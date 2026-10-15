@@ -7,6 +7,12 @@ import { AuthGuard, PublicOnlyGuard, RoleGuard } from '@/app/routes/guards'
 
 import { LoginPage } from '@/features/auth/pages/LoginPage'
 import { AccessDeniedPage } from '@/features/auth/pages/AccessDeniedPage'
+import { CategoryManagementPage } from '@/features/menu/pages/CategoryManagementPage'
+import { MenuItemListPage } from '@/features/menu/pages/MenuItemListPage'
+import { MenuItemCreatePage } from '@/features/menu/pages/MenuItemCreatePage'
+import { MenuItemDetailPage } from '@/features/menu/pages/MenuItemDetailPage'
+import { TabletMenuPage } from '@/features/menu/pages/TabletMenuPage'
+import { TabletMenuItemDetailPage } from '@/features/menu/pages/TabletMenuItemDetailPage'
 import { PlaceholderPage } from '@/shared/components/PlaceholderPage'
 import { TabletCartPage } from '@/features/ordering/pages/TabletCartPage'
 import { TabletCheckoutPage } from '@/features/ordering/pages/TabletCheckoutPage'
@@ -46,6 +52,12 @@ export function AppRoutes() {
           }
         >
           <Route element={<StaffLayout />}>
+            <Route element={<RoleGuard allowedRoles={['OWNER']} />}>
+              <Route path="/owner/categories" element={<CategoryManagementPage />} />
+              <Route path="/owner/menu-items" element={<MenuItemListPage />} />
+              <Route path="/owner/menu-items/new" element={<MenuItemCreatePage />} />
+              <Route path="/owner/menu-items/:itemId" element={<MenuItemDetailPage />} />
+            </Route>
             <Route
               path="/owner/dashboard"
               element={<PlaceholderPage title="Dashboard Tổng quan" description="Báo cáo số liệu và hoạt động nhà hàng." />}
@@ -112,8 +124,9 @@ export function AppRoutes() {
             />
             <Route
               path="/tablet/menu"
-              element={<PlaceholderPage title="Thực đơn Tablet" description="Xem danh sách món ăn phục vụ tại nhà hàng." />}
+              element={<TabletMenuPage />}
             />
+            <Route path="/tablet/menu/:itemId" element={<TabletMenuItemDetailPage />} />
           </Route>
         </Route>
       </Route>

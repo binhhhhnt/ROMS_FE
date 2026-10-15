@@ -2,7 +2,7 @@ import { Outlet, Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/app/store/authStore'
 import { authApi } from '@/features/auth/api/authApi'
 import { Button } from '@/shared/components/ui/button'
-import { UtensilsCrossed, LogOut, ClipboardList, LayoutDashboard } from 'lucide-react'
+import { UtensilsCrossed, LogOut, ClipboardList, LayoutDashboard, FolderOpen } from 'lucide-react'
 import { toast } from 'sonner'
 
 export function StaffLayout() {
@@ -58,6 +58,18 @@ export function StaffLayout() {
       <div className="flex-1 flex">
         {/* Simple Side Nav */}
         <aside className="w-56 bg-card border-r border-border p-4 flex flex-col gap-1 hidden md:flex">
+          {user?.role === 'OWNER' && (
+            <Link to="/owner/menu-items" className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text hover:bg-surface/50 transition-colors">
+              <UtensilsCrossed className="w-4 h-4 text-accent" />
+              Danh sách món
+            </Link>
+          )}
+          {user?.role === 'OWNER' && (
+            <Link to="/owner/categories" className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text hover:bg-surface/50 transition-colors">
+              <FolderOpen className="w-4 h-4 text-accent" />
+              Danh mục món
+            </Link>
+          )}
           {user?.role === 'OWNER' && (
             <Link
               to="/owner/dashboard"
