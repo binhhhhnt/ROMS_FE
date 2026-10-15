@@ -51,7 +51,7 @@ export function LoginForm() {
 
       // 4. Role-aware redirection
       if (userProfile.role === 'TABLE_ACCOUNT') {
-        navigate('/tablet/cart', { replace: true })
+        navigate('/tablet/welcome', { replace: true })
       } else if (userProfile.role === 'KITCHEN_STAFF') {
         navigate('/kitchen/queue', { replace: true })
       } else if (userProfile.role === 'OWNER') {

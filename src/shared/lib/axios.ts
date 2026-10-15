@@ -102,12 +102,97 @@ apiClient.interceptors.response.use(
   }
 )
 
+const ERROR_TRANSLATIONS: Record<string, string> = {
+  CANNOT_DEACTIVATE_SELF: 'Bạn không thể tự khóa tài khoản của chính mình.',
+  TABLE_ID_REQUIRED: 'Bắt buộc phải chọn bàn ăn liên kết cho tài khoản máy tính bảng.',
+  TABLE_INACTIVE: 'Không thể liên kết tài khoản với bàn đang ngưng hoạt động.',
+  TABLE_ALREADY_ASSIGNED: 'Bàn ăn này đã được liên kết với một tài khoản máy tính bảng khác.',
+  INVALID_TABLE_ASSIGNMENT: 'Tài khoản nhân viên không được phép gán bàn ăn.',
+  DUPLICATE_USERNAME: 'Tên đăng nhập này đã tồn tại, vui lòng chọn tên khác.',
+  DUPLICATE_EMAIL: 'Địa chỉ email này đã được sử dụng bởi một tài khoản khác.',
+  INVALID_CREDENTIALS: 'Tên đăng nhập hoặc mật khẩu không chính xác.',
+  USER_NOT_FOUND: 'Không tìm thấy tài khoản người dùng.',
+  TABLE_NOT_FOUND: 'Không tìm thấy thông tin bàn ăn yêu cầu.',
+  PASSWORD_MISMATCH: 'Mật khẩu cũ không chính xác.',
+  INTERNAL_SERVER_ERROR: 'Hệ thống máy chủ gặp lỗi tạm thời. Vui lòng thử lại sau.',
+}
+
+function translateErrorMessage(message: string, code?: string): string {
+  if (code && ERROR_TRANSLATIONS[code]) {
+    return ERROR_TRANSLATIONS[code]
+  }
+
+  const lower = message.toLowerCase()
+
+  if (lower.includes('cannot deactivate your own account')) {
+    return 'Bạn không thể tự vô hiệu hóa tài khoản của chính mình.'
+  }
+  if (lower.includes('already linked to user') || lower.includes('already assigned')) {
+    return 'Bàn ăn này đã được liên kết với một tài khoản máy tính bảng khác.'
+  }
+  if (lower.includes('email is already in use') || lower.includes('duplicate_email')) {
+    return 'Địa chỉ email này đã được sử dụng bởi tài khoản khác.'
+  }
+  if (lower.includes('username is already taken') || lower.includes('duplicate_username')) {
+    return 'Tên đăng nhập này đã tồn tại trong hệ thống.'
+  }
+  if (lower.includes('table id is required')) {
+    return 'Bắt buộc phải chọn một bàn ăn cho máy tính bảng.'
+  }
+  if (lower.includes('cannot link account to an inactive table')) {
+    return 'Không thể liên kết tài khoản với bàn đang ngưng hoạt động.'
+  }
+  if (lower.includes('staff accounts cannot be linked to a table')) {
+    return 'Tài khoản nhân viên không được liên kết với bàn ăn.'
+  }
+  if (lower.includes('user not found')) {
+    return 'Không tìm thấy tài khoản người dùng tương ứng.'
+  }
+  if (lower.includes('table not found')) {
+    return 'Không tìm thấy bàn ăn tương ứng.'
+  }
+  if (lower.includes('password must be at least') || lower.includes('password length')) {
+    return 'Mật khẩu phải có độ dài tối thiểu 6 ký tự.'
+  }
+  if (lower.includes('full name cannot be blank')) {
+    return 'Họ và tên không được để trống.'
+  }
+  if (lower.includes('email must be valid')) {
+    return 'Địa chỉ email không đúng định dạng.'
+  }
+  if (lower.includes('invalid username or password') || lower.includes('bad credentials')) {
+    return 'Tên đăng nhập hoặc mật khẩu không đúng.'
+  }
+  if (lower.includes('unexpected internal server error')) {
+    return 'Hệ thống máy chủ gặp sự cố tạm thời. Vui lòng thử lại sau.'
+  }
+  if (lower.includes('access is denied') || lower.includes('forbidden')) {
+    return 'Bạn không có quyền thực hiện thao tác này.'
+  }
+  if (lower.includes('unauthorized')) {
+    return 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.'
+  }
+  if (lower.includes('network error')) {
+    return 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại đường truyền mạng.'
+  }
+
+  return message
+}
+
 export function getApiErrorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {
     const responseData = error.response?.data as { message?: string; error?: { code?: string } } | undefined
-    if (responseData?.message) {
-      return responseData.message
+    const errorCode = responseData?.error?.code
+    const rawMessage = responseData?.message
+
+    if (rawMessage) {
+      return translateErrorMessage(rawMessage, errorCode)
     }
+
+    if (errorCode && ERROR_TRANSLATIONS[errorCode]) {
+      return ERROR_TRANSLATIONS[errorCode]
+    }
+
     if (error.response?.status === 401) {
       return 'Phiên đăng nhập đã hết hạn hoặc không hợp lệ. Vui lòng đăng nhập lại.'
     }
@@ -123,7 +208,7 @@ export function getApiErrorMessage(error: unknown): string {
     if (error.response?.status && error.response.status >= 500) {
       return 'Hệ thống máy chủ gặp lỗi tạm thời. Vui lòng thử lại sau.'
     }
-    return error.message || 'Có lỗi xảy ra khi kết nối tới máy chủ.'
+    return translateErrorMessage(error.message || 'Có lỗi xảy ra khi kết nối tới máy chủ.')
   }
-  return error instanceof Error ? error.message : 'Có lỗi không xác định xảy ra.'
+  return error instanceof Error ? translateErrorMessage(error.message) : 'Có lỗi không xác định xảy ra.'
 }

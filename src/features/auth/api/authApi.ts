@@ -4,6 +4,12 @@ import type {
   LoginRequest,
   LoginResponseData,
   UserProfile,
+  ForgotPasswordRequest,
+  VerifyOtpRequest,
+  ResetPasswordRequest,
+  ChangePasswordRequest,
+  UserProfileDetail,
+  UpdateProfileRequest,
 } from '@/features/auth/types/auth.types'
 
 export const authApi = {
@@ -31,4 +37,52 @@ export const authApi = {
   async logout(): Promise<void> {
     await apiClient.post('/api/auth/logout')
   },
+
+  async forgotPassword(payload: ForgotPasswordRequest): Promise<string> {
+    const res = await apiClient.post<ApiResponse<null>>(
+      '/api/auth/forgot-password',
+      payload
+    )
+    return res.data.message
+  },
+
+  async verifyOtp(payload: VerifyOtpRequest): Promise<string> {
+    const res = await apiClient.post<ApiResponse<null>>(
+      '/api/auth/verify-otp',
+      payload
+    )
+    return res.data.message
+  },
+
+  async resetPassword(payload: ResetPasswordRequest): Promise<string> {
+    const res = await apiClient.post<ApiResponse<null>>(
+      '/api/auth/reset-password',
+      payload
+    )
+    return res.data.message
+  },
+
+  async getProfile(): Promise<UserProfileDetail> {
+    const res = await apiClient.get<ApiResponse<UserProfileDetail>>(
+      '/api/users/me/profile'
+    )
+    return res.data.data
+  },
+
+  async updateProfile(payload: UpdateProfileRequest): Promise<UserProfileDetail> {
+    const res = await apiClient.put<ApiResponse<UserProfileDetail>>(
+      '/api/users/me/profile',
+      payload
+    )
+    return res.data.data
+  },
+
+  async changePassword(payload: ChangePasswordRequest): Promise<string> {
+    const res = await apiClient.post<ApiResponse<null>>(
+      '/api/users/me/change-password',
+      payload
+    )
+    return res.data.message
+  },
 }
+

@@ -6,6 +6,9 @@ import { TabletLayout } from '@/app/layouts/TabletLayout'
 import { AuthGuard, PublicOnlyGuard, RoleGuard } from '@/app/routes/guards'
 
 import { LoginPage } from '@/features/auth/pages/LoginPage'
+import { ForgotPasswordPage } from '@/features/auth/pages/ForgotPasswordPage'
+import { ResetPasswordPage } from '@/features/auth/pages/ResetPasswordPage'
+import { ProfilePage } from '@/features/auth/pages/ProfilePage'
 import { AccessDeniedPage } from '@/features/auth/pages/AccessDeniedPage'
 import { PlaceholderPage } from '@/shared/components/PlaceholderPage'
 import { TabletCartPage } from '@/features/ordering/pages/TabletCartPage'
@@ -20,6 +23,14 @@ import { KitchenCookingPage } from '@/features/kitchen/pages/KitchenCookingPage'
 import { KitchenReadyPage } from '@/features/kitchen/pages/KitchenReadyPage'
 import { KitchenMenuAvailabilityPage } from '@/features/kitchen/pages/KitchenMenuAvailabilityPage'
 
+import { UserManagementPage } from '@/features/users/pages/UserManagementPage'
+import { TablesOverviewPage } from '@/features/tables/pages/TablesOverviewPage'
+import { TableDetailPage } from '@/features/tables/pages/TableDetailPage'
+import { SessionDetailPage } from '@/features/tables/pages/SessionDetailPage'
+import { SessionHistoryPage } from '@/features/tables/pages/SessionHistoryPage'
+import { TabletWelcomePage } from '@/features/tables/pages/TabletWelcomePage'
+import { AiAssistantPage } from '@/features/tables/pages/AiAssistantPage'
+
 export function AppRoutes() {
   return (
     <Routes>
@@ -27,10 +38,8 @@ export function AppRoutes() {
       <Route element={<PublicOnlyGuard />}>
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<LoginPage />} />
-          <Route
-            path="/forgot-password"
-            element={<PlaceholderPage title="Quên mật khẩu" description="Tính năng gửi mã OTP khôi phục mật khẩu qua email." />}
-          />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
         </Route>
       </Route>
 
@@ -51,12 +60,72 @@ export function AppRoutes() {
               element={<PlaceholderPage title="Dashboard Tổng quan" description="Báo cáo số liệu và hoạt động nhà hàng." />}
             />
             <Route
+              path="/owner/users"
+              element={<UserManagementPage />}
+            />
+            <Route
+              path="/owner/users/:userId"
+              element={<UserManagementPage />}
+            />
+            <Route
+              path="/tables"
+              element={<TablesOverviewPage />}
+            />
+            <Route
+              path="/staff/tables"
+              element={<TablesOverviewPage />}
+            />
+            <Route
+              path="/staff/active-tables"
+              element={<TablesOverviewPage initialActiveOnly={true} />}
+            />
+            <Route
+              path="/tables/:tableId"
+              element={<TableDetailPage />}
+            />
+            <Route
+              path="/staff/tables/:tableId"
+              element={<TableDetailPage />}
+            />
+            <Route
+              path="/sessions/:sessionId"
+              element={<SessionDetailPage />}
+            />
+            <Route
+              path="/staff/sessions/:sessionId"
+              element={<SessionDetailPage />}
+            />
+            <Route
+              path="/sessions/history"
+              element={<SessionHistoryPage />}
+            />
+            <Route
+              path="/staff/sessions/history"
+              element={<SessionHistoryPage />}
+            />
+            <Route
+              path="/ai-assistant"
+              element={<AiAssistantPage />}
+            />
+            <Route
               path="/staff/orders"
               element={<StaffOrdersPage />}
             />
             <Route
               path="/staff/orders/:orderId"
               element={<StaffOrderDetailPage />}
+            />
+            <Route
+              path="/profile"
+              element={<ProfilePage defaultTab="profile" />}
+            />
+            <Route
+              path="/profile/change-password"
+              element={<ProfilePage defaultTab="password" />}
+            />
+            <Route
+              path="/settings/change-password"
+              element={<ProfilePage defaultTab="password" />}
             />
           </Route>
         </Route>
@@ -95,6 +164,10 @@ export function AppRoutes() {
         >
           <Route element={<TabletLayout />}>
             <Route
+              path="/tablet/welcome"
+              element={<TabletWelcomePage />}
+            />
+            <Route
               path="/tablet/cart"
               element={<TabletCartPage />}
             />
@@ -113,6 +186,14 @@ export function AppRoutes() {
             <Route
               path="/tablet/menu"
               element={<PlaceholderPage title="Thực đơn Tablet" description="Xem danh sách món ăn phục vụ tại nhà hàng." />}
+            />
+            <Route
+              path="/tablet/ai-assistant"
+              element={<AiAssistantPage />}
+            />
+            <Route
+              path="/tablet/assistant"
+              element={<AiAssistantPage />}
             />
           </Route>
         </Route>
