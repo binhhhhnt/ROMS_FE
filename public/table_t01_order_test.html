@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ROMS Test Tool - Table T01 Đặt Món Cho KDS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- SockJS & STOMP for live WebSocket monitoring -->
+  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+  <style>
+    :root {
+      --bg-main: #0B132B;
+      --card-bg: #1C2541;
+      --card-border: #3A506B;
+      --text-main: #F8FAFC;
+      --text-muted: #94A3B8;
+      --primary: #0284C7;
+      --primary-hover: #0369A1;
+      --accent-sky: #38BDF8;
+      --success: #10B981;
+      --warning: #F59E0B;
+      --danger: #EF4444;
+      --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: var(--font-family);
+      line-height: 1.5;
+      padding: 24px 16px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .header-title h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .badge-navy {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent-sky);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
+    .badge-success {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .badge-warning {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--warning);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 9px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: #E2E8F0;
+      border: 1px solid var(--card-border);
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: white;
+    }
+    .btn-success:hover {
+      opacity: 0.9;
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .form-group {
+      margin-bottom: 12px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 8px 12px;
+      background: rgba(11, 19, 43, 0.6);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      color: white;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-control:focus {
+      border-color: var(--accent-sky);
+    }
+
+    .row-inputs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    /* Auth Box Modes */
+    .auth-section {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 18px;
+    }
+
+    .auth-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 8px;
+    }
+
+    .auth-tab-btn {
+      padding: 5px 12px;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .auth-tab-btn.active {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: rgba(56, 189, 248, 0.4);
+      color: var(--accent-sky);
+    }
+
+    /* Preset Quick-Buttons */
+    .preset-box {
+      background: rgba(14, 165, 233, 0.08);
+      border: 1px dashed rgba(56, 189, 248, 0.4);
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 18px;
+    }
+
+    .preset-box-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent-sky);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .preset-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    /* Dish Selection List */
+    .dish-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 380px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .dish-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px;
+      background: rgba(11, 19, 43, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      transition: background 0.15s;
+    }
+
+    .dish-item:hover {
+      background: rgba(11, 19, 43, 0.8);
+      border-color: rgba(56, 189, 248, 0.3);
+    }
+
+    .dish-info {
+      flex: 1;
+    }
+
+    .dish-name {
+      font-weight: 600;
+      font-size: 14px;
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dish-id {
+      font-size: 11px;
+      color: var(--accent-sky);
+      background: rgba(56, 189, 248, 0.1);
+      padding: 1px 6px;
+      border-radius: 4px;
+    }
+
+    .dish-price {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .qty-control {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .qty-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--card-border);
+      color: white;
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .qty-btn:hover {
+      background: var(--primary);
+    }
+
+    .qty-val {
+      font-size: 14px;
+      font-weight: 700;
+      width: 24px;
+      text-align: center;
+    }
+
+    .dish-note-input {
+      width: 100%;
+      margin-top: 6px;
+      padding: 4px 8px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      color: #E2E8F0;
+      font-size: 12px;
+    }
+
+    /* Cart Summary */
+    .cart-summary {
+      background: rgba(11, 19, 43, 0.7);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 14px;
+      margin-top: 16px;
+    }
+
+    .cart-summary-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+
+    .cart-summary-total {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--accent-sky);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding-top: 8px;
+      margin-top: 8px;
+    }
+
+    /* Alert / Notice Box */
+    .alert {
+      padding: 12px 14px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .alert-info {
+      background: rgba(2, 132, 199, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: #BAE6FD;
+    }
+
+    .alert-warning {
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #FDE68A;
+    }
+
+    .alert-success {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #A7F3D0;
+    }
+
+    .alert-danger {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #FECACA;
+    }
+
+    .sql-code {
+      background: #050B14;
+      border: 1px solid #1E293B;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-family: monospace;
+      font-size: 12px;
+      color: #38BDF8;
+      overflow-x: auto;
+      margin-top: 6px;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* Terminal / Log Box */
+    .log-box {
+      background: #050B14;
+      border: 1px solid #1E293B;
+      border-radius: 8px;
+      padding: 12px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 12px;
+      color: #A5F3FC;
+      max-height: 280px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .log-item {
+      margin-bottom: 8px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .log-item:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+    }
+
+    .log-time {
+      color: #64748B;
+      font-size: 11px;
+    }
+
+    .log-topic {
+      color: #38BDF8;
+      font-weight: 600;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .dot-green { background: #10B981; box-shadow: 0 0 6px #10B981; }
+    .dot-red { background: #EF4444; box-shadow: 0 0 6px #EF4444; }
+    .dot-yellow { background: #F59E0B; }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .tab-btn {
+      padding: 8px 14px;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .tab-btn.active {
+      color: var(--accent-sky);
+      border-bottom-color: var(--accent-sky);
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Top Navigation & Header -->
+  <header>
+    <div class="header-title">
+      <h1>
+        🍽️ ROMS Test Tool: Bàn T-01 Đặt Món
+        <span class="badge badge-navy">BINH-DEV Features</span>
+      </h1>
+      <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">
+        Gửi đơn gọi món từ <strong>table_t01</strong> (TABLE_ACCOUNT) vào Backend để kiểm tra hiển thị thời gian thực trên <strong>KDS (Kitchen Display System)</strong>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a href="http://localhost:5173/kitchen/queue" target="_blank" class="btn btn-secondary" title="Mở trang KDS hàng đợi để theo dõi">
+        👨‍🍳 Mở Web KDS Hàng Đợi (/kitchen/queue) ↗
+      </a>
+      <a href="http://localhost:5173/tablet/orders" target="_blank" class="btn btn-secondary" title="Mở trang theo dõi đơn tablet">
+        📱 Mở Tablet Theo Dõi (/tablet/orders) ↗
+      </a>
+    </div>
+  </header>
+
+  <!-- Origin / CORS Notice -->
+  <div class="alert alert-warning" id="originAlertBox" style="display: none;">
+    <div>⚠️</div>
+    <div style="flex: 1;">
+      <strong>Lưu ý về nguồn mở file (Origin 'null'):</strong>
+      <p style="margin-top: 4px;">
+        Trình duyệt đang mở file từ ổ đĩa (<code>file:///</code>). Để tránh triệt để lỗi <code>CORS / origin 'null'</code>:
+      </p>
+      <div style="margin-top: 6px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+        <a href="http://localhost:5173/table_t01_order_test.html" class="btn btn-primary btn-sm">
+          👉 Mở bằng link Vite: http://localhost:5173/table_t01_order_test.html
+        </a>
+        <span style="font-size: 12px; color: #E2E8F0;">(Khuyến nghị nhất — chạy qua Vite Proxy không bao giờ bị CORS)</span>
+      </div>
+      <p style="margin-top: 6px; font-size: 12px; color: var(--text-muted);">
+        Hoặc nếu bạn muốn tiếp tục mở file trực tiếp, hãy chọn tab <strong>"Nhập / Dán Access Token"</strong> bên dưới để dùng luôn token đã đăng nhập tay mà không cần gọi API login.
+      </p>
+    </div>
+  </div>
+
+  <!-- Service Session Notice / DB Pre-requisite -->
+  <div class="alert alert-info" id="sessionNoticeBox">
+    <div>ℹ️</div>
+    <div style="flex: 1;">
+      <strong>Kiến trúc & Cơ chế kiểm tra của Backend (BE-010 / BINH-DEV):</strong>
+      <p style="margin-top: 4px;">
+        Đơn hàng yêu cầu <code>sessionId</code> của phiên phục vụ đang <code>ACTIVE</code> gắn với Bàn T01 (table_id = 1). 
+        Nếu database của bạn chưa có session ACTIVE nào cho bàn 1, bạn chỉ cần mở PostgreSQL (DBeaver/pgAdmin) chạy câu lệnh 1 dòng này để tạo:
+      </p>
+      <div class="sql-code" id="sqlCommand">INSERT INTO service_sessions (id, table_id, status, opened_at, opened_by) VALUES (1, 1, 'ACTIVE', NOW(), (SELECT id FROM users WHERE username = 'table_t01')) ON CONFLICT (id) DO UPDATE SET status = 'ACTIVE';</div>
+      <div style="margin-top: 6px;">
+        <button class="btn btn-secondary btn-sm" onclick="copySql()">📋 Copy câu lệnh SQL</button>
+        <span id="copyFeedback" style="color: #38BDF8; font-size: 12px; margin-left: 8px;"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- Left Column: Form & Menu -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <span>🛎️ Thiết Lập Gọi Món (Bàn T-01)</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span id="authStatusDot" class="status-dot dot-yellow"></span>
+          <span id="authStatusText" style="font-size: 12px; color: var(--text-muted);">Chưa có Token</span>
+        </div>
+      </div>
+
+      <!-- Config Inputs -->
+      <div class="row-inputs">
+        <div class="form-group">
+          <label class="form-label">Chế độ kết nối API</label>
+          <select id="apiModeSelect" class="form-control" onchange="handleApiModeChange()">
+            <option value="proxy">Vite Proxy (khuyến nghị, không lo CORS)</option>
+            <option value="direct">Trực tiếp Backend (http://localhost:8080)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Service Session ID</label>
+          <input type="number" id="sessionIdInput" class="form-control" value="1">
+        </div>
+      </div>
+
+      <div class="form-group" id="customUrlGroup" style="display: none;">
+        <label class="form-label">Backend URL</label>
+        <input type="text" id="apiBaseUrl" class="form-control" value="http://localhost:8080">
+      </div>
+
+      <!-- Authentication Section: Manual Token vs Form Login -->
+      <div class="auth-section">
+        <div class="auth-tabs">
+          <button class="auth-tab-btn active" id="btnTabPasteToken" onclick="switchAuthMode('paste')">
+            📋 Cách 1: Dán Access Token (Không lo CORS)
+          </button>
+          <button class="auth-tab-btn" id="btnTabLogin" onclick="switchAuthMode('login')">
+            🔑 Cách 2: Đăng nhập tay qua Form
+          </button>
+        </div>
+
+        <!-- Mode 1: Paste Access Token directly -->
+        <div id="authModePaste">
+          <label class="form-label">Dán mã Access Token (JWT Bearer):</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="manualTokenInput" class="form-control" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." oninput="onManualTokenInput()">
+            <button class="btn btn-secondary btn-sm" onclick="pasteFromClipboard()">Dán từ Clipboard</button>
+          </div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">
+            💡 Bạn có thể đăng nhập trên web thật <a href="http://localhost:5173/login" target="_blank" style="color: var(--accent-sky);">http://localhost:5173/login</a> với tài khoản <code>table_t01</code> / <code>Password@123</code>, sau đó mở F12 Console gõ <code>window.__authStore.getState().accessToken</code> để lấy token dán vào đây!
+          </div>
+        </div>
+
+        <!-- Mode 2: Login via form -->
+        <div id="authModeLogin" style="display: none;">
+          <div class="row-inputs">
+            <div class="form-group">
+              <label class="form-label">Tài khoản Tablet</label>
+              <input type="text" id="usernameInput" class="form-control" value="table_t01">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Mật khẩu</label>
+              <input type="password" id="passwordInput" class="form-control" value="Password@123">
+            </div>
+          </div>
+          <button class="btn btn-secondary btn-sm" style="width: 100%; margin-top: 4px;" onclick="manualLogin()">
+            🔐 Bấm để Đăng Nhập Lấy Token
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Preset Buttons -->
+      <div class="preset-box">
+        <div class="preset-box-title">
+          ⚡ Chọn Nhanh Combo Test KDS (1-Click)
+        </div>
+        <div class="preset-buttons">
+          <button class="btn btn-secondary btn-sm" onclick="applyPreset(1)">🍲 2 Phở Bò + 1 Trà Đào</button>
+          <button class="btn btn-secondary btn-sm" onclick="applyPreset(2)">🍛 1 Cơm Tấm + 1 Nem Rán</button>
+          <button class="btn btn-secondary btn-sm" onclick="applyPreset(3)">🍗 1 Gà Nướng + 2 Cà Phê</button>
+          <button class="btn btn-secondary btn-sm" onclick="resetCart()">🔄 Xóa chọn lại</button>
+        </div>
+      </div>
+
+      <!-- Menu Items Selection -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <span style="font-size: 13px; font-weight: 600; color: #FFFFFF;">Danh Sách Món (Từ Seed Data ROMS)</span>
+        <button class="btn btn-secondary btn-sm" onclick="fetchLiveMenu()" id="btnFetchMenu">🔄 Tải món từ BE</button>
+      </div>
+
+      <div class="dish-list" id="dishListContainer">
+        <!-- Rendered by JS -->
+      </div>
+
+      <!-- Cart Total & Submit -->
+      <div class="cart-summary">
+        <div class="cart-summary-row">
+          <span style="color: var(--text-muted);">Tổng số lượng món:</span>
+          <span id="totalItemsDisplay" style="font-weight: 600;">0 món</span>
+        </div>
+        <div class="cart-summary-row cart-summary-total">
+          <span>Tổng tiền tạm tính:</span>
+          <span id="totalAmountDisplay">0 đ</span>
+        </div>
+      </div>
+
+      <div style="margin-top: 18px; display: flex; gap: 12px;">
+        <button class="btn btn-primary" style="flex: 1; padding: 12px;" id="btnPlaceOrder" onclick="placeOrder()">
+          🚀 GỬI ORDER VÀO BẾP (POST /api/orders)
+        </button>
+      </div>
+
+      <!-- Result Banner -->
+      <div id="orderResultBox" style="margin-top: 16px; display: none;"></div>
+    </div>
+
+    <!-- Right Column: Live Monitor & Logs -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <span>📡 STOMP WebSocket & Live Event Monitor</span>
+        </div>
+        <div>
+          <span id="wsStatusDot" class="status-dot dot-yellow"></span>
+          <span id="wsStatusText" style="font-size: 12px; color: var(--text-muted); margin-left: 6px;">Đang chuẩn bị...</span>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('ws-tab')">Sự kiện Real-time (KDS)</button>
+        <button class="tab-btn" onclick="switchTab('payload-tab')">Request / Response HTTP</button>
+        <button class="tab-btn" onclick="switchTab('history-tab')">Lịch Sử Order Test</button>
+      </div>
+
+      <!-- Tab 1: WebSocket / STOMP Events -->
+      <div id="tab-ws">
+        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">
+          Lắng nghe kênh: <code>/topic/kitchen/orders</code> và <code>/topic/session/{sessionId}/orders</code>
+        </div>
+        <div class="log-box" id="wsLogBox">
+          <div class="log-item">
+            <span class="log-time">[Hệ thống]</span> Khởi tạo WebSocket STOMP listener...
+          </div>
+        </div>
+        <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+          <button class="btn btn-secondary btn-sm" onclick="reconnectWebSocket()">🔄 Kết nối lại WebSocket</button>
+          <button class="btn btn-secondary btn-sm" onclick="clearWsLogs()">Xóa log</button>
+        </div>
+      </div>
+
+      <!-- Tab 2: HTTP Payload & cURL -->
+      <div id="tab-payload" style="display: none;">
+        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">
+          Payload gửi gần nhất (JSON):
+        </div>
+        <div class="log-box" id="payloadLogBox" style="height: 140px;">// Chưa gửi request nào</div>
+
+        <div style="font-size: 12px; color: var(--text-muted); margin-top: 12px; margin-bottom: 6px;">
+          Response từ Backend:
+        </div>
+        <div class="log-box" id="responseLogBox" style="height: 140px;">// Đang đợi phản hồi</div>
+      </div>
+
+      <!-- Tab 3: Order History -->
+      <div id="tab-history" style="display: none;">
+        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">
+          Các mã Order đã tạo thành công trong phiên test này:
+        </div>
+        <div id="orderHistoryList" style="display: flex; flex-direction: column; gap: 8px; max-height: 320px; overflow-y: auto;">
+          <div style="color: var(--text-muted); font-size: 13px; text-align: center; padding: 20px;">
+            Chưa có đơn hàng nào được tạo.
+          </div>
+        </div>
+      </div>
+
+      <!-- Explanatory footer for KDS tester -->
+      <div style="margin-top: 20px; padding: 14px; background: rgba(255, 255, 255, 0.04); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.08);">
+        <h4 style="font-size: 13px; font-weight: 700; color: #FFFFFF; margin-bottom: 6px;">
+          💡 Hướng dẫn kiểm tra KDS thực tế:
+        </h4>
+        <ol style="font-size: 12px; color: #CBD5E1; padding-left: 18px; line-height: 1.7;">
+          <li>Mở màn hình KDS tại <code>http://localhost:5173/kitchen/queue</code> (đăng nhập tài khoản <code>kitchen01</code> / <code>Password@123</code>).</li>
+          <li>Đảm bảo đã có Access Token (dán token hoặc đăng nhập tay Bàn T-01).</li>
+          <li>Bấm <strong>"GỬI ORDER VÀO BẾP"</strong>.</li>
+          <li>Kiểm tra màn hình KDS: Thẻ đơn của <strong>Bàn T01</strong> sẽ xuất hiện tức thì qua WebSocket STOMP không cần reload trang.</li>
+        </ol>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  // Initial seed menu items as fallback
+  const defaultDishes = [
+    { id: 1, name: 'Phở Bò Tái Nạm', price: 65000, category: 'Món Chính' },
+    { id: 2, name: 'Cơm Tấm Sườn Bì Chả', price: 55000, category: 'Món Chính' },
+    { id: 3, name: 'Bún Bò Huế Đặc Biệt', price: 65000, category: 'Món Chính' },
+    { id: 4, name: 'Gà Nướng Muối Ớt (Nửa con)', price: 120000, category: 'Món Chính' },
+    { id: 7, name: 'Nem Rán Hà Nội (5 chiếc)', price: 50000, category: 'Món Ăn Kèm & Khai Vị' },
+    { id: 9, name: 'Cà Phê Sữa Đá Sài Gòn', price: 28000, category: 'Đồ Uống & Tráng Miệng' },
+    { id: 10, name: 'Trà Đào Cam Sả', price: 38000, category: 'Đồ Uống & Tráng Miệng' }
+  ];
+
+  let currentDishes = [...defaultDishes];
+  let cart = {};
+  let currentAccessToken = '';
+  let stompClient = null;
+  let orderHistory = [];
+
+  // Initialize
+  window.addEventListener('DOMContentLoaded', () => {
+    // Check if opened via file://
+    if (window.location.protocol === 'file:') {
+      document.getElementById('originAlertBox').style.display = 'flex';
+      // In file:// mode, default to direct backend URL
+      document.getElementById('apiModeSelect').value = 'direct';
+      document.getElementById('customUrlGroup').style.display = 'block';
+    } else {
+      // In http://localhost:5173 mode, Vite proxy handles /api without CORS!
+      document.getElementById('apiModeSelect').value = 'proxy';
+      document.getElementById('customUrlGroup').style.display = 'none';
+    }
+
+    renderDishList();
+    applyPreset(1); // Default Combo 1
+    initWebSocket();
+  });
+
+  function getApiBaseUrl() {
+    const mode = document.getElementById('apiModeSelect').value;
+    if (mode === 'proxy' && window.location.protocol !== 'file:') {
+      return ''; // Use relative path, Vite proxies /api to http://localhost:8080
+    }
+    return document.getElementById('apiBaseUrl').value.replace(/\/$/, '');
+  }
+
+  function handleApiModeChange() {
+    const mode = document.getElementById('apiModeSelect').value;
+    document.getElementById('customUrlGroup').style.display = (mode === 'direct') ? 'block' : 'none';
+  }
+
+  function switchAuthMode(mode) {
+    const btnPaste = document.getElementById('btnTabPasteToken');
+    const btnLogin = document.getElementById('btnTabLogin');
+    const panelPaste = document.getElementById('authModePaste');
+    const panelLogin = document.getElementById('authModeLogin');
+
+    if (mode === 'paste') {
+      btnPaste.classList.add('active');
+      btnLogin.classList.remove('active');
+      panelPaste.style.display = 'block';
+      panelLogin.style.display = 'none';
+    } else {
+      btnLogin.classList.add('active');
+      btnPaste.classList.remove('active');
+      panelLogin.style.display = 'block';
+      panelPaste.style.display = 'none';
+    }
+  }
+
+  function onManualTokenInput() {
+    const val = document.getElementById('manualTokenInput').value.trim();
+    setAccessToken(val);
+  }
+
+  async function pasteFromClipboard() {
+    try {
+      const text = await navigator.clipboard.readText();
+      document.getElementById('manualTokenInput').value = text.trim();
+      setAccessToken(text.trim());
+    } catch (e) {
+      alert('Không thể đọc clipboard tự động. Vui lòng bấm chuột phải và Dán (Ctrl+V) vào ô!');
+    }
+  }
+
+  function setAccessToken(token) {
+    currentAccessToken = token;
+    const dot = document.getElementById('authStatusDot');
+    const text = document.getElementById('authStatusText');
+
+    if (token) {
+      dot.className = 'status-dot dot-green';
+      text.textContent = 'Đã có Token hợp lệ';
+      // Automatically connect STOMP WebSocket with this token
+      reconnectWebSocket();
+    } else {
+      dot.className = 'status-dot dot-yellow';
+      text.textContent = 'Chưa có Token';
+    }
+  }
+
+  async function manualLogin() {
+    const baseUrl = getApiBaseUrl();
+    const username = document.getElementById('usernameInput').value;
+    const password = document.getElementById('passwordInput').value;
+
+    const dot = document.getElementById('authStatusDot');
+    const text = document.getElementById('authStatusText');
+    text.textContent = 'Đang đăng nhập...';
+
+    try {
+      const res = await fetch(`${baseUrl}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok && data.data?.accessToken) {
+        setAccessToken(data.data.accessToken);
+        document.getElementById('manualTokenInput').value = data.data.accessToken;
+        alert(`Đăng nhập thành công tài khoản ${username}! Token đã được lưu.`);
+      } else {
+        dot.className = 'status-dot dot-red';
+        text.textContent = 'Đăng nhập thất bại';
+        alert(`Đăng nhập thất bại: ${data.message || res.statusText}`);
+      }
+    } catch (err) {
+      dot.className = 'status-dot dot-red';
+      text.textContent = 'Lỗi kết nối';
+      if (window.location.protocol === 'file:') {
+        alert(`Lỗi CORS: Khi mở file từ file://, trình duyệt chặn gọi http://localhost:8080.\n\nGiải pháp:\n1. Mở trang tại http://localhost:5173/table_t01_order_test.html\n2. Hoặc đăng nhập tại http://localhost:5173/login rồi dán token vào ô 'Dán Access Token'!`);
+      } else {
+        alert(`Lỗi kết nối: ${err.message}`);
+      }
+    }
+  }
+
+  function formatMoney(amount) {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+  }
+
+  function renderDishList() {
+    const container = document.getElementById('dishListContainer');
+    container.innerHTML = '';
+
+    currentDishes.forEach(dish => {
+      const currentQty = cart[dish.id]?.quantity || 0;
+      const currentNote = cart[dish.id]?.note || '';
+
+      const itemEl = document.createElement('div');
+      itemEl.className = 'dish-item';
+      itemEl.id = `dish-item-${dish.id}`;
+      itemEl.innerHTML = `
+        <div class="dish-info">
+          <div class="dish-name">
+            <span>${dish.name}</span>
+            <span class="dish-id">ID: ${dish.id}</span>
+          </div>
+          <div class="dish-price">${formatMoney(dish.price)} • ${dish.category || 'Món ăn'}</div>
+          ${currentQty > 0 ? `
+            <input type="text" class="dish-note-input" id="note-${dish.id}" 
+                   placeholder="Ghi chú món (vd: không ớt, ít đá...)" 
+                   value="${escapeHtml(currentNote)}"
+                   onchange="updateDishNote(${dish.id}, this.value)">
+          ` : ''}
+        </div>
+        <div class="qty-control">
+          <div class="qty-btn" onclick="adjustQty(${dish.id}, -1)">-</div>
+          <div class="qty-val" id="qty-val-${dish.id}">${currentQty}</div>
+          <div class="qty-btn" onclick="adjustQty(${dish.id}, 1)">+</div>
+        </div>
+      `;
+      container.appendChild(itemEl);
+    });
+
+    updateSummary();
+  }
+
+  function adjustQty(dishId, delta) {
+    if (!cart[dishId]) {
+      cart[dishId] = { quantity: 0, note: '' };
+    }
+    cart[dishId].quantity += delta;
+    if (cart[dishId].quantity <= 0) {
+      delete cart[dishId];
+    }
+    renderDishList();
+  }
+
+  function updateDishNote(dishId, val) {
+    if (cart[dishId]) {
+      cart[dishId].note = val;
+    }
+  }
+
+  function updateSummary() {
+    let totalItems = 0;
+    let totalAmount = 0;
+
+    for (const [id, item] of Object.entries(cart)) {
+      const dish = currentDishes.find(d => d.id === Number(id));
+      if (dish && item.quantity > 0) {
+        totalItems += item.quantity;
+        totalAmount += dish.price * item.quantity;
+      }
+    }
+
+    document.getElementById('totalItemsDisplay').textContent = `${totalItems} món`;
+    document.getElementById('totalAmountDisplay').textContent = formatMoney(totalAmount);
+  }
+
+  function applyPreset(presetNumber) {
+    cart = {};
+    if (presetNumber === 1) {
+      cart[1] = { quantity: 2, note: 'Ít hành, không ớt' };
+      cart[10] = { quantity: 1, note: 'Ít đường 50%' };
+    } else if (presetNumber === 2) {
+      cart[2] = { quantity: 1, note: 'Sườn chín kĩ' };
+      cart[7] = { quantity: 1, note: 'Chiên giòn nóng' };
+    } else if (presetNumber === 3) {
+      cart[4] = { quantity: 1, note: 'Cay vừa' };
+      cart[9] = { quantity: 2, note: 'Nhiều sữa' };
+    }
+    renderDishList();
+  }
+
+  function resetCart() {
+    cart = {};
+    renderDishList();
+  }
+
+  function copySql() {
+    const text = document.getElementById('sqlCommand').innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      const fb = document.getElementById('copyFeedback');
+      fb.textContent = '✓ Đã copy vào clipboard!';
+      setTimeout(() => { fb.textContent = ''; }, 3000);
+    });
+  }
+
+  async function placeOrder() {
+    const baseUrl = getApiBaseUrl();
+    const sessionId = Number(document.getElementById('sessionIdInput').value);
+    const resultBox = document.getElementById('orderResultBox');
+    const btnPlace = document.getElementById('btnPlaceOrder');
+
+    if (!currentAccessToken) {
+      alert('Chưa có Access Token! Vui lòng dán Token hoặc bấm Đăng Nhập trước khi gửi order.');
+      return;
+    }
+
+    // Build items list
+    const items = [];
+    for (const [dishId, detail] of Object.entries(cart)) {
+      if (detail.quantity > 0) {
+        items.push({
+          menuItemId: Number(dishId),
+          quantity: detail.quantity,
+          note: detail.note || null
+        });
+      }
+    }
+
+    if (items.length === 0) {
+      alert('Vui lòng chọn ít nhất 1 món ăn trước khi gửi order!');
+      return;
+    }
+
+    btnPlace.disabled = true;
+    btnPlace.textContent = '⏳ ĐANG GỬI VÀO BẾP...';
+    resultBox.style.display = 'none';
+
+    const orderPayload = {
+      sessionId: sessionId,
+      items: items
+    };
+
+    document.getElementById('payloadLogBox').textContent = JSON.stringify(orderPayload, null, 2);
+
+    try {
+      const res = await fetch(`${baseUrl}/api/orders`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${currentAccessToken}`
+        },
+        body: JSON.stringify(orderPayload)
+      });
+
+      const responseJson = await res.json().catch(() => ({}));
+      document.getElementById('responseLogBox').textContent = JSON.stringify(responseJson, null, 2);
+
+      if (res.status === 201 && responseJson.success) {
+        const orderData = responseJson.data;
+        resultBox.className = 'alert alert-success';
+        resultBox.style.display = 'block';
+        resultBox.innerHTML = `
+          <div>🎉</div>
+          <div>
+            <strong>GỌI MÓN THÀNH CÔNG! (Order #${orderData.id})</strong>
+            <p style="margin-top: 4px;">
+              Bàn: <strong>${orderData.tableCode || 'T01'}</strong> • Trạng thái: <span class="badge badge-warning">${orderData.status}</span> • Tổng: <strong>${formatMoney(orderData.totalAmount)}</strong>
+            </p>
+            <p style="margin-top: 4px; font-size: 12px; color: #6EE7B7;">
+              ✓ Backend đã trừ tồn kho tự động & kích hoạt STOMP broadcast vào <code>/topic/kitchen/orders</code>.<br>
+              👉 Màn hình <strong>KDS Hàng Đợi (/kitchen/queue)</strong> sẽ nhận được thẻ đơn ngay lập tức!
+            </p>
+          </div>
+        `;
+
+        // Add to history
+        addOrderToHistory(orderData);
+        switchTab('ws-tab');
+      } else if (res.status === 404 || (responseJson.message && responseJson.message.includes('session'))) {
+        resultBox.className = 'alert alert-danger';
+        resultBox.style.display = 'block';
+        resultBox.innerHTML = `
+          <div>⚠️</div>
+          <div>
+            <strong>LỖI PHIÊN PHỤC VỤ (Session #${sessionId} không tồn tại hoặc chưa ACTIVE):</strong>
+            <p style="margin-top: 4px;">
+              Backend yêu cầu Service Session phải đang <code>ACTIVE</code>. Hãy copy và chạy lệnh SQL ở khung xanh trên cùng vào PostgreSQL để tạo session 1, sau đó bấm lại nút Gửi Order!
+            </p>
+          </div>
+        `;
+      } else if (res.status === 409) {
+        resultBox.className = 'alert alert-danger';
+        resultBox.style.display = 'block';
+        resultBox.innerHTML = `
+          <div>⚠️</div>
+          <div>
+            <strong>XUNG ĐỘT TỒN KHO HOẶC TRẠNG THÁI (409 CONFLICT):</strong>
+            <p style="margin-top: 4px;">${escapeHtml(responseJson.message || 'Không đủ nguyên liệu trong kho để chế biến.')}</p>
+          </div>
+        `;
+      } else {
+        resultBox.className = 'alert alert-danger';
+        resultBox.style.display = 'block';
+        resultBox.innerHTML = `
+          <div>❌</div>
+          <div>
+            <strong>GỬI ĐƠN THẤT BẠI (${res.status}):</strong>
+            <p style="margin-top: 4px;">${escapeHtml(responseJson.message || 'Có lỗi xảy ra khi gọi API.')}</p>
+          </div>
+        `;
+      }
+    } catch (err) {
+      resultBox.className = 'alert alert-danger';
+      resultBox.style.display = 'block';
+      resultBox.innerHTML = `
+        <div>❌</div>
+        <div>
+          <strong>LỖI GỬI ĐƠN:</strong>
+          <p style="margin-top: 4px;">${escapeHtml(err.message)}</p>
+        </div>
+      `;
+    } finally {
+      btnPlace.disabled = false;
+      btnPlace.textContent = '🚀 GỬI ORDER VÀO BẾP (POST /api/orders)';
+    }
+  }
+
+  function addOrderToHistory(order) {
+    orderHistory.unshift(order);
+    const historyContainer = document.getElementById('orderHistoryList');
+    historyContainer.innerHTML = '';
+
+    orderHistory.forEach(o => {
+      const el = document.createElement('div');
+      el.style.cssText = 'background: rgba(11, 19, 43, 0.7); border: 1px solid var(--card-border); border-radius: 8px; padding: 10px; font-size: 13px;';
+      const itemsList = o.items ? o.items.map(i => `${i.quantity}x ${i.menuItemName}`).join(', ') : 'Chi tiết món';
+      el.innerHTML = `
+        <div style="display: flex; justify-content: space-between; font-weight: 600; margin-bottom: 4px;">
+          <span>Đơn #${o.id} • ${o.tableCode || 'T01'}</span>
+          <span class="badge badge-warning">${o.status}</span>
+        </div>
+        <div style="color: var(--text-muted); font-size: 12px;">${itemsList}</div>
+        <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 12px; color: var(--accent-sky);">
+          <span>${formatMoney(o.totalAmount)}</span>
+          <span style="color: #64748B;">${new Date().toLocaleTimeString('vi-VN')}</span>
+        </div>
+      `;
+      historyContainer.appendChild(el);
+    });
+  }
+
+  async function fetchLiveMenu() {
+    const baseUrl = getApiBaseUrl();
+    const btn = document.getElementById('btnFetchMenu');
+    btn.textContent = 'Đang tải...';
+
+    try {
+      const headers = {};
+      if (currentAccessToken) {
+        headers['Authorization'] = `Bearer ${currentAccessToken}`;
+      }
+      const res = await fetch(`${baseUrl}/api/menu-items?page=0&size=50`, { headers });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.data && json.data.content && json.data.content.length > 0) {
+          currentDishes = json.data.content.map(m => ({
+            id: m.id,
+            name: m.name,
+            price: m.price,
+            category: m.category?.name || 'Món'
+          }));
+          renderDishList();
+          alert(`Đã tải thành công ${currentDishes.length} món từ Backend!`);
+        }
+      } else {
+        alert('Không tải được thực đơn từ Backend, đang dùng dữ liệu seed mẫu.');
+      }
+    } catch (e) {
+      console.warn('Cannot fetch live menu', e);
+      alert('Không thể kết nối API /api/menu-items, đang sử dụng danh sách món seed.');
+    } finally {
+      btn.textContent = '🔄 Tải món từ BE';
+    }
+  }
+
+  function parseJwtRole(token) {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      const parsed = JSON.parse(jsonPayload);
+      return parsed.role || null;
+    } catch(e) {
+      return null;
+    }
+  }
+
+  // STOMP WebSocket Monitor
+  function initWebSocket() {
+    const wsUrl = (window.location.protocol === 'file:') ? 'http://localhost:8080/ws' : '/ws';
+    const wsDot = document.getElementById('wsStatusDot');
+    const wsText = document.getElementById('wsStatusText');
+
+    if (!currentAccessToken) {
+      wsDot.className = 'status-dot dot-yellow';
+      wsText.textContent = 'Chờ Access Token để kết nối /ws';
+      appendWsLog('STOMP Info', 'Backend yêu cầu Token Authorization khi kết nối WebSocket STOMP. Vui lòng Dán Token hoặc Đăng Nhập để kết nối live monitor!');
+      return;
+    }
+
+    try {
+      const socket = new SockJS(wsUrl);
+      stompClient = Stomp.over(socket);
+      stompClient.debug = null;
+
+      const headers = {
+        Authorization: `Bearer ${currentAccessToken}`
+      };
+
+      stompClient.connect(headers, (frame) => {
+        wsDot.className = 'status-dot dot-green';
+        wsText.textContent = 'Đã kết nối STOMP /ws';
+
+        const role = parseJwtRole(currentAccessToken);
+        appendWsLog('Hệ thống', `Kết nối STOMP thành công! (Role: ${role || 'N/A'})`);
+
+        // Check subscription permissions based on Role
+        if (role === 'KITCHEN_STAFF' || role === 'OWNER') {
+          stompClient.subscribe('/topic/kitchen/orders', (message) => {
+            try {
+              const body = JSON.parse(message.body);
+              appendWsLog('Topic: /topic/kitchen/orders', `🔥 [KDS NOTIFICATION] Order #${body.orderId || body.id} - Bàn ${body.tableName || 'T01'} - Status: ${body.status || body.newStatus} (Tổng: ${body.totalItems || 0} món)`);
+            } catch(e) {
+              appendWsLog('Topic: /topic/kitchen/orders', message.body);
+            }
+          });
+          appendWsLog('STOMP', `Đã subscribe /topic/kitchen/orders (Quyền Bếp / Quản trị)`);
+        } else {
+          appendWsLog('Phân quyền STOMP', `Tài khoản Bàn (${role}) chỉ được subscribe kênh phiên bàn /topic/session/{id}/orders theo Security Rule của Backend (Kênh bếp /topic/kitchen/orders chỉ dành cho KITCHEN_STAFF/OWNER).`);
+        }
+
+        // Table session orders topic
+        const sid = document.getElementById('sessionIdInput').value || '1';
+        try {
+          stompClient.subscribe(`/topic/session/${sid}/orders`, (message) => {
+            try {
+              const body = JSON.parse(message.body);
+              appendWsLog(`/topic/session/${sid}/orders`, `📱 [SESSION EVENT] Order #${body.orderId} - Trạng thái: ${body.newStatus || body.status}`);
+            } catch(e) {
+              appendWsLog(`/topic/session/${sid}/orders`, message.body);
+            }
+          });
+          appendWsLog('STOMP', `Đã subscribe /topic/session/${sid}/orders`);
+        } catch(subErr) {
+          console.warn('Cannot subscribe session topic', subErr);
+        }
+      }, (error) => {
+        wsDot.className = 'status-dot dot-red';
+        wsText.textContent = 'Mất kết nối WebSocket';
+        const msg = error ? (error.headers ? error.headers.message : error) : 'Token không hợp lệ hoặc hết hạn';
+        appendWsLog('STOMP Error', `Lỗi kết nối WebSocket: ${msg}`);
+      });
+    } catch(err) {
+      wsDot.className = 'status-dot dot-red';
+      wsText.textContent = 'Lỗi SockJS';
+      appendWsLog('Lỗi', err.message);
+    }
+  }
+
+  function reconnectWebSocket() {
+    if (stompClient) {
+      try { stompClient.disconnect(); } catch(e) {}
+    }
+    initWebSocket();
+  }
+
+  function appendWsLog(topic, message) {
+    const box = document.getElementById('wsLogBox');
+    const item = document.createElement('div');
+    item.className = 'log-item';
+    const time = new Date().toLocaleTimeString('vi-VN');
+    item.innerHTML = `
+      <span class="log-time">[${time}]</span> <span class="log-topic">[${escapeHtml(topic)}]</span>
+      <div style="margin-top: 2px;">${escapeHtml(message)}</div>
+    `;
+    box.appendChild(item);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function clearWsLogs() {
+    document.getElementById('wsLogBox').innerHTML = '<div class="log-item"><span class="log-time">[Hệ thống]</span> Đã xóa log.</div>';
+  }
+
+  function switchTab(tabName) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('tab-ws').style.display = 'none';
+    document.getElementById('tab-payload').style.display = 'none';
+    document.getElementById('tab-history').style.display = 'none';
+
+    if (tabName === 'ws-tab') {
+      document.querySelector('.tab-btn:nth-child(1)').classList.add('active');
+      document.getElementById('tab-ws').style.display = 'block';
+    } else if (tabName === 'payload-tab') {
+      document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
+      document.getElementById('tab-payload').style.display = 'block';
+    } else if (tabName === 'history-tab') {
+      document.querySelector('.tab-btn:nth-child(3)').classList.add('active');
+      document.getElementById('tab-history').style.display = 'block';
+    }
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+</script>
+
+</body>
+</html>
