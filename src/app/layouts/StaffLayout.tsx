@@ -2,7 +2,7 @@ import { Outlet, Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/app/store/authStore'
 import { authApi } from '@/features/auth/api/authApi'
 import { Button } from '@/shared/components/ui/button'
-import { UtensilsCrossed, LogOut, ClipboardList, LayoutDashboard } from 'lucide-react'
+import { UtensilsCrossed, LogOut, ClipboardList, LayoutDashboard, Boxes, History, ClipboardCheck, BookOpen, ShoppingBag } from 'lucide-react'
 import { toast } from 'sonner'
 
 export function StaffLayout() {
@@ -74,6 +74,45 @@ export function StaffLayout() {
             <ClipboardList className="w-4 h-4 text-accent" />
             Danh sách Order
           </Link>
+          {(user?.role === 'OWNER' || user?.role === 'INVENTORY_STAFF') && (
+            <>
+              <Link
+                to="/inventory/ingredients"
+                className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text hover:bg-surface/50 transition-colors"
+              >
+                <Boxes className="w-4 h-4 text-accent" />
+                Nguyên liệu & Tồn kho
+              </Link>
+              <Link
+                to="/inventory/movements"
+                className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text hover:bg-surface/50 transition-colors"
+              >
+                <History className="w-4 h-4 text-accent" />
+                Biến động kho
+              </Link>
+              <Link
+                to="/inventory/checks"
+                className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text hover:bg-surface/50 transition-colors"
+              >
+                <ClipboardCheck className="w-4 h-4 text-accent" />
+                Kiểm kê kho
+              </Link>
+              <Link
+                to="/inventory/recipes"
+                className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text hover:bg-surface/50 transition-colors"
+              >
+                <BookOpen className="w-4 h-4 text-accent" />
+                Công thức món (BOM)
+              </Link>
+              <Link
+                to="/inventory/purchases"
+                className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text hover:bg-surface/50 transition-colors"
+              >
+                <ShoppingBag className="w-4 h-4 text-accent" />
+                Phiếu nhập hàng
+              </Link>
+            </>
+          )}
         </aside>
 
         {/* Page Content */}
