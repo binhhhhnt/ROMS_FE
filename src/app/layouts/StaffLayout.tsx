@@ -2,7 +2,7 @@ import { Outlet, Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/app/store/authStore'
 import { authApi } from '@/features/auth/api/authApi'
 import { Button } from '@/shared/components/ui/button'
-import { UtensilsCrossed, LogOut, ClipboardList, LayoutDashboard } from 'lucide-react'
+import { UtensilsCrossed, LogOut, ClipboardList, LayoutDashboard, Receipt, BarChart3 } from 'lucide-react'
 import { toast } from 'sonner'
 
 export function StaffLayout() {
@@ -59,13 +59,29 @@ export function StaffLayout() {
         {/* Simple Side Nav */}
         <aside className="w-56 bg-card border-r border-border p-4 flex flex-col gap-1 hidden md:flex">
           {user?.role === 'OWNER' && (
-            <Link
-              to="/owner/dashboard"
-              className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text hover:bg-surface/50 transition-colors"
-            >
-              <LayoutDashboard className="w-4 h-4 text-accent" />
-              Tổng quan
-            </Link>
+            <>
+              <Link
+                to="/owner/dashboard"
+                className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text hover:bg-surface/50 transition-colors"
+              >
+                <LayoutDashboard className="w-4 h-4 text-accent" />
+                Tổng quan
+              </Link>
+              <Link
+                to="/owner/expenses"
+                className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text hover:bg-surface/50 transition-colors"
+              >
+                <Receipt className="w-4 h-4 text-accent" />
+                Quản lý Chi phí
+              </Link>
+              <Link
+                to="/owner/reports/revenue"
+                className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text hover:bg-surface/50 transition-colors"
+              >
+                <BarChart3 className="w-4 h-4 text-accent" />
+                Báo cáo & Thống kê
+              </Link>
+            </>
           )}
           <Link
             to="/staff/orders"
