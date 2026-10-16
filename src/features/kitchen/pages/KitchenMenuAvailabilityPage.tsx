@@ -164,16 +164,16 @@ export function KitchenMenuAvailabilityPage() {
   return (
     <div className="max-w-7xl mx-auto flex flex-col gap-6">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-950 p-5 rounded-2xl border border-slate-800 shadow-md">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card p-5 rounded-2xl border border-border shadow-xs">
         <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-xl bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-400 font-bold shrink-0">
+          <div className="w-12 h-12 rounded-xl bg-surface border border-border flex items-center justify-center text-primary font-bold shrink-0">
             <UtensilsCrossed className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-xl sm:text-2xl font-black text-white tracking-wide">
+            <h1 className="text-xl sm:text-2xl font-black text-text tracking-wide">
               Quản lý Trạng thái Món ăn (Menu Availability)
             </h1>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-muted mt-1">
               Bật / tắt nhanh khả năng đặt món tại bếp khi hết nguyên liệu đột xuất hoặc mở bán lại
             </p>
           </div>
@@ -185,10 +185,10 @@ export function KitchenMenuAvailabilityPage() {
           size="sm"
           onClick={() => refetchMenu()}
           disabled={isLoadingMenu || isRefetchingMenu}
-          className="text-xs h-10 border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white self-start sm:self-auto"
+          className="text-xs h-10 border-border bg-card text-text hover:bg-surface self-start sm:self-auto"
         >
           <RefreshCw
-            className={`w-4 h-4 mr-1.5 ${isRefetchingMenu ? 'animate-spin text-sky-400' : ''}`}
+            className={`w-4 h-4 mr-1.5 ${isRefetchingMenu ? 'animate-spin text-primary' : ''}`}
           />
           {isRefetchingMenu ? 'Đang tải...' : 'Làm mới'}
         </Button>
@@ -196,48 +196,48 @@ export function KitchenMenuAvailabilityPage() {
 
       {/* KPI Stats Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <div className="bg-slate-950 border border-slate-800 p-4 rounded-2xl flex items-center justify-between">
+        <div className="bg-card border border-border p-4 rounded-2xl flex items-center justify-between shadow-xs">
           <div>
-            <div className="text-xs font-bold text-slate-400 uppercase">
+            <div className="text-xs font-bold text-muted uppercase">
               Tổng số món
             </div>
-            <div className="text-2xl font-black text-white mt-1">
+            <div className="text-2xl font-black text-text mt-1">
               {kpiCounts.total}
             </div>
           </div>
         </div>
 
-        <div className="bg-slate-950 border border-slate-800 p-4 rounded-2xl flex items-center justify-between">
+        <div className="bg-card border border-border p-4 rounded-2xl flex items-center justify-between shadow-xs">
           <div>
-            <div className="text-xs font-bold text-emerald-400 uppercase flex items-center gap-1">
+            <div className="text-xs font-bold text-status-ready uppercase flex items-center gap-1">
               <CheckCircle2 className="w-3.5 h-3.5" />
               Đang phục vụ
             </div>
-            <div className="text-2xl font-black text-emerald-400 mt-1">
+            <div className="text-2xl font-black text-status-ready mt-1">
               {kpiCounts.available}
             </div>
           </div>
         </div>
 
-        <div className="bg-slate-950 border border-slate-800 p-4 rounded-2xl flex items-center justify-between">
+        <div className="bg-card border border-border p-4 rounded-2xl flex items-center justify-between shadow-xs">
           <div>
-            <div className="text-xs font-bold text-amber-400 uppercase flex items-center gap-1">
+            <div className="text-xs font-bold text-status-cooking uppercase flex items-center gap-1">
               <AlertTriangle className="w-3.5 h-3.5" />
               Tạm ngưng bán
             </div>
-            <div className="text-2xl font-black text-amber-400 mt-1">
+            <div className="text-2xl font-black text-status-cooking mt-1">
               {kpiCounts.tempUnavailable}
             </div>
           </div>
         </div>
 
-        <div className="bg-slate-950 border border-slate-800 p-4 rounded-2xl flex items-center justify-between">
+        <div className="bg-card border border-border p-4 rounded-2xl flex items-center justify-between shadow-xs">
           <div>
-            <div className="text-xs font-bold text-slate-500 uppercase flex items-center gap-1">
+            <div className="text-xs font-bold text-muted uppercase flex items-center gap-1">
               <Ban className="w-3.5 h-3.5" />
               Ngừng vĩnh viễn
             </div>
-            <div className="text-2xl font-black text-slate-500 mt-1">
+            <div className="text-2xl font-black text-muted mt-1">
               {kpiCounts.discontinued}
             </div>
           </div>
@@ -245,9 +245,9 @@ export function KitchenMenuAvailabilityPage() {
       </div>
 
       {/* Search and Filters Toolbar */}
-      <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4 shadow-md flex flex-col gap-4">
+      <div className="bg-card border border-border rounded-2xl p-4 shadow-xs flex flex-col gap-4">
         {/* Status Tabs */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 border-b border-slate-800/80">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 border-b border-border">
           {statusTabs.map((tab) => {
             const isActive = selectedStatus === tab.value
             return (
@@ -257,8 +257,8 @@ export function KitchenMenuAvailabilityPage() {
                 onClick={() => setSelectedStatus(tab.value)}
                 className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-colors flex items-center gap-2 cursor-pointer ${
                   isActive
-                    ? 'bg-sky-600 text-white shadow'
-                    : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                    ? 'bg-primary text-white shadow-xs'
+                    : 'text-muted hover:bg-surface hover:text-text'
                 }`}
               >
                 <span>{tab.label}</span>
@@ -266,7 +266,7 @@ export function KitchenMenuAvailabilityPage() {
                   className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
                     isActive
                       ? 'bg-white/20 text-white'
-                      : 'bg-slate-850 text-slate-400'
+                      : 'bg-surface text-muted'
                   }`}
                 >
                   {tab.count}
@@ -279,22 +279,22 @@ export function KitchenMenuAvailabilityPage() {
         {/* Search & Category Filter */}
         <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
           <div className="sm:col-span-8 relative">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <Search className="w-4 h-4 text-muted absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <Input
               type="text"
               placeholder="Tìm kiếm theo tên món ăn..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 text-xs h-10 bg-slate-900 border-slate-800 text-white placeholder:text-slate-500 focus:border-sky-500"
+              className="pl-9 text-xs h-10 bg-background border-border text-text placeholder:text-muted focus:border-primary"
             />
           </div>
 
           <div className="sm:col-span-4 flex items-center gap-2">
-            <Filter className="w-4 h-4 text-slate-400 shrink-0" />
+            <Filter className="w-4 h-4 text-muted shrink-0" />
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full text-xs h-10 px-3 rounded-xl border border-slate-800 bg-slate-900 text-white focus:outline-none focus:border-sky-500"
+              className="w-full text-xs h-10 px-3 rounded-xl border border-border bg-background text-text focus:outline-none focus:border-primary"
             >
               <option value="ALL">Tất cả danh mục món</option>
               {categories.map((cat) => (
@@ -313,19 +313,19 @@ export function KitchenMenuAvailabilityPage() {
           {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
             <div
               key={i}
-              className="bg-slate-800/60 border border-slate-700 rounded-2xl h-72 animate-pulse"
+              className="bg-card border border-border rounded-2xl h-72 animate-pulse shadow-xs"
             />
           ))}
         </div>
       ) : filteredItems.length === 0 ? (
-        <div className="bg-slate-950 border border-dashed border-slate-800 rounded-3xl p-16 text-center flex flex-col items-center justify-center my-8">
-          <div className="w-16 h-16 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-500 mb-3">
+        <div className="bg-card border border-dashed border-border rounded-3xl p-16 text-center flex flex-col items-center justify-center my-8 shadow-xs">
+          <div className="w-16 h-16 rounded-2xl bg-surface border border-border flex items-center justify-center text-muted mb-3">
             <AlertCircle className="w-8 h-8" />
           </div>
-          <h3 className="text-base font-bold text-white mb-1">
+          <h3 className="text-base font-bold text-text mb-1">
             Không tìm thấy món ăn nào
           </h3>
-          <p className="text-xs text-slate-400 max-w-sm">
+          <p className="text-xs text-muted max-w-sm">
             Không có món ăn nào phù hợp với bộ lọc hiện tại. Thử thay đổi từ khóa hoặc đặt lại bộ lọc.
           </p>
         </div>

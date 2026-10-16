@@ -48,9 +48,13 @@ export function KitchenOrderDetailPage() {
     const unsubKitchen = subscribeToTopic('/topic/kitchen/orders', () => {
       refetch()
     })
+    const unsubSession = subscribeToTopic('/topic/session/1/orders', () => {
+      refetch()
+    })
 
     return () => {
       unsubKitchen()
+      unsubSession()
     }
   }, [refetch])
 
@@ -106,30 +110,30 @@ export function KitchenOrderDetailPage() {
     switch (status) {
       case 'PENDING':
         return (
-          <span className="px-3 py-1 rounded-full text-xs font-black bg-amber-500/20 text-amber-400 border border-amber-500/40 animate-pulse">
+          <span className="px-3 py-1 rounded-full text-xs font-bold bg-status-pending/20 text-status-pending border border-status-pending/40 animate-pulse">
             Chờ tiếp nhận
           </span>
         )
       case 'COOKING':
         return (
-          <span className="px-3 py-1 rounded-full text-xs font-black bg-sky-500/20 text-sky-400 border border-sky-500/40">
+          <span className="px-3 py-1 rounded-full text-xs font-bold bg-status-cooking/20 text-status-cooking border border-status-cooking/40">
             Đang nấu
           </span>
         )
       case 'COMPLETED':
         return (
-          <span className="px-3 py-1 rounded-full text-xs font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+          <span className="px-3 py-1 rounded-full text-xs font-bold bg-status-completed/20 text-status-completed border border-status-completed/40">
             Đã hoàn thành
           </span>
         )
       case 'CANCELLED':
         return (
-          <span className="px-3 py-1 rounded-full text-xs font-black bg-red-500/20 text-red-400 border border-red-500/40">
+          <span className="px-3 py-1 rounded-full text-xs font-bold bg-status-cancelled/20 text-status-cancelled border border-status-cancelled/40">
             Đã hủy
           </span>
         )
       default:
-        return <span className="text-xs text-slate-400">{status}</span>
+        return <span className="text-xs text-muted">{status}</span>
     }
   }
 
@@ -137,65 +141,65 @@ export function KitchenOrderDetailPage() {
     switch (status) {
       case 'PENDING':
         return (
-          <span className="text-xs font-bold px-2.5 py-1 rounded-md bg-amber-500/15 text-amber-400 border border-amber-500/30">
+          <span className="text-xs font-bold px-2.5 py-1 rounded-md bg-status-pending/15 text-status-pending border border-status-pending/30">
             Chờ nấu
           </span>
         )
       case 'COOKING':
         return (
-          <span className="text-xs font-bold px-2.5 py-1 rounded-md bg-sky-500/20 text-sky-400 border border-sky-500/40 flex items-center gap-1.5">
-            <Flame className="w-3.5 h-3.5 animate-pulse text-amber-400" />
+          <span className="text-xs font-bold px-2.5 py-1 rounded-md bg-status-cooking/20 text-status-cooking border border-status-cooking/40 flex items-center gap-1.5">
+            <Flame className="w-3.5 h-3.5 animate-pulse text-amber-500" />
             Đang chế biến
           </span>
         )
       case 'READY':
         return (
-          <span className="text-xs font-extrabold px-3 py-1 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center gap-1.5">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          <span className="text-xs font-bold px-3 py-1 rounded-md bg-status-ready/20 text-status-ready border border-status-ready/40 flex items-center gap-1.5">
+            <CheckCircle2 className="w-4 h-4 text-status-ready" />
             Sẵn sàng bưng
           </span>
         )
       case 'COMPLETED':
         return (
-          <span className="text-xs font-bold px-2.5 py-1 rounded-md bg-slate-800 text-slate-400 border border-slate-700">
+          <span className="text-xs font-bold px-2.5 py-1 rounded-md bg-surface text-muted border border-border">
             Đã phục vụ
           </span>
         )
       case 'CANCELLED':
         return (
-          <span className="text-xs font-bold px-2.5 py-1 rounded-md bg-red-500/15 text-red-400 border border-red-500/30">
+          <span className="text-xs font-bold px-2.5 py-1 rounded-md bg-status-cancelled/15 text-status-cancelled border border-status-cancelled/30">
             Đã hủy
           </span>
         )
       default:
-        return <span className="text-xs text-slate-400">{status}</span>
+        return <span className="text-xs text-muted">{status}</span>
     }
   }
 
   if (isLoading) {
     return (
       <div className="max-w-4xl mx-auto flex flex-col gap-6">
-        <div className="h-6 w-32 bg-slate-800 rounded animate-pulse" />
-        <div className="h-32 bg-slate-800 border border-slate-700 rounded-2xl animate-pulse" />
-        <div className="h-64 bg-slate-800 border border-slate-700 rounded-2xl animate-pulse" />
+        <div className="h-6 w-32 bg-surface rounded animate-pulse" />
+        <div className="h-32 bg-card border border-border rounded-2xl animate-pulse" />
+        <div className="h-64 bg-card border border-border rounded-2xl animate-pulse" />
       </div>
     )
   }
 
   if (error || !order) {
     return (
-      <div className="max-w-md mx-auto my-12 text-center flex flex-col items-center gap-4 bg-slate-950 border border-slate-800 rounded-3xl p-8">
-        <div className="w-14 h-14 rounded-2xl bg-red-500/10 text-red-400 flex items-center justify-center">
+      <div className="max-w-md mx-auto my-12 text-center flex flex-col items-center gap-4 bg-card border border-border rounded-3xl p-8 shadow-xs">
+        <div className="w-14 h-14 rounded-2xl bg-status-cancelled/10 text-status-cancelled flex items-center justify-center">
           <AlertCircle className="w-8 h-8" />
         </div>
         <div>
-          <h2 className="text-lg font-bold text-white">Không tìm thấy đơn bếp</h2>
-          <p className="text-xs text-slate-400 mt-1">
+          <h2 className="text-lg font-bold text-text">Không tìm thấy đơn bếp</h2>
+          <p className="text-xs text-muted mt-1">
             Mã đơn #{orderId} không tồn tại hoặc đã bị hủy khỏi hàng đợi.
           </p>
         </div>
         <Link to="/kitchen/queue">
-          <Button variant="primary" size="sm" className="bg-sky-600 hover:bg-sky-500">
+          <Button variant="primary" size="sm">
             <ArrowLeft className="w-4 h-4 mr-1.5" />
             Về Hàng đợi KDS
           </Button>
@@ -216,7 +220,7 @@ export function KitchenOrderDetailPage() {
       <div className="flex items-center justify-between">
         <Link
           to="/kitchen/queue"
-          className="text-xs font-bold text-slate-400 hover:text-white flex items-center gap-1.5 transition-colors"
+          className="text-xs font-bold text-muted hover:text-text flex items-center gap-1.5 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Về Hàng đợi KDS
@@ -228,33 +232,33 @@ export function KitchenOrderDetailPage() {
           size="sm"
           onClick={() => refetch()}
           disabled={isRefetching}
-          className="text-xs h-8 border-slate-700 bg-slate-950 text-slate-300 hover:bg-slate-800 hover:text-white"
+          className="text-xs h-8 border-border bg-card text-text hover:bg-surface/50"
         >
           <RefreshCw
-            className={`w-3.5 h-3.5 mr-1.5 ${isRefetching ? 'animate-spin text-sky-400' : ''}`}
+            className={`w-3.5 h-3.5 mr-1.5 ${isRefetching ? 'animate-spin text-accent' : ''}`}
           />
           {isRefetching ? 'Đang cập nhật...' : 'Làm mới'}
         </Button>
       </div>
 
       {/* Main Order Header Card */}
-      <div className="bg-slate-950 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col gap-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+      <div className="bg-card border border-border rounded-2xl p-5 shadow-xs flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
           <div className="flex items-center gap-3.5">
-            <div className="w-14 h-14 rounded-2xl bg-slate-900 border border-slate-700 flex items-center justify-center text-sky-400 font-black text-xl shadow-inner">
+            <div className="w-14 h-14 rounded-2xl bg-surface border border-border flex items-center justify-center text-primary font-black text-xl shadow-inner">
               {order.tableCode || `T${order.tableId}`}
             </div>
             <div>
               <div className="flex items-center gap-2.5">
-                <h1 className="text-xl sm:text-2xl font-black text-white">
+                <h1 className="text-xl sm:text-2xl font-bold text-text">
                   {order.tableCode ? `Bàn ${order.tableCode}` : `Bàn #${order.tableId}`}
                 </h1>
-                <span className="text-xs font-bold text-slate-400 bg-slate-900 px-2.5 py-0.5 rounded-md border border-slate-800">
+                <span className="text-xs font-bold text-muted bg-surface px-2.5 py-0.5 rounded-md border border-border">
                   Đơn #{order.id}
                 </span>
               </div>
-              <div className="flex items-center gap-2 text-xs text-slate-400 mt-1">
-                <Clock className="w-3.5 h-3.5 text-sky-400" />
+              <div className="flex items-center gap-2 text-xs text-muted mt-1">
+                <Clock className="w-3.5 h-3.5 text-accent" />
                 <span>Nhận lúc: {formatTime(order.createdAt)}</span>
               </div>
             </div>
@@ -269,7 +273,7 @@ export function KitchenOrderDetailPage() {
                 type="button"
                 onClick={handleAcceptOrder}
                 disabled={isAccepting}
-                className="h-10 px-4 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs rounded-xl flex items-center gap-2 shadow-md transition-colors cursor-pointer disabled:opacity-60"
+                className="h-10 px-4 bg-primary hover:bg-primary-hover active:bg-primary-active text-white font-bold text-xs rounded-xl flex items-center gap-2 shadow-xs transition-colors cursor-pointer disabled:opacity-60"
               >
                 {isAccepting ? (
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -287,38 +291,38 @@ export function KitchenOrderDetailPage() {
 
         {/* Progress Counters Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-          <div className="bg-slate-900/80 border border-slate-800 p-3 rounded-xl">
-            <div className="text-[11px] font-bold text-slate-400 uppercase">
+          <div className="bg-surface/40 border border-border p-3 rounded-xl">
+            <div className="text-[11px] font-bold text-muted uppercase">
               Tổng số lượng
             </div>
-            <div className="text-xl font-black text-white mt-0.5">
+            <div className="text-xl font-black text-text mt-0.5">
               {totalItemsCount} món
             </div>
           </div>
 
-          <div className="bg-slate-900/80 border border-slate-800 p-3 rounded-xl">
-            <div className="text-[11px] font-bold text-amber-400 uppercase">
+          <div className="bg-surface/40 border border-border p-3 rounded-xl">
+            <div className="text-[11px] font-bold text-status-pending uppercase">
               Chờ nấu
             </div>
-            <div className="text-xl font-black text-amber-400 mt-0.5">
+            <div className="text-xl font-black text-status-pending mt-0.5">
               {pendingItemsCount}
             </div>
           </div>
 
-          <div className="bg-slate-900/80 border border-slate-800 p-3 rounded-xl">
-            <div className="text-[11px] font-bold text-sky-400 uppercase">
+          <div className="bg-surface/40 border border-border p-3 rounded-xl">
+            <div className="text-[11px] font-bold text-status-cooking uppercase">
               Đang nấu
             </div>
-            <div className="text-xl font-black text-sky-400 mt-0.5">
+            <div className="text-xl font-black text-status-cooking mt-0.5">
               {cookingItemsCount}
             </div>
           </div>
 
-          <div className="bg-slate-900/80 border border-slate-800 p-3 rounded-xl">
-            <div className="text-[11px] font-bold text-emerald-400 uppercase">
+          <div className="bg-surface/40 border border-border p-3 rounded-xl">
+            <div className="text-[11px] font-bold text-status-ready uppercase">
               Sẵn sàng bưng
             </div>
-            <div className="text-xl font-black text-emerald-400 mt-0.5">
+            <div className="text-xl font-black text-status-ready mt-0.5">
               {readyItemsCount}
             </div>
           </div>
@@ -326,46 +330,46 @@ export function KitchenOrderDetailPage() {
       </div>
 
       {/* Items Detailed List Card */}
-      <div className="bg-slate-950 border border-slate-800 rounded-2xl shadow-lg overflow-hidden">
-        <div className="bg-slate-900/80 p-4 border-b border-slate-800 flex items-center justify-between">
-          <h2 className="text-sm font-bold text-white flex items-center gap-2">
-            <ChefHat className="w-4 h-4 text-sky-400" />
+      <div className="bg-card border border-border rounded-2xl shadow-xs overflow-hidden">
+        <div className="bg-surface/30 p-4 border-b border-border flex items-center justify-between">
+          <h2 className="text-sm font-bold text-text flex items-center gap-2">
+            <ChefHat className="w-4 h-4 text-accent" />
             Chi tiết các món ăn cần chế biến
           </h2>
-          <span className="text-xs text-slate-400">
+          <span className="text-xs text-muted">
             Cập nhật trạng thái từng món
           </span>
         </div>
 
-        <div className="divide-y divide-slate-800/80">
+        <div className="divide-y divide-border/60">
           {order.items.map((item, idx) => (
             <div
               key={item.id}
               className={`p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors ${
                 item.status === 'READY'
-                  ? 'bg-emerald-500/5'
+                  ? 'bg-status-ready/5'
                   : item.status === 'COOKING'
-                  ? 'bg-sky-500/5'
-                  : 'hover:bg-slate-900/40'
+                  ? 'bg-status-cooking/5'
+                  : 'hover:bg-surface/20'
               }`}
             >
               {/* Item Details */}
               <div className="flex items-start gap-3 flex-1 min-w-0">
-                <span className="text-xs font-bold text-slate-500 w-5 pt-1">
+                <span className="text-xs font-bold text-muted w-5 pt-1">
                   {idx + 1}.
                 </span>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2.5">
-                    <span className="font-bold text-base text-white truncate">
+                    <span className="font-bold text-base text-text truncate">
                       {item.menuItemName}
                     </span>
-                    <span className="px-2 py-0.5 rounded-md bg-sky-500/20 text-sky-300 font-black text-xs border border-sky-500/30">
+                    <span className="px-2 py-0.5 rounded-md bg-surface text-primary font-black text-xs border border-border">
                       &times; {item.quantity}
                     </span>
                   </div>
 
                   {item.note && (
-                    <p className="text-xs font-semibold text-amber-400 mt-1 flex items-center gap-1.5 bg-amber-500/10 px-2.5 py-1 rounded-md border border-amber-500/20 max-w-fit">
+                    <p className="text-xs font-semibold text-status-pending mt-1 flex items-center gap-1.5 bg-status-pending/10 px-2.5 py-1 rounded-md border border-status-pending/20 max-w-fit">
                       <FileText className="w-3.5 h-3.5 shrink-0" />
                       <span>Ghi chú của khách: &ldquo;{item.note}&rdquo;</span>
                     </p>
@@ -383,13 +387,13 @@ export function KitchenOrderDetailPage() {
                     type="button"
                     onClick={() => handleUpdateItemStatus(item.id, 'COOKING')}
                     disabled={updatingItemId === item.id}
-                    className="h-9 px-3 bg-slate-800 hover:bg-slate-700 text-sky-300 font-bold text-xs rounded-lg border border-slate-700 flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-60"
+                    className="h-9 px-3 bg-surface hover:bg-surface/80 text-primary font-bold text-xs rounded-lg border border-border flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-60"
                   >
                     {updatingItemId === item.id ? (
-                      <div className="w-3.5 h-3.5 border-2 border-sky-400 border-t-transparent rounded-full animate-spin" />
+                      <div className="w-3.5 h-3.5 border-2 border-accent border-t-transparent rounded-full animate-spin" />
                     ) : (
                       <>
-                        <Flame className="w-3.5 h-3.5 text-amber-400" />
+                        <Flame className="w-3.5 h-3.5 text-amber-500" />
                         <span>Bắt đầu nấu</span>
                       </>
                     )}
@@ -402,7 +406,7 @@ export function KitchenOrderDetailPage() {
                     type="button"
                     onClick={() => handleUpdateItemStatus(item.id, 'READY')}
                     disabled={updatingItemId === item.id}
-                    className="h-9 px-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer disabled:opacity-60"
+                    className="h-9 px-3 bg-status-ready hover:bg-status-ready/90 active:bg-status-ready text-white font-bold text-xs rounded-lg flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer disabled:opacity-60"
                   >
                     {updatingItemId === item.id ? (
                       <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />

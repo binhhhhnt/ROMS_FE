@@ -64,29 +64,29 @@ export function KitchenCookingOrderCard({
   }
 
   return (
-    <div className={`bg-slate-800 border rounded-2xl shadow-lg overflow-hidden flex flex-col transition-all ${
+    <div className={`bg-card border rounded-2xl shadow-sm overflow-hidden flex flex-col transition-all ${
       isAllReady
-        ? 'border-emerald-500/80 ring-2 ring-emerald-500/30'
+        ? 'border-emerald-500 ring-2 ring-emerald-500/20'
         : isCookingLong
-        ? 'border-amber-500/80 ring-2 ring-amber-500/30'
-        : 'border-slate-700 hover:border-sky-500/60'
+        ? 'border-amber-500 ring-2 ring-amber-500/20'
+        : 'border-border hover:border-primary/40'
     }`}>
       {/* Header */}
-      <div className="bg-slate-950/80 p-4 border-b border-slate-700 flex items-center justify-between">
+      <div className="bg-surface/40 p-4 border-b border-border flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-slate-900 border border-slate-700 flex items-center justify-center text-sky-400 font-black text-lg shadow-inner">
+          <div className="w-12 h-12 rounded-xl bg-surface border border-border flex items-center justify-center text-primary font-black text-lg shadow-xs">
             {order.tableCode || `T${order.tableId}`}
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-extrabold text-lg text-white">
+              <span className="font-extrabold text-lg text-text">
                 {order.tableCode ? `Bàn ${order.tableCode}` : `Bàn #${order.tableId}`}
               </span>
-              <span className="text-xs font-bold text-slate-400 bg-slate-800 px-2 py-0.5 rounded">
+              <span className="text-xs font-bold text-muted bg-surface px-2 py-0.5 rounded">
                 #{order.id}
               </span>
             </div>
-            <div className="text-xs text-slate-400 mt-0.5">
+            <div className="text-xs text-muted mt-0.5">
               Bắt đầu: {formatTime(order.createdAt)}
             </div>
           </div>
@@ -95,19 +95,19 @@ export function KitchenCookingOrderCard({
         {/* Elapsed Timer Badge */}
         <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-extrabold ${
           isAllReady
-            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+            ? 'bg-status-ready/15 text-status-ready border border-status-ready/30'
             : isCookingLong
-            ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40 animate-pulse'
-            : 'bg-sky-500/20 text-sky-400 border border-sky-500/40'
+            ? 'bg-status-cancelled/15 text-status-cancelled border border-status-cancelled/30 animate-pulse'
+            : 'bg-status-cooking/15 text-status-cooking border border-status-cooking/30'
         }`}>
           {isAllReady ? (
             <>
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+              <CheckCircle2 className="w-3.5 h-3.5 text-status-ready" />
               <span>ĐÃ XONG CẢ ĐƠN</span>
             </>
           ) : (
             <>
-              <Flame className="w-3.5 h-3.5 animate-pulse text-amber-400" />
+              <Flame className="w-3.5 h-3.5 animate-pulse text-status-cooking" />
               <span>Đã nấu: {elapsedMinutes} phút</span>
             </>
           )}
@@ -115,10 +115,10 @@ export function KitchenCookingOrderCard({
       </div>
 
       {/* Dishes List */}
-      <div className="p-4 flex-1 divide-y divide-slate-700/60 flex flex-col gap-2">
-        <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center justify-between">
+      <div className="p-4 flex-1 divide-y divide-border flex flex-col gap-2">
+        <div className="text-xs font-bold text-muted uppercase tracking-wider mb-1 flex items-center justify-between">
           <span>Tiến độ món ({readyItems.length}/{order.items.length} món xong)</span>
-          <span className="text-sky-400">
+          <span className="text-accent font-semibold">
             Tổng SL: {order.items.reduce((sum, i) => sum + i.quantity, 0)}
           </span>
         </div>
@@ -129,24 +129,24 @@ export function KitchenCookingOrderCard({
               key={item.id}
               className={`flex items-center justify-between gap-3 p-3 rounded-xl border transition-colors ${
                 item.status === 'READY'
-                  ? 'bg-emerald-500/10 border-emerald-500/30'
-                  : 'bg-slate-900/60 border-slate-800'
+                  ? 'bg-emerald-50/70 border-emerald-200'
+                  : 'bg-background border-border'
               }`}
             >
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className={`font-bold text-base ${
-                    item.status === 'READY' ? 'text-emerald-300' : 'text-white'
+                    item.status === 'READY' ? 'text-status-ready' : 'text-text'
                   }`}>
                     {item.menuItemName}
                   </span>
-                  <span className="w-7 h-7 rounded-lg bg-sky-500/20 border border-sky-500/30 text-sky-300 flex items-center justify-center font-black text-xs shrink-0">
+                  <span className="w-7 h-7 rounded-lg bg-surface border border-border text-primary flex items-center justify-center font-black text-xs shrink-0">
                     &times;{item.quantity}
                   </span>
                 </div>
 
                 {item.note && (
-                  <p className="text-xs font-semibold text-amber-400 mt-1 flex items-center gap-1.5 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                  <p className="text-xs font-semibold text-amber-700 mt-1 flex items-center gap-1.5 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
                     <FileText className="w-3 h-3 shrink-0" />
                     <span>Ghi chú: {item.note}</span>
                   </p>
@@ -156,7 +156,7 @@ export function KitchenCookingOrderCard({
               {/* Status Action Button */}
               <div className="shrink-0">
                 {item.status === 'READY' ? (
-                  <span className="px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-xs font-bold flex items-center gap-1">
+                  <span className="px-3 py-1.5 rounded-lg bg-status-ready/15 text-status-ready border border-status-ready/30 text-xs font-bold flex items-center gap-1">
                     <CheckCircle2 className="w-4 h-4" />
                     <span>Đã xong</span>
                   </span>
@@ -172,10 +172,10 @@ export function KitchenCookingOrderCard({
                       }
                     }}
                     disabled={updatingItemId === item.id}
-                    className="h-10 px-3.5 bg-slate-700 hover:bg-slate-600 active:bg-slate-800 text-amber-300 font-bold text-xs rounded-xl border border-slate-600 flex items-center gap-1.5 cursor-pointer disabled:opacity-60"
+                    className="h-10 px-3.5 bg-surface hover:bg-surface-hover active:bg-surface text-status-cooking font-bold text-xs rounded-xl border border-border flex items-center gap-1.5 cursor-pointer disabled:opacity-60"
                   >
                     {updatingItemId === item.id ? (
-                      <div className="w-4 h-4 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+                      <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                     ) : (
                       <>
                         <Flame className="w-4 h-4" />
@@ -195,7 +195,7 @@ export function KitchenCookingOrderCard({
                       }
                     }}
                     disabled={updatingItemId === item.id}
-                    className="h-10 px-4 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-md cursor-pointer transition-colors disabled:opacity-60"
+                    className="h-10 px-4 bg-status-ready hover:bg-emerald-600 active:bg-emerald-700 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors disabled:opacity-60"
                   >
                     {updatingItemId === item.id ? (
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -214,13 +214,13 @@ export function KitchenCookingOrderCard({
       </div>
 
       {/* Card Footer */}
-      <div className="bg-slate-950/80 p-4 border-t border-slate-700 flex items-center justify-between gap-3 mt-auto">
+      <div className="bg-surface/30 p-4 border-t border-border flex items-center justify-between gap-3 mt-auto">
         <Link to={`/kitchen/orders/${order.id}`}>
           <Button
             type="button"
             variant="outline"
             size="sm"
-            className="text-xs h-10 px-3 border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white"
+            className="text-xs h-10 px-3 border-border bg-card text-text hover:bg-surface"
           >
             <span>Chi tiết</span>
             <ChevronRight className="w-3.5 h-3.5 ml-1" />
@@ -233,7 +233,7 @@ export function KitchenCookingOrderCard({
             type="button"
             onClick={handleFinishAllItems}
             disabled={isFinishingAll}
-            className="h-10 px-4 bg-sky-600 hover:bg-sky-500 active:bg-sky-700 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-md transition-colors cursor-pointer disabled:opacity-60"
+            className="h-10 px-4 bg-accent hover:bg-accent-hover active:bg-accent text-white font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer disabled:opacity-60"
           >
             {isFinishingAll ? (
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

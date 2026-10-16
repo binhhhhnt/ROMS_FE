@@ -31,16 +31,18 @@ export function KitchenLayout() {
   ]
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white flex flex-col font-sans">
+    <div className="min-h-screen bg-background text-text flex flex-col font-sans">
       {/* KDS Header */}
-      <header className="bg-slate-950 border-b border-slate-800 h-16 px-6 flex items-center justify-between">
+      <header className="bg-primary text-white h-16 px-6 flex items-center justify-between shadow-md">
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 text-sky-400 font-bold text-xl tracking-wider">
-            <ChefHat className="w-6 h-6" />
+          <div className="flex items-center gap-2 text-white font-bold text-xl tracking-wide">
+            <div className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center text-accent">
+              <ChefHat className="w-5 h-5 text-white" />
+            </div>
             <span>ROMS KDS</span>
           </div>
 
-          <nav className="flex items-center gap-1 ml-6">
+          <nav className="flex items-center gap-1.5 ml-6">
             {navItems.map((item) => {
               const Icon = item.icon
               const isActive = location.pathname === item.path
@@ -49,10 +51,10 @@ export function KitchenLayout() {
                   key={item.path}
                   to={item.path}
                   className={cn(
-                    'flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors',
+                    'flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors',
                     isActive
-                      ? 'bg-sky-600 text-white shadow'
-                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      ? 'bg-white/20 text-white shadow-xs'
+                      : 'text-white/75 hover:bg-white/10 hover:text-white'
                   )}
                 >
                   <Icon className="w-4 h-4" />
@@ -64,14 +66,14 @@ export function KitchenLayout() {
         </div>
 
         <div className="flex items-center gap-4">
-          <span className="text-xs text-slate-400">
-            Đầu bếp: {user?.fullName || user?.username}
+          <span className="text-xs text-white/80 hidden sm:inline">
+            Đầu bếp: <strong>{user?.fullName || user?.username}</strong>
           </span>
           <Button
             variant="ghost"
             size="sm"
             onClick={handleLogout}
-            className="text-slate-300 hover:bg-slate-800 hover:text-white"
+            className="text-white hover:bg-white/10 hover:text-white text-xs"
           >
             <LogOut className="w-4 h-4 mr-1.5" />
             Thoát KDS
@@ -80,7 +82,7 @@ export function KitchenLayout() {
       </header>
 
       {/* KDS Main Screen */}
-      <main className="flex-1 p-6 overflow-auto bg-slate-900">
+      <main className="flex-1 p-6 overflow-auto bg-background">
         <Outlet />
       </main>
     </div>
