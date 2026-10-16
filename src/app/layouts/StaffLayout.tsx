@@ -2,7 +2,7 @@ import { Outlet, Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/app/store/authStore'
 import { authApi } from '@/features/auth/api/authApi'
 import { Button } from '@/shared/components/ui/button'
-import { UtensilsCrossed, LogOut, ClipboardList, LayoutDashboard, Boxes, History, ClipboardCheck, BookOpen, ShoppingBag, Receipt, BarChart3 } from 'lucide-react'
+import { UtensilsCrossed, LogOut, ClipboardList, LayoutDashboard, Boxes, History, ClipboardCheck, BookOpen, ShoppingBag, Receipt, BarChart3, FolderOpen } from 'lucide-react'
 import { toast } from 'sonner'
 
 export function StaffLayout() {
@@ -68,6 +68,20 @@ export function StaffLayout() {
                 Tổng quan
               </Link>
               <Link
+                to="/owner/categories"
+                className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text hover:bg-surface/50 transition-colors"
+              >
+                <FolderOpen className="w-4 h-4 text-accent" />
+                Danh mục món
+              </Link>
+              <Link
+                to="/owner/menu-items"
+                className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text hover:bg-surface/50 transition-colors"
+              >
+                <UtensilsCrossed className="w-4 h-4 text-accent" />
+                Danh sách món
+              </Link>
+              <Link
                 to="/owner/expenses"
                 className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text hover:bg-surface/50 transition-colors"
               >
@@ -83,13 +97,15 @@ export function StaffLayout() {
               </Link>
             </>
           )}
-          <Link
-            to="/staff/orders"
-            className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text hover:bg-surface/50 transition-colors"
-          >
-            <ClipboardList className="w-4 h-4 text-accent" />
-            Danh sách Order
-          </Link>
+          {(user?.role === 'OWNER' || user?.role === 'SERVICE_STAFF') && (
+            <Link
+              to="/staff/orders"
+              className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text hover:bg-surface/50 transition-colors"
+            >
+              <ClipboardList className="w-4 h-4 text-accent" />
+              Danh sách Order
+            </Link>
+          )}
           {(user?.role === 'OWNER' || user?.role === 'INVENTORY_STAFF') && (
             <>
               <Link

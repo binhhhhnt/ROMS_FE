@@ -299,16 +299,16 @@ export function CategoriesPage() {
       />
 
       {/* Create / Edit Modal */}
-      <CategoryFormModal
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false)
-          setSelectedCategory(null)
-        }}
-        onSubmit={handleFormSubmit}
-        category={selectedCategory}
-        isLoading={createMutation.isPending || updateMutation.isPending}
-      />
+      {isModalOpen && (
+        <CategoryFormModal
+          category={selectedCategory}
+          onClose={() => {
+            setIsModalOpen(false)
+            setSelectedCategory(null)
+          }}
+          onSave={handleFormSubmit}
+        />
+      )}
     </div>
   )
 }

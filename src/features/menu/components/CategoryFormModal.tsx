@@ -1,217 +1,121 @@
-import { useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import axios from 'axios'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { X, Layers, Hash, AlignLeft, CheckCircle2 } from 'lucide-react'
-import { categorySchema, type CategoryFormValues } from '@/features/menu/schemas/categorySchema'
-import type { CategoryResponse } from '@/features/menu/types/category.types'
+import { X } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
+import type { ApiErrorResponse } from '@/shared/types/api.types'
+import { getCategoryErrorMessage } from '../api/categoryApi'
+import { categorySchema, type CategoryFormValues } from '../schemas/categorySchema'
+import type { CategoryResponse } from '../types/category.types'
 
 interface CategoryFormModalProps {
-  isOpen: boolean
+  category: CategoryResponse | null
   onClose: () => void
-  onSubmit: (values: CategoryFormValues) => Promise<void>
-  category?: CategoryResponse | null
-  isLoading?: boolean
+  onSave: (values: CategoryFormValues) => Promise<void>
 }
 
-export function CategoryFormModal({
-  isOpen,
-  onClose,
-  onSubmit,
-  category,
-  isLoading = false,
-}: CategoryFormModalProps) {
-  const isEditing = Boolean(category)
-
-  const {
-    register,
-    handleSubmit,
-    reset,
-    watch,
-    setValue,
-    formState: { errors },
-  } = useForm<CategoryFormValues>({
+export function CategoryFormModal({ category, onClose, onSave }: CategoryFormModalProps) {
+  const dialogRef = useRef<HTMLDialogElement>(null)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+  const { register, handleSubmit, setError, formState: { errors, isSubmitting } } = useForm<CategoryFormValues>({
     resolver: zodResolver(categorySchema),
     defaultValues: {
-      name: '',
-      description: '',
-      displayOrder: 1,
-      isActive: true,
+      name: category?.name ?? '',
+      description: category?.description ?? '',
+      displayOrder: category?.displayOrder ?? 0,
+      isActive: category?.isActive ?? true,
     },
   })
 
-  const isActiveValue = watch('isActive')
-
   useEffect(() => {
-    if (isOpen) {
-      if (category) {
-        reset({
-          name: category.name,
-          description: category.description || '',
-          displayOrder: category.displayOrder,
-          isActive: category.isActive,
-        })
-      } else {
-        reset({
-          name: '',
-          description: '',
-          displayOrder: 1,
-          isActive: true,
-        })
+    const dialog = dialogRef.current
+    const previousFocus = document.activeElement
+    dialog?.showModal()
+    return () => {
+      dialog?.close()
+      if (previousFocus instanceof HTMLElement && previousFocus.isConnected) previousFocus.focus()
+    }
+  }, [])
+
+  const submit = handleSubmit(async (values) => {
+    setSubmitError(null)
+    try {
+      await onSave(values)
+    } catch (error) {
+      setSubmitError(getCategoryErrorMessage(error))
+      if (axios.isAxiosError<ApiErrorResponse>(error) && error.response?.status === 400) {
+        const details = error.response.data.error?.details
+        if (details && typeof details === 'object') {
+          const messages: Record<keyof CategoryFormValues, string> = {
+            name: 'Tên danh mục chưa hợp lệ (bắt buộc, tối đa 100 ký tự).',
+            description: 'Mô tả chưa hợp lệ (tối đa 255 ký tự).',
+            displayOrder: 'Thứ tự hiển thị phải là số nguyên trong phạm vi cho phép.',
+            isActive: 'Vui lòng chọn trạng thái danh mục hợp lệ.',
+          }
+          for (const field of Object.keys(messages) as Array<keyof CategoryFormValues>) {
+            if (Object.hasOwn(details, field)) setError(field, { type: 'server', message: messages[field] })
+          }
+        }
       }
     }
-  }, [isOpen, category, reset])
-
-  if (!isOpen) return null
-
-  const handleFormSubmit = async (values: CategoryFormValues) => {
-    await onSubmit(values)
-  }
+  })
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-card border border-border rounded-2xl max-w-lg w-full shadow-2xl flex flex-col overflow-hidden text-left">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-surface/30">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-              <Layers className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <h3 className="font-bold text-base text-text">
-                {isEditing ? 'Chỉnh sửa danh mục món' : 'Thêm danh mục món mới'}
-              </h3>
-              <p className="text-xs text-muted">
-                {isEditing
-                  ? `Mã danh mục: #${category?.id}`
-                  : 'Tạo nhóm phân loại các món ăn hiển thị trên thực đơn'}
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={isLoading}
-            className="p-1.5 rounded-lg text-muted hover:text-text hover:bg-muted-bg transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+    <dialog
+      ref={dialogRef}
+      aria-labelledby="category-dialog-title"
+      aria-describedby="category-dialog-description"
+      aria-modal="true"
+      onCancel={(event) => { event.preventDefault(); if (!isSubmitting) onClose() }}
+      className="fixed inset-0 m-auto max-h-[90dvh] w-[calc(100%_-_2rem)] max-w-lg overflow-y-auto rounded-2xl border border-border bg-card p-0 text-text shadow-xl backdrop:bg-primary/40"
+    >
+      <div className="flex items-start justify-between gap-4 border-b border-border p-6">
+        <div>
+          <h2 id="category-dialog-title" className="text-xl font-bold text-primary">
+            {category ? 'Chỉnh sửa danh mục' : 'Thêm danh mục'}
+          </h2>
+          <p id="category-dialog-description" className="mt-1 text-sm text-muted">Sắp xếp và quản lý nhóm món trong thực đơn.</p>
         </div>
-
-        {/* Form Body */}
-        <form onSubmit={handleSubmit(handleFormSubmit)} className="p-6 flex flex-col gap-4">
-          {/* Name */}
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="cat-name" className="text-xs font-semibold text-text flex items-center justify-between">
-              <span>Tên danh mục</span>
-              <span className="text-[11px] font-normal text-status-cancelled">* Bắt buộc</span>
-            </label>
-            <Input
-              id="cat-name"
-              placeholder="Ví dụ: Món khai vị, Món chính, Đồ uống, Tráng miệng..."
-              leftIcon={<Layers className="w-4 h-4 text-muted" />}
-              error={Boolean(errors.name)}
-              disabled={isLoading}
-              {...register('name')}
-            />
-            {errors.name && (
-              <span className="text-xs text-status-cancelled">{errors.name.message}</span>
-            )}
-          </div>
-
-          {/* Display Order */}
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="cat-display-order" className="text-xs font-semibold text-text flex items-center justify-between">
-              <span>Thứ tự hiển thị trên Menu / Tablet</span>
-              <span className="text-[11px] font-normal text-status-cancelled">* Bắt buộc</span>
-            </label>
-            <Input
-              id="cat-display-order"
-              type="number"
-              min="0"
-              placeholder="1"
-              leftIcon={<Hash className="w-4 h-4 text-muted" />}
-              error={Boolean(errors.displayOrder)}
-              disabled={isLoading}
-              {...register('displayOrder', { valueAsNumber: true })}
-            />
-            <p className="text-[11px] text-muted">
-              Số nhỏ hơn sẽ được ưu tiên hiển thị trước trên thanh danh mục tablet của thực khách.
-            </p>
-            {errors.displayOrder && (
-              <span className="text-xs text-status-cancelled">{errors.displayOrder.message}</span>
-            )}
-          </div>
-
-          {/* Description */}
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="cat-desc" className="text-xs font-semibold text-text flex items-center justify-between">
-              <span>Mô tả danh mục</span>
-              <span className="text-[11px] font-normal text-muted">(Tùy chọn)</span>
-            </label>
-            <div className="relative">
-              <textarea
-                id="cat-desc"
-                rows={3}
-                placeholder="Mô tả tóm tắt về đặc trưng của danh mục món ăn này..."
-                disabled={isLoading}
-                className="w-full px-3 py-2 text-xs rounded-lg border border-border bg-input text-text placeholder:text-muted/60 focus:outline-hidden focus:ring-2 focus:ring-accent/40 focus:border-accent disabled:opacity-50 transition-all resize-none"
-                {...register('description')}
-              />
-              <AlignLeft className="w-4 h-4 text-muted absolute right-3 top-3 pointer-events-none" />
-            </div>
-            {errors.description && (
-              <span className="text-xs text-status-cancelled">{errors.description.message}</span>
-            )}
-          </div>
-
-          {/* Active Status Switch */}
-          <div className="p-3.5 rounded-xl bg-surface/30 border border-border flex items-center justify-between cursor-pointer"
-               onClick={() => !isLoading && setValue('isActive', !isActiveValue, { shouldValidate: true })}>
-            <div className="flex flex-col gap-0.5">
-              <span className="text-xs font-bold text-text flex items-center gap-1.5">
-                <CheckCircle2 className={`w-4 h-4 ${isActiveValue ? 'text-status-ready' : 'text-muted'}`} />
-                Hiển thị trên thực đơn
-              </span>
-              <span className="text-[11px] text-muted">
-                {isActiveValue
-                  ? 'Danh mục đang kích hoạt và hiển thị cho thực khách đặt món'
-                  : 'Tạm ẩn danh mục khỏi thực đơn tablet và danh sách gọi món'}
-              </span>
-            </div>
-            <input
-              type="checkbox"
-              id="cat-active"
-              className="w-4 h-4 accent-primary rounded cursor-pointer shrink-0"
-              disabled={isLoading}
-              checked={isActiveValue}
-              onChange={(e) => setValue('isActive', e.target.checked, { shouldValidate: true })}
-            />
-          </div>
-
-          {/* Modal Actions */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-border mt-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={onClose}
-              disabled={isLoading}
-            >
-              Hủy bỏ
-            </Button>
-            <Button
-              type="submit"
-              size="sm"
-              isLoading={isLoading}
-              className="bg-primary hover:bg-primary-hover text-white font-semibold"
-            >
-              {isEditing ? 'Lưu thay đổi' : 'Tạo danh mục'}
-            </Button>
-          </div>
-        </form>
+        <Button type="button" variant="ghost" size="icon" aria-label="Đóng biểu mẫu" onClick={onClose} disabled={isSubmitting}>
+          <X className="h-5 w-5" />
+        </Button>
       </div>
-    </div>
+      <form onSubmit={submit} noValidate aria-busy={isSubmitting}>
+        <fieldset disabled={isSubmitting} className="flex min-w-0 flex-col gap-5 p-6">
+          <div>
+            <label htmlFor="category-name" className="mb-2 block text-sm font-semibold">Tên danh mục <span className="text-status-cancelled">*</span></label>
+            <Input id="category-name" autoFocus maxLength={100} autoComplete="off" aria-required="true" aria-invalid={!!errors.name} aria-describedby={errors.name ? 'category-name-error' : undefined} error={!!errors.name} {...register('name')} />
+            {errors.name && <p id="category-name-error" className="mt-1 text-sm text-status-cancelled">{errors.name.message}</p>}
+          </div>
+          <div>
+            <label htmlFor="category-description" className="mb-2 block text-sm font-semibold">Mô tả</label>
+            <textarea id="category-description" rows={3} maxLength={255} aria-invalid={!!errors.description} aria-describedby="category-description-help category-description-error" className="w-full resize-y rounded-md border border-border bg-card p-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" {...register('description')} />
+            <p id="category-description-help" className="mt-1 text-xs text-muted">Tối đa 255 ký tự.</p>
+            {errors.description && <p id="category-description-error" className="mt-1 text-sm text-status-cancelled">{errors.description.message}</p>}
+          </div>
+          <div>
+            <label htmlFor="category-display-order" className="mb-2 block text-sm font-semibold">Thứ tự hiển thị <span className="text-status-cancelled">*</span></label>
+            <Input id="category-display-order" type="number" step="1" aria-required="true" aria-invalid={!!errors.displayOrder} aria-describedby="category-order-help category-order-error" error={!!errors.displayOrder} {...register('displayOrder', { valueAsNumber: true })} />
+            <p id="category-order-help" className="mt-1 text-xs text-muted">Số nhỏ hơn được hiển thị trước.</p>
+            {errors.displayOrder && <p id="category-order-error" className="mt-1 text-sm text-status-cancelled">{errors.displayOrder.message}</p>}
+          </div>
+          <div>
+            <label className="flex cursor-pointer items-center gap-3 text-sm font-semibold">
+              <input type="checkbox" className="h-4 w-4 accent-primary focus-visible:outline-accent" {...register('isActive')} />
+              Đang hoạt động
+            </label>
+            <p className="mt-2 text-xs leading-relaxed text-muted">Danh mục ngừng hoạt động và các món thuộc danh mục sẽ không hiển thị trên thực đơn của tài khoản bàn.</p>
+            {errors.isActive && <p className="mt-1 text-sm text-status-cancelled">{errors.isActive.message}</p>}
+          </div>
+          {submitError && <p role="alert" className="rounded-lg border border-status-cancelled/30 bg-status-cancelled/5 p-3 text-sm text-status-cancelled">{submitError}</p>}
+        </fieldset>
+        <div className="flex justify-end gap-3 border-t border-border bg-background px-6 py-4">
+          <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>Hủy</Button>
+          <Button type="submit" isLoading={isSubmitting}>{category ? 'Lưu thay đổi' : 'Tạo danh mục'}</Button>
+        </div>
+      </form>
+    </dialog>
   )
 }

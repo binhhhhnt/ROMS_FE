@@ -7,6 +7,12 @@ import { AuthGuard, PublicOnlyGuard, RoleGuard } from '@/app/routes/guards'
 
 import { LoginPage } from '@/features/auth/pages/LoginPage'
 import { AccessDeniedPage } from '@/features/auth/pages/AccessDeniedPage'
+import { CategoryManagementPage } from '@/features/menu/pages/CategoryManagementPage'
+import { MenuItemListPage } from '@/features/menu/pages/MenuItemListPage'
+import { MenuItemCreatePage } from '@/features/menu/pages/MenuItemCreatePage'
+import { MenuItemDetailPage } from '@/features/menu/pages/MenuItemDetailPage'
+import { TabletMenuPage } from '@/features/menu/pages/TabletMenuPage'
+import { TabletMenuItemDetailPage } from '@/features/menu/pages/TabletMenuItemDetailPage'
 import { PlaceholderPage } from '@/shared/components/PlaceholderPage'
 import { TabletCartPage } from '@/features/ordering/pages/TabletCartPage'
 import { TabletCheckoutPage } from '@/features/ordering/pages/TabletCheckoutPage'
@@ -59,66 +65,36 @@ export function AppRoutes() {
           }
         >
           <Route element={<StaffLayout />}>
-            <Route
-              path="/owner/dashboard"
-              element={<OwnerDashboardPage />}
-            />
-            <Route
-              path="/owner/expenses"
-              element={<ExpensesPage />}
-            />
-            <Route
-              path="/owner/reports/revenue"
-              element={<RevenueReportPage />}
-            />
-            <Route
-              path="/owner/reports/popular-items"
-              element={<PopularItemsReportPage />}
-            />
-            <Route
-              path="/owner/reports/profit"
-              element={<ProfitReportPage />}
-            />
-            <Route
-              path="/owner/reports/operations"
-              element={<OperationsReportPage />}
-            />
-            <Route
-              path="/staff/orders"
-              element={<StaffOrdersPage />}
-            />
-            <Route
-              path="/staff/orders/:orderId"
-              element={<StaffOrderDetailPage />}
-            />
-            <Route
-              path="/inventory/ingredients"
-              element={<IngredientsPage />}
-            />
-            <Route
-              path="/inventory/movements"
-              element={<StockMovementsPage />}
-            />
-            <Route
-              path="/inventory/checks"
-              element={<InventoryChecksPage />}
-            />
-            <Route
-              path="/inventory/recipes"
-              element={<RecipesPage />}
-            />
-            <Route
-              path="/inventory/purchases"
-              element={<PurchasesPage />}
-            />
-            <Route
-              path="/inventory/purchases/new"
-              element={<CreatePurchasePage />}
-            />
-            <Route
-              path="/inventory/purchases/:purchaseId"
-              element={<PurchaseDetailPage />}
-            />
+            {/* Owner Only Routes */}
+            <Route element={<RoleGuard allowedRoles={['OWNER']} />}>
+              <Route path="/owner/categories" element={<CategoryManagementPage />} />
+              <Route path="/owner/menu-items" element={<MenuItemListPage />} />
+              <Route path="/owner/menu-items/new" element={<MenuItemCreatePage />} />
+              <Route path="/owner/menu-items/:itemId" element={<MenuItemDetailPage />} />
+              <Route path="/owner/dashboard" element={<OwnerDashboardPage />} />
+              <Route path="/owner/expenses" element={<ExpensesPage />} />
+              <Route path="/owner/reports/revenue" element={<RevenueReportPage />} />
+              <Route path="/owner/reports/popular-items" element={<PopularItemsReportPage />} />
+              <Route path="/owner/reports/profit" element={<ProfitReportPage />} />
+              <Route path="/owner/reports/operations" element={<OperationsReportPage />} />
+            </Route>
+
+            {/* Service Staff & Owner Routes */}
+            <Route element={<RoleGuard allowedRoles={['OWNER', 'SERVICE_STAFF']} />}>
+              <Route path="/staff/orders" element={<StaffOrdersPage />} />
+              <Route path="/staff/orders/:orderId" element={<StaffOrderDetailPage />} />
+            </Route>
+
+            {/* Inventory Staff & Owner Routes */}
+            <Route element={<RoleGuard allowedRoles={['OWNER', 'INVENTORY_STAFF']} />}>
+              <Route path="/inventory/ingredients" element={<IngredientsPage />} />
+              <Route path="/inventory/movements" element={<StockMovementsPage />} />
+              <Route path="/inventory/checks" element={<InventoryChecksPage />} />
+              <Route path="/inventory/recipes" element={<RecipesPage />} />
+              <Route path="/inventory/purchases" element={<PurchasesPage />} />
+              <Route path="/inventory/purchases/new" element={<CreatePurchasePage />} />
+              <Route path="/inventory/purchases/:purchaseId" element={<PurchaseDetailPage />} />
+            </Route>
           </Route>
         </Route>
 
@@ -173,8 +149,9 @@ export function AppRoutes() {
             />
             <Route
               path="/tablet/menu"
-              element={<PlaceholderPage title="Thực đơn Tablet" description="Xem danh sách món ăn phục vụ tại nhà hàng." />}
+              element={<TabletMenuPage />}
             />
+            <Route path="/tablet/menu/:itemId" element={<TabletMenuItemDetailPage />} />
           </Route>
         </Route>
       </Route>
