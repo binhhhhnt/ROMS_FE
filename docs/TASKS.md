@@ -55,13 +55,13 @@
 | FE-036 | Danh sách phiếu mua (`FE-SCR-036`; Page) | ROMS-057 | Member 4 | Todo | Phiếu hàng đã nhận, không quản lý PO/supplier; verify route/UI manually |
 | FE-037 | Tạo phiếu mua (`FE-SCR-037`; Page) | ROMS-058 | Member 4 | Todo | Tạo phiếu nhập hàng thực tế; verify route/UI manually |
 | FE-038 | Chi tiết/chỉnh sửa phiếu mua (`FE-SCR-038`; Page + Modal/Action) | ROMS-059 | Member 4 | Todo | Sửa dòng phiếu mua, BE tạo movement bù trừ; verify route/UI manually |
-| FE-039 | Dashboard Owner (`FE-SCR-039`; Page) | ROMS-007 | Member 5 | Todo | KPI chỉ dựa vào dữ liệu BE thực có; verify route/UI manually |
-| FE-040 | Quản lý chi phí (`FE-SCR-040`; Page + Modal/Action) | ROMS-061, ROMS-062 | Member 5 | Todo | Thêm/sửa/hủy; yêu cầu lý do hủy; verify route/UI manually |
-| FE-041 | Báo cáo doanh thu (`FE-SCR-041`; Page) | ROMS-063 | Member 5 | Todo | Chờ xác nhận định nghĩa doanh thu vì chưa có payment; verify route/UI manually |
-| FE-042 | Báo cáo món bán chạy (`FE-SCR-042`; Page) | ROMS-064 | Member 5 | Todo | Chỉ số dựa trên API BE; verify route/UI manually |
-| FE-043 | Báo cáo chi phí/lợi nhuận (`FE-SCR-043`; Page) | ROMS-065 | Member 5 | Todo | Lợi nhuận ước tính; cần xác nhận nguồn số liệu; verify route/UI manually |
-| FE-044 | Báo cáo vận hành (`FE-SCR-044`; Page) | ROMS-066 | Member 5 | Todo | Verify actual backend endpoint, DTO and permissions; manual UI review; verify route/UI manually |
-| FE-045 | Xuất báo cáo (`FE-SCR-045`; Action) | ROMS-067 | Member 5 | Todo | Không tạo page riêng; tải file theo bộ lọc; verify route/UI manually |
+| FE-039 | Dashboard Owner (`FE-SCR-039`; Page) | ROMS-007 | Member 5 | Done | Tích hợp GET /api/dashboard/overview, trends, best-selling; KPI metrics, biểu đồ SVG tương tác, top món bán chạy, cảnh báo vận hành; build verified |
+| FE-040 | Quản lý chi phí (`FE-SCR-040`; Page + Modal/Action) | ROMS-061, ROMS-062 | Member 5 | Done | Tích hợp CRUD chi phí /api/expenses; modal thêm/sửa, modal xác nhận hủy bắt buộc lý do; bảng chi phí phân trang, lọc ngày; build verified |
+| FE-041 | Báo cáo doanh thu (`FE-SCR-041`; Page) | ROMS-063 | Member 5 | Done | Tích hợp GET /api/dashboard/trends, overview; biểu đồ doanh thu SVG interactive, bảng chi tiết theo ngày; doanh thu tính theo đơn COMPLETED; build verified |
+| FE-042 | Báo cáo món bán chạy (`FE-SCR-042`; Page) | ROMS-064 | Member 5 | Done | Tích hợp GET /api/dashboard/best-selling; biểu đồ xếp hạng món bán chạy SVG, bảng chi tiết số lượng & doanh thu, tùy chọn giới hạn (5/10/20 món); build verified |
+| FE-043 | Báo cáo chi phí/lợi nhuận (`FE-SCR-043`; Page) | ROMS-065 | Member 5 | Done | Tích hợp GET /api/dashboard/trends, overview; thẻ tóm tắt doanh thu, chi phí, nhập hàng, lợi nhuận ròng; biểu đồ so sánh đa chỉ số SVG, bảng chi tiết ngày; build verified |
+| FE-044 | Báo cáo vận hành (`FE-SCR-044`; Page) | ROMS-066 | Member 5 | Done | Tích hợp GET /api/dashboard/overview; tỷ lệ hoàn thành đơn, tỷ lệ hủy đơn, phiên bàn phục vụ, cảnh báo tồn kho tối thiểu, chuẩn mực KPI vận hành; build verified |
+| FE-045 | Xuất báo cáo (`FE-SCR-045`; Action) | ROMS-067 | Member 5 | Done | Tích hợp GET /api/dashboard/export; nút xuất CSV trên thanh bộ lọc ReportFilterBar dùng chung trên toàn bộ 4 trang báo cáo; build verified |
 
 **Backend alignment:** BE PRD mới nhất chỉ cho `TABLE_ACCOUNT` của chính bàn đó hủy Order/OrderItem còn `PENDING`; mọi thao tác hủy trong UI Staff/Kitchen phải ẩn hoặc loại bỏ. `ROMS-042` vẫn giữ làm mã tham chiếu từ tracker cũ nhưng không triển khai chức năng hủy tại KDS; cần đồng bộ tracker/SRS nếu nhóm cập nhật tài liệu nguồn. FE-046 là màn hình FE phát sinh từ BE-008 đã phê duyệt, không tự đặt mã ROMS mới.
 

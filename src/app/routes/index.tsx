@@ -19,6 +19,12 @@ import { KitchenOrderDetailPage } from '@/features/kitchen/pages/KitchenOrderDet
 import { KitchenCookingPage } from '@/features/kitchen/pages/KitchenCookingPage'
 import { KitchenReadyPage } from '@/features/kitchen/pages/KitchenReadyPage'
 import { KitchenMenuAvailabilityPage } from '@/features/kitchen/pages/KitchenMenuAvailabilityPage'
+import { ExpensesPage } from '@/features/expenses/pages/ExpensesPage'
+import { OwnerDashboardPage } from '@/features/dashboard/pages/OwnerDashboardPage'
+import { RevenueReportPage } from '@/features/reports/pages/RevenueReportPage'
+import { PopularItemsReportPage } from '@/features/reports/pages/PopularItemsReportPage'
+import { ProfitReportPage } from '@/features/reports/pages/ProfitReportPage'
+import { OperationsReportPage } from '@/features/reports/pages/OperationsReportPage'
 
 export function AppRoutes() {
   return (
@@ -48,7 +54,27 @@ export function AppRoutes() {
           <Route element={<StaffLayout />}>
             <Route
               path="/owner/dashboard"
-              element={<PlaceholderPage title="Dashboard Tổng quan" description="Báo cáo số liệu và hoạt động nhà hàng." />}
+              element={<OwnerDashboardPage />}
+            />
+            <Route
+              path="/owner/expenses"
+              element={<ExpensesPage />}
+            />
+            <Route
+              path="/owner/reports/revenue"
+              element={<RevenueReportPage />}
+            />
+            <Route
+              path="/owner/reports/popular-items"
+              element={<PopularItemsReportPage />}
+            />
+            <Route
+              path="/owner/reports/profit"
+              element={<ProfitReportPage />}
+            />
+            <Route
+              path="/owner/reports/operations"
+              element={<OperationsReportPage />}
             />
             <Route
               path="/staff/orders"
