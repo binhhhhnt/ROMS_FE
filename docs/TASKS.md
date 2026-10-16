@@ -28,20 +28,20 @@
 | FE-010 | KDS đang chế biến (`FE-SCR-010`; Page + Action) | ROMS-040 | BINH-DEV | Done | Tích hợp GET /api/kitchen/orders?status=COOKING, PATCH /items/{id}/status, STOMP realtime, chuyển item sang READY, build verified |
 | FE-011 | KDS món sẵn sàng (`FE-SCR-011`; Page + Action) | ROMS-041 | BINH-DEV | Done | Item READY, service staff cập nhật COMPLETED khi phục vụ; verify route/UI manually |
 | FE-046 | Rapid Menu Availability (`FE-SCR-046`; Page + Confirmation Modal) | BE-008 (no separate ROMS ticket) | BINH-DEV | Done | Tích hợp GET /api/menu-items, GET /api/categories, PATCH /api/menu-items/{id}/status, modal xác nhận bắt buộc, chặn Kitchen bật DISCONTINUED, build verified |
-| FE-012 | Quên mật khẩu (`FE-SCR-012`; Page) | ROMS-002 | QUANG | Todo | Gửi OTP email Gmail SMTP (qua BE); verify route/UI manually |
-| FE-013 | Đặt lại mật khẩu (`FE-SCR-013`; Page) | ROMS-003 | QUANG | Todo | OTP 6 số, 5 phút, tối đa 5 lần sai; verify route/UI manually |
-| FE-014 | Đổi mật khẩu (`FE-SCR-014`; Page) | ROMS-004 | QUANG | Todo | BE thu hồi các phiên liên quan khi đổi mật khẩu; verify route/UI manually |
-| FE-015 | Hồ sơ cá nhân (`FE-SCR-015`; Page) | ROMS-005 | QUANG | Todo | Verify actual backend endpoint, DTO and permissions; manual UI review; verify route/UI manually |
-| FE-016 | Không có quyền (`FE-SCR-016`; Page) | ROMS-006 | QUANG | Todo | Protected Routes dùng chung; verify route/UI manually |
-| FE-017 | Quản lý tài khoản (`FE-SCR-017`; Page + Modal/Action) | ROMS-008, ROMS-009 | QUANG | Todo | Danh sách, tạo account với role và table_id khi TABLE_ACCOUNT; verify route/UI manually |
-| FE-018 | Chi tiết/sửa tài khoản (`FE-SCR-018`; Page) | ROMS-010 | QUANG | Todo | Quản lý trạng thái, role và liên kết bàn; verify route/UI manually |
-| FE-019 | Sơ đồ/danh sách bàn (`FE-SCR-019`; Page + Modal/Action) | ROMS-011, ROMS-012 | QUANG | Todo | Quản lý bàn: Owner; thêm/sửa bằng modal; verify route/UI manually |
-| FE-020 | Chi tiết bàn (`FE-SCR-020`; Page + Modal/Action) | ROMS-013, ROMS-014 | QUANG | Todo | Staff/Owner có thể mở phiên hỗ trợ; tablet mở trên trang chào; verify route/UI manually |
-| FE-021 | Chi tiết phiên phục vụ (`FE-SCR-021`; Page + Modal/Action) | ROMS-015, ROMS-016, ROMS-017 | QUANG | Todo | Chuyển bàn, đóng phiên trong modal; tablet không được đóng phiên; verify route/UI manually |
-| FE-022 | Lịch sử phiên phục vụ (`FE-SCR-022`; Page) | ROMS-018 | QUANG | Todo | Theo phiên, log chuyển bàn nằm trong chi tiết; verify route/UI manually |
-| FE-023 | Trang chào tablet (`FE-SCR-023`; Page + Modal/Action) | ROMS-024, ROMS-014 | QUANG | Todo | ROMS-014 shared workflow của QUANG; xác nhận mở phiên từ tablet; verify route/UI manually |
-| FE-024 | Trợ lý AI món ăn (`FE-SCR-024`; Page/Drawer) | ROMS-032 | QUANG | Todo | Text + voice-to-text; Gemini chỉ gợi ý; khả dụng từ BE; verify route/UI manually |
-| FE-025 | Bàn đang phục vụ (`FE-SCR-025`; Page) | ROMS-036 | QUANG | Todo | Tổng hợp bàn và active session; verify route/UI manually |
+| FE-012 | Quên mật khẩu (`FE-SCR-012`; Page) | ROMS-002 | QUANG | Done | Gửi OTP email Gmail SMTP (qua BE); form validation Zod, state thông báo gửi mail, build verified |
+| FE-013 | Đặt lại mật khẩu (`FE-SCR-013`; Page) | ROMS-003 | QUANG | Done | OTP 6 số, 5 phút, tối đa 5 lần sai; form xác nhận mật khẩu mới, liên kết từ quên mật khẩu, build verified |
+| FE-014 | Đổi mật khẩu (`FE-SCR-014`; Page) | ROMS-004 | QUANG | Done | BE thu hồi các phiên liên quan khi đổi mật khẩu; form validation Zod, tự động thu hồi session, build verified |
+| FE-015 | Hồ sơ cá nhân (`FE-SCR-015`; Page) | ROMS-005 | QUANG | Done | Tích hợp GET/PUT /api/users/me/profile, đồng bộ Zustand user, giao diện tab linh hoạt, build verified |
+| FE-016 | Không có quyền (`FE-SCR-016`; Page) | ROMS-006 | QUANG | Done | Nâng cấp điều hướng thông minh theo vai trò, nút quay lại và đăng xuất an toàn, build verified |
+| FE-017 | Quản lý tài khoản (`FE-SCR-017`; Page + Modal/Action) | ROMS-008, ROMS-009 | QUANG | Done | Bảng danh sách phân trang, tìm kiếm, lọc vai trò/trạng thái; modal tạo tài khoản ràng buộc bàn TABLE_ACCOUNT, build verified |
+| FE-018 | Chi tiết/sửa tài khoản (`FE-SCR-018`; Page) | ROMS-010 | QUANG | Done | Modal/Action cập nhật họ tên, email, vai trò, liên kết bàn và chuyển đổi trạng thái hoạt động (khóa/mở), build verified |
+| FE-019 | Sơ đồ/danh sách bàn (`FE-SCR-019`; Page + Modal/Action) | ROMS-011, ROMS-012 | QUANG | Done | Sơ đồ lưới trực quan, KPI tổng hợp, lọc khu vực/trạng thái, modal thêm/sửa bàn cho Owner, build verified |
+| FE-020 | Chi tiết bàn (`FE-SCR-020`; Page + Modal/Action) | ROMS-013, ROMS-014 | QUANG | Done | Xem thông tin bàn, sức chứa, mở phiên phục vụ trực tiếp tại bàn, build verified |
+| FE-021 | Chi tiết phiên phục vụ (`FE-SCR-021`; Page + Modal/Action) | ROMS-015, ROMS-016, ROMS-017 | QUANG | Done | Mở phiên, đóng phiên và modal chuyển bàn đích với kiểm tra bàn trống, build verified |
+| FE-022 | Lịch sử phiên phục vụ (`FE-SCR-022`; Page) | ROMS-018 | QUANG | Done | Bảng lịch sử phiên phục vụ, lọc trạng thái, phân trang, tra cứu chi tiết lịch sử đổi bàn, build verified |
+| FE-023 | Trang chào tablet (`FE-SCR-023`; Page + Modal/Action) | ROMS-024, ROMS-014 | QUANG | Done | Màn hình chào mừng thực khách tại bàn, mở phiên phục vụ tự động, chuyển tiếp vào thực đơn, build verified |
+| FE-024 | Trợ lý AI món ăn (`FE-SCR-024`; Page/Drawer) | ROMS-032 | QUANG | Done | Tích hợp Google Gemini AI, nhận diện giọng nói tiếng Việt, kiểm tra tồn kho thời gian thực, build verified |
+| FE-025 | Bàn đang phục vụ (`FE-SCR-025`; Page) | ROMS-036 | QUANG | Done | Tích hợp chế độ lọc các bàn đang phục vụ active session, thẻ đếm KPI thời gian thực, build verified |
 | FE-026 | Danh mục món (`FE-SCR-026`; Page + Modal/Action) | ROMS-019, ROMS-020 | Member 3 | Todo | Form thêm/sửa category trong modal; verify route/UI manually |
 | FE-027 | Danh sách món (`FE-SCR-027`; Page) | ROMS-021 | Member 3 | Todo | Lọc category/status; verify route/UI manually |
 | FE-028 | Tạo món (`FE-SCR-028`; Page) | ROMS-022 | Member 3 | Todo | Cloudinary upload qua BE; DB lưu ảnh URL; verify route/UI manually |

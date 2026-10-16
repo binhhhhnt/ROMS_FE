@@ -2,7 +2,7 @@ import { Outlet, Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/app/store/authStore'
 import { authApi } from '@/features/auth/api/authApi'
 import { Button } from '@/shared/components/ui/button'
-import { Utensils, ShoppingCart, Clock, LogOut } from 'lucide-react'
+import { Utensils, ShoppingCart, Clock, LogOut, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 
 export function TabletLayout() {
@@ -46,6 +46,16 @@ export function TabletLayout() {
             >
               <Utensils className="w-4 h-4 mr-1.5" />
               Thực đơn
+            </Button>
+          </Link>
+          <Link to="/tablet/ai-assistant">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-white hover:bg-primary-hover hover:text-white"
+            >
+              <Sparkles className="w-4 h-4 mr-1.5 text-accent" />
+              Trợ lý AI
             </Button>
           </Link>
           <Link to="/tablet/cart">
