@@ -17,23 +17,23 @@ import {
   ChevronUp,
   Flame,
 } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { aiApi, type AiRecommendationItem } from '@/features/tables/api/aiApi'
+import { tableApi } from '@/features/tables/api/tableApi'
 import { useAuthStore } from '@/app/store/authStore'
 import { useCartStore } from '@/features/ordering/store/cartStore'
+import {
+  useAiChatStore,
+  getSessionKey,
+  createInitialChatData,
+  type ChatMessage,
+} from '@/features/tables/store/aiChatStore'
 import { getApiErrorMessage } from '@/shared/lib/axios'
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 import { Badge } from '@/shared/components/ui/badge'
-
-interface ChatMessage {
-  id: string
-  sender: 'user' | 'bot'
-  text: string
-  timestamp: Date
-  recommendations?: AiRecommendationItem[]
-}
 
 const QUICK_PROMPTS = [
   'Gợi ý combo món ngon cho 4 người ăn gia đình 👨‍👩‍👧‍👦',
@@ -48,29 +48,52 @@ export function AiAssistantPage() {
   const { user } = useAuthStore()
   const { addItem } = useCartStore()
   const isTablet = user?.role === 'TABLE_ACCOUNT'
+  const tableId = user?.tableId
 
-  // Advanced criteria states
+  // Fetch current table status to obtain activeSessionId
+  const { data: table } = useQuery({
+    queryKey: ['tabletTableInfo', tableId],
+    queryFn: () => tableApi.getTableById(tableId!),
+    enabled: !!tableId,
+    refetchInterval: 5000,
+  })
+
+  // Unique session key per table and active session
+  const sessionKey = getSessionKey(tableId, table?.activeSessionId, user?.username)
+
+  const cleanupOldTableSessions = useAiChatStore((state) => state.cleanupOldTableSessions)
+  const addMessage = useAiChatStore((state) => state.addMessage)
+  const updateCriteria = useAiChatStore((state) => state.updateCriteria)
+  const resetChat = useAiChatStore((state) => state.resetChat)
+
+  // Clean up any historical sessions of this table so they never leak into new session
+  useEffect(() => {
+    if (tableId) {
+      cleanupOldTableSessions(tableId, table?.activeSessionId)
+    }
+  }, [tableId, table?.activeSessionId, cleanupOldTableSessions])
+
+  // Reactive state for the current table & session
+  const sessionChat = useAiChatStore((state) => state.sessions[sessionKey])
+  const initialData = useRef(createInitialChatData()).current
+
+  const messages =
+    sessionChat?.messages && sessionChat.messages.length > 0
+      ? sessionChat.messages
+      : initialData.messages
+  const partySize = sessionChat?.partySize ?? initialData.partySize
+  const allergies = sessionChat?.allergies ?? initialData.allergies
+  const budgetRange = sessionChat?.budgetRange ?? initialData.budgetRange
+
+  // Advanced criteria toggle
   const [showFilters, setShowFilters] = useState(false)
-  const [partySize, setPartySize] = useState<number | ''>(4)
-  const [allergies, setAllergies] = useState('')
-  const [budgetRange, setBudgetRange] = useState('')
 
-  // Chat message input & history
+  // Chat message input & loading states
   const [inputText, setInputText] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isListening, setIsListening] = useState(false)
   const recognitionRef = useRef<any>(null)
   const chatBottomRef = useRef<HTMLDivElement>(null)
-
-  // Messages stream
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: 'welcome-msg',
-      sender: 'bot',
-      text: 'Xin chào quý khách! Tôi là Trợ lý Ẩm thực AI thông minh của nhà hàng ROMS. Hãy trò chuyện với tôi về khẩu vị, sở thích món ăn, số lượng người hoặc bất kỳ yêu cầu nào (dị ứng, ngân sách...), tôi sẽ gợi ý thực đơn chuẩn xác và đang sẵn sàng phục vụ quý khách!',
-      timestamp: new Date(),
-    },
-  ])
 
   // Scroll to bottom on new message
   useEffect(() => {
@@ -137,10 +160,10 @@ export function AiAssistantPage() {
       id: `user-${Date.now()}`,
       sender: 'user',
       text: query,
-      timestamp: new Date(),
+      timestamp: new Date().toISOString(),
     }
 
-    setMessages((prev) => [...prev, userMessage])
+    addMessage(sessionKey, userMessage)
     setInputText('')
     setIsLoading(true)
 
@@ -158,20 +181,20 @@ export function AiAssistantPage() {
         id: `bot-${Date.now()}`,
         sender: 'bot',
         text: res.message || 'Dưới đây là các món ăn được lựa chọn riêng theo khẩu vị của quý khách:',
-        timestamp: new Date(),
+        timestamp: new Date().toISOString(),
         recommendations: res.recommendations || [],
       }
 
-      setMessages((prev) => [...prev, botMessage])
+      addMessage(sessionKey, botMessage)
     } catch (err) {
       const errorMsg = getApiErrorMessage(err) || 'Không thể kết nối với Trợ lý AI lúc này.'
       const errorBotMessage: ChatMessage = {
         id: `bot-err-${Date.now()}`,
         sender: 'bot',
         text: `Rất tiếc: ${errorMsg}. Quý khách vui lòng thử lại hoặc chọn một câu hỏi gợi ý bên dưới.`,
-        timestamp: new Date(),
+        timestamp: new Date().toISOString(),
       }
-      setMessages((prev) => [...prev, errorBotMessage])
+      addMessage(sessionKey, errorBotMessage)
       toast.error(errorMsg)
     } finally {
       setIsLoading(false)
@@ -180,14 +203,7 @@ export function AiAssistantPage() {
 
   // Reset conversation
   const handleResetChat = () => {
-    setMessages([
-      {
-        id: `welcome-${Date.now()}`,
-        sender: 'bot',
-        text: 'Cuộc trò chuyện mới đã bắt đầu! Quý khách muốn tìm kiếm món ăn nào hôm nay?',
-        timestamp: new Date(),
-      },
-    ])
+    resetChat(sessionKey)
     setInputText('')
     toast.info('Đã làm mới cuộc trò chuyện với Trợ lý AI')
   }
@@ -217,8 +233,13 @@ export function AiAssistantPage() {
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-bold tracking-tight">Trợ lý Ẩm thực ROMS AI</h1>
               <Badge variant="cooking" className="bg-white/20 text-white text-[11px] hover:bg-white/30">
-                Gemini 2.5 Flash
+                Gemini AI
               </Badge>
+              {table?.activeSessionId && (
+                <Badge variant="secondary" className="bg-white/15 text-white/90 text-[10px]">
+                  Phiên #{table.activeSessionId}
+                </Badge>
+              )}
             </div>
             <p className="text-xs text-white/80">
               Gợi ý món ăn chuẩn vị • Kiểm tra nguyên liệu tồn kho theo thời gian thực
@@ -266,7 +287,11 @@ export function AiAssistantPage() {
               min={1}
               max={50}
               value={partySize}
-              onChange={(e) => setPartySize(e.target.value ? Number(e.target.value) : '')}
+              onChange={(e) =>
+                updateCriteria(sessionKey, {
+                  partySize: e.target.value ? Number(e.target.value) : '',
+                })
+              }
               placeholder="Ví dụ: 4 người"
               className="h-8 bg-card text-xs"
             />
@@ -279,7 +304,11 @@ export function AiAssistantPage() {
             </label>
             <Input
               value={allergies}
-              onChange={(e) => setAllergies(e.target.value)}
+              onChange={(e) =>
+                updateCriteria(sessionKey, {
+                  allergies: e.target.value,
+                })
+              }
               placeholder="Ví dụ: Dị ứng tôm, kiêng ăn cay..."
               className="h-8 bg-card text-xs"
             />
@@ -292,7 +321,11 @@ export function AiAssistantPage() {
             </label>
             <Input
               value={budgetRange}
-              onChange={(e) => setBudgetRange(e.target.value)}
+              onChange={(e) =>
+                updateCriteria(sessionKey, {
+                  budgetRange: e.target.value,
+                })
+              }
               placeholder="Ví dụ: Khoảng 500.000đ - 1.000.000đ"
               className="h-8 bg-card text-xs"
             />
@@ -339,7 +372,7 @@ export function AiAssistantPage() {
                     msg.sender === 'user' ? 'text-white/70' : 'text-muted'
                   }`}
                 >
-                  {msg.timestamp.toLocaleTimeString('vi-VN', {
+                  {new Date(msg.timestamp).toLocaleTimeString('vi-VN', {
                     hour: '2-digit',
                     minute: '2-digit',
                   })}
