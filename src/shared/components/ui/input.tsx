@@ -3,7 +3,7 @@ import { cn } from '@/shared/utils/cn'
 
 export interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
-  error?: boolean
+  error?: boolean | string
   leftIcon?: React.ReactNode
   rightIcon?: React.ReactNode
 }

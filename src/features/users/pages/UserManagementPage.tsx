@@ -132,8 +132,6 @@ export function UserManagementPage() {
         : rawUsers.filter((u) => u.role !== 'TABLE_ACCOUNT')
       : rawUsers
 
-  const totalPages = data?.totalPages || 0
-  const totalElements = data?.totalElements || 0
 
   const handleOpenCreate = () => {
     if (activeTab === 'staff') {
@@ -515,7 +513,8 @@ export function UserManagementPage() {
                   <th className="py-3 px-4">Tài khoản Tablet</th>
                   <th className="py-3 px-4">Tên định danh thiết bị</th>
                   <th className="py-3 px-4">Bàn ăn liên kết</th>
-                  <th className="py-3 px-4">Trạng thái</th>
+                  <th className="py-3 px-4">Trạng thái bàn</th>
+                  <th className="py-3 px-4">Trạng thái tài khoản</th>
                   <th className="py-3 px-4">Ngày tạo</th>
                   <th className="py-3 px-4 text-right">Thao tác</th>
                 </tr>
@@ -523,14 +522,14 @@ export function UserManagementPage() {
               <tbody className="divide-y divide-border">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={6} className="py-12 text-center text-muted">
+                    <td colSpan={7} className="py-12 text-center text-muted">
                       <div className="w-7 h-7 border-2 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-2" />
                       Đang tải danh sách tài khoản bàn...
                     </td>
                   </tr>
                 ) : users.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-10 text-center text-muted">
+                    <td colSpan={7} className="py-10 text-center text-muted">
                       Không tìm thấy tài khoản bàn nào phù hợp với bộ lọc.
                     </td>
                   </tr>
@@ -563,6 +562,32 @@ export function UserManagementPage() {
                           </span>
                         ) : (
                           <span className="text-muted/50 italic">Chưa gắn bàn</span>
+                        )}
+                      </td>
+
+                      {/* Cột trạng thái bàn: Đang hoạt động / Ngừng phục vụ & Có phiên phục vụ */}
+                      <td className="py-3.5 px-4">
+                        {item.tableId ? (
+                          <div className="flex flex-col gap-1 items-start">
+                            {item.tableIsActive ? (
+                              <span className="inline-flex items-center gap-1 text-status-completed font-medium">
+                                <span className="w-1.5 h-1.5 rounded-full bg-status-completed" />
+                                Đang hoạt động
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-muted font-medium">
+                                <span className="w-1.5 h-1.5 rounded-full bg-muted" />
+                                Ngừng phục vụ
+                              </span>
+                            )}
+                            {item.hasActiveSession && (
+                              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-status-cooking/10 text-status-cooking border border-status-cooking/20">
+                                Đang có phiên
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-muted/50 italic">Chưa có bàn</span>
                         )}
                       </td>
 
@@ -606,23 +631,28 @@ export function UserManagementPage() {
                             <Edit2 className="w-4 h-4" />
                           </button>
 
-                          {/* Nút Khóa / Mở khóa */}
-                          <button
-                            type="button"
-                            onClick={() => handleToggleStatus(item)}
-                            className={`p-1.5 rounded-md transition-colors ${
-                              item.isActive
-                                ? 'text-muted hover:text-status-cancelled hover:bg-status-cancelled/10'
-                                : 'text-status-completed hover:bg-status-completed/10'
-                            }`}
-                            title={item.isActive ? 'Vô hiệu hóa tài khoản bàn' : 'Kích hoạt tài khoản bàn'}
-                          >
-                            {item.isActive ? (
-                              <Lock className="w-4 h-4" />
-                            ) : (
+                          {/* Nút Khóa / Mở khóa: Chỉ hiển thị nút khóa khi tài khoản bàn có thể khóa (canDeactivate === true) */}
+                          {item.isActive ? (
+                            item.canDeactivate ? (
+                              <button
+                                type="button"
+                                onClick={() => handleToggleStatus(item)}
+                                className="p-1.5 rounded-md transition-colors text-muted hover:text-status-cancelled hover:bg-status-cancelled/10"
+                                title="Vô hiệu hóa tài khoản bàn"
+                              >
+                                <Lock className="w-4 h-4" />
+                              </button>
+                            ) : null
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleToggleStatus(item)}
+                              className="p-1.5 rounded-md transition-colors text-status-completed hover:bg-status-completed/10"
+                              title="Kích hoạt tài khoản bàn"
+                            >
                               <Unlock className="w-4 h-4" />
-                            )}
-                          </button>
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
