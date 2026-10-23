@@ -565,30 +565,14 @@ export function UserManagementPage() {
                         )}
                       </td>
 
-                      {/* Cột trạng thái bàn: Đang hoạt động / Ngừng phục vụ & Có phiên phục vụ */}
+                      {/* Cột trạng thái bàn: nếu không có phiên để trắng, có phiên hoạt động thì ghi đang có phiên */}
                       <td className="py-3.5 px-4">
-                        {item.tableId ? (
-                          <div className="flex flex-col gap-1 items-start">
-                            {item.tableIsActive ? (
-                              <span className="inline-flex items-center gap-1 text-status-completed font-medium">
-                                <span className="w-1.5 h-1.5 rounded-full bg-status-completed" />
-                                Đang hoạt động
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center gap-1 text-muted font-medium">
-                                <span className="w-1.5 h-1.5 rounded-full bg-muted" />
-                                Ngừng phục vụ
-                              </span>
-                            )}
-                            {item.hasActiveSession && (
-                              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-status-cooking/10 text-status-cooking border border-status-cooking/20">
-                                Đang có phiên
-                              </span>
-                            )}
-                          </div>
-                        ) : (
-                          <span className="text-muted/50 italic">Chưa có bàn</span>
-                        )}
+                        {item.hasActiveSession ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-status-cooking/10 text-status-cooking border border-status-cooking/20">
+                            <span className="w-1.5 h-1.5 rounded-full bg-status-cooking animate-pulse" />
+                            Đang có phiên
+                          </span>
+                        ) : null}
                       </td>
 
                       <td className="py-3.5 px-4">
