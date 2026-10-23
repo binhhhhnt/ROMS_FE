@@ -104,6 +104,9 @@ apiClient.interceptors.response.use(
 
 const ERROR_TRANSLATIONS: Record<string, string> = {
   CANNOT_DEACTIVATE_SELF: 'Bạn không thể tự khóa tài khoản của chính mình.',
+  TABLE_ACCOUNT_LOCKED: 'Không thể mở phiên phục vụ cho bàn có tài khoản máy tính bảng đang bị khóa.',
+  TARGET_TABLE_ACCOUNT_LOCKED: 'Không thể chuyển bàn sang bàn có tài khoản máy tính bảng đang bị khóa.',
+  TABLE_HAS_ACTIVE_SESSION: 'Không thể khóa tài khoản khi bàn đang có phiên phục vụ hoạt động.',
   TABLE_ID_REQUIRED: 'Bắt buộc phải chọn bàn ăn liên kết cho tài khoản máy tính bảng.',
   TABLE_INACTIVE: 'Không thể liên kết tài khoản với bàn đang ngưng hoạt động.',
   TABLE_ALREADY_ASSIGNED: 'Bàn ăn này đã được liên kết với một tài khoản máy tính bảng khác.',

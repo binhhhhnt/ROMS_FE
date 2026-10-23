@@ -27,6 +27,7 @@ import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 import { Badge } from '@/shared/components/ui/badge'
 import { getApiErrorMessage } from '@/shared/lib/axios'
+import { subscribeToTopic } from '@/shared/lib/stomp'
 
 type ManagementTab = 'staff' | 'tablet'
 
@@ -71,10 +72,21 @@ export function UserManagementPage() {
   // Current active filters based on tab
   const currentFilters = activeTab === 'staff' ? staffFilters : tabletFilters
 
-  // Fetch users with TanStack Query
+  // Lắng nghe sự kiện WebSocket realtime khi trạng thái bàn hoặc phiên phục vụ thay đổi
+  useEffect(() => {
+    const unsubscribe = subscribeToTopic('/topic/tables', () => {
+      queryClient.invalidateQueries({ queryKey: ['usersList'] })
+    })
+    return () => {
+      unsubscribe()
+    }
+  }, [queryClient])
+
+  // Fetch users with TanStack Query kèm cơ chế realtime & backup polling 3s cho tab tablet
   const { data, isLoading, isFetching, refetch } = useQuery({
     queryKey: ['usersList', activeTab, currentFilters],
     queryFn: () => userApi.getUsers(currentFilters),
+    refetchInterval: activeTab === 'tablet' ? 3000 : false,
   })
 
   // Auto-load user if userId param is present
