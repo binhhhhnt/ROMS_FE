@@ -27,6 +27,7 @@ import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 import { Badge } from '@/shared/components/ui/badge'
 import { getApiErrorMessage } from '@/shared/lib/axios'
+import { subscribeToTopic } from '@/shared/lib/stomp'
 
 type ManagementTab = 'staff' | 'tablet'
 
@@ -71,10 +72,21 @@ export function UserManagementPage() {
   // Current active filters based on tab
   const currentFilters = activeTab === 'staff' ? staffFilters : tabletFilters
 
-  // Fetch users with TanStack Query
+  // Lắng nghe sự kiện WebSocket realtime khi trạng thái bàn hoặc phiên phục vụ thay đổi
+  useEffect(() => {
+    const unsubscribe = subscribeToTopic('/topic/tables', () => {
+      queryClient.invalidateQueries({ queryKey: ['usersList'] })
+    })
+    return () => {
+      unsubscribe()
+    }
+  }, [queryClient])
+
+  // Fetch users with TanStack Query kèm cơ chế realtime & backup polling 3s cho tab tablet
   const { data, isLoading, isFetching, refetch } = useQuery({
     queryKey: ['usersList', activeTab, currentFilters],
     queryFn: () => userApi.getUsers(currentFilters),
+    refetchInterval: activeTab === 'tablet' ? 3000 : false,
   })
 
   // Auto-load user if userId param is present
@@ -113,8 +125,7 @@ export function UserManagementPage() {
           ? `Tài khoản máy tính bảng Bàn ${updatedUser.tableCode || updatedUser.username}`
           : `Tài khoản nhân viên "${updatedUser.fullName || updatedUser.username}"`
       toast.success(
-        `${typeLabel} đã ${
-          updatedUser.isActive ? 'được kích hoạt' : 'bị khóa / vô hiệu hóa'
+        `${typeLabel} đã ${updatedUser.isActive ? 'được kích hoạt' : 'bị khóa / vô hiệu hóa'
         } thành công!`
       )
     },
@@ -131,6 +142,7 @@ export function UserManagementPage() {
         ? rawUsers
         : rawUsers.filter((u) => u.role !== 'TABLE_ACCOUNT')
       : rawUsers
+
 
   const handleOpenCreate = () => {
     if (activeTab === 'staff') {
@@ -249,11 +261,10 @@ export function UserManagementPage() {
         <button
           type="button"
           onClick={() => setActiveTab('staff')}
-          className={`flex items-center gap-2 py-3 px-5 text-sm font-semibold transition-all border-b-2 -mb-px rounded-t-lg ${
-            activeTab === 'staff'
+          className={`flex items-center gap-2 py-3 px-5 text-sm font-semibold transition-all border-b-2 -mb-px rounded-t-lg ${activeTab === 'staff'
               ? 'border-primary text-primary bg-primary/5'
               : 'border-transparent text-muted hover:text-text hover:bg-surface/50'
-          }`}
+            }`}
         >
           <Users className="w-4 h-4" />
           <span>Tài khoản người dùng (Nhân viên)</span>
@@ -262,11 +273,10 @@ export function UserManagementPage() {
         <button
           type="button"
           onClick={() => setActiveTab('tablet')}
-          className={`flex items-center gap-2 py-3 px-5 text-sm font-semibold transition-all border-b-2 -mb-px rounded-t-lg ${
-            activeTab === 'tablet'
+          className={`flex items-center gap-2 py-3 px-5 text-sm font-semibold transition-all border-b-2 -mb-px rounded-t-lg ${activeTab === 'tablet'
               ? 'border-accent text-accent bg-accent/5'
               : 'border-transparent text-muted hover:text-text hover:bg-surface/50'
-          }`}
+            }`}
         >
           <Tablet className="w-4 h-4" />
           <span>Tài khoản bàn (Máy tính bảng)</span>
@@ -328,8 +338,8 @@ export function UserManagementPage() {
                     e.target.value === 'true'
                       ? true
                       : e.target.value === 'false'
-                      ? false
-                      : '',
+                        ? false
+                        : '',
                   page: 0,
                 }))
               }
@@ -375,8 +385,8 @@ export function UserManagementPage() {
                     e.target.value === 'true'
                       ? true
                       : e.target.value === 'false'
-                      ? false
-                      : '',
+                        ? false
+                        : '',
                   page: 0,
                 }))
               }
@@ -478,11 +488,10 @@ export function UserManagementPage() {
                           <button
                             type="button"
                             onClick={() => handleToggleStatus(item)}
-                            className={`p-1.5 rounded-md transition-colors ${
-                              item.isActive
+                            className={`p-1.5 rounded-md transition-colors ${item.isActive
                                 ? 'text-muted hover:text-status-cancelled hover:bg-status-cancelled/10'
                                 : 'text-status-completed hover:bg-status-completed/10'
-                            }`}
+                              }`}
                             title={item.isActive ? 'Vô hiệu hóa tài khoản' : 'Kích hoạt tài khoản'}
                           >
                             {item.isActive ? (
@@ -512,7 +521,8 @@ export function UserManagementPage() {
                   <th className="py-3 px-4">Tài khoản Tablet</th>
                   <th className="py-3 px-4">Tên định danh thiết bị</th>
                   <th className="py-3 px-4">Bàn ăn liên kết</th>
-                  <th className="py-3 px-4">Trạng thái</th>
+                  <th className="py-3 px-4">Trạng thái bàn</th>
+                  <th className="py-3 px-4">Trạng thái tài khoản</th>
                   <th className="py-3 px-4">Ngày tạo</th>
                   <th className="py-3 px-4 text-right">Thao tác</th>
                 </tr>
@@ -520,14 +530,14 @@ export function UserManagementPage() {
               <tbody className="divide-y divide-border">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={6} className="py-12 text-center text-muted">
+                    <td colSpan={7} className="py-12 text-center text-muted">
                       <div className="w-7 h-7 border-2 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-2" />
                       Đang tải danh sách tài khoản bàn...
                     </td>
                   </tr>
                 ) : users.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-10 text-center text-muted">
+                    <td colSpan={7} className="py-10 text-center text-muted">
                       Không tìm thấy tài khoản bàn nào phù hợp với bộ lọc.
                     </td>
                   </tr>
@@ -561,6 +571,16 @@ export function UserManagementPage() {
                         ) : (
                           <span className="text-muted/50 italic">Chưa gắn bàn</span>
                         )}
+                      </td>
+
+                      {/* Cột trạng thái bàn: nếu không có phiên để trắng, có phiên hoạt động thì ghi đang có phiên */}
+                      <td className="py-3.5 px-4">
+                        {item.hasActiveSession ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-status-cooking/10 text-status-cooking border border-status-cooking/20">
+                            <span className="w-1.5 h-1.5 rounded-full bg-status-cooking animate-pulse" />
+                            Đang có phiên
+                          </span>
+                        ) : null}
                       </td>
 
                       <td className="py-3.5 px-4">
@@ -603,23 +623,28 @@ export function UserManagementPage() {
                             <Edit2 className="w-4 h-4" />
                           </button>
 
-                          {/* Nút Khóa / Mở khóa */}
-                          <button
-                            type="button"
-                            onClick={() => handleToggleStatus(item)}
-                            className={`p-1.5 rounded-md transition-colors ${
-                              item.isActive
-                                ? 'text-muted hover:text-status-cancelled hover:bg-status-cancelled/10'
-                                : 'text-status-completed hover:bg-status-completed/10'
-                            }`}
-                            title={item.isActive ? 'Vô hiệu hóa tài khoản bàn' : 'Kích hoạt tài khoản bàn'}
-                          >
-                            {item.isActive ? (
-                              <Lock className="w-4 h-4" />
-                            ) : (
+                          {/* Nút Khóa / Mở khóa: Chỉ hiển thị nút khóa khi tài khoản bàn có thể khóa (canDeactivate === true) */}
+                          {item.isActive ? (
+                            item.canDeactivate ? (
+                              <button
+                                type="button"
+                                onClick={() => handleToggleStatus(item)}
+                                className="p-1.5 rounded-md transition-colors text-muted hover:text-status-cancelled hover:bg-status-cancelled/10"
+                                title="Vô hiệu hóa tài khoản bàn"
+                              >
+                                <Lock className="w-4 h-4" />
+                              </button>
+                            ) : null
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleToggleStatus(item)}
+                              className="p-1.5 rounded-md transition-colors text-status-completed hover:bg-status-completed/10"
+                              title="Kích hoạt tài khoản bàn"
+                            >
                               <Unlock className="w-4 h-4" />
-                            )}
-                          </button>
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -677,8 +702,8 @@ export function UserManagementPage() {
               ? 'Xác nhận khóa tài khoản máy tính bảng'
               : 'Xác nhận khóa tài khoản nhân viên'
             : statusConfirmUser?.role === 'TABLE_ACCOUNT'
-            ? 'Xác nhận mở khóa tài khoản máy tính bảng'
-            : 'Xác nhận mở khóa tài khoản nhân viên'
+              ? 'Xác nhận mở khóa tài khoản máy tính bảng'
+              : 'Xác nhận mở khóa tài khoản nhân viên'
         }
         description={
           statusConfirmUser ? (

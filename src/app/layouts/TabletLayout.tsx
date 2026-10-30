@@ -1,6 +1,7 @@
 import { Outlet, Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/app/store/authStore'
 import { authApi } from '@/features/auth/api/authApi'
+import { useAiChatStore } from '@/features/tables/store/aiChatStore'
 import { Button } from '@/shared/components/ui/button'
 import { Utensils, ShoppingCart, Clock, LogOut, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
@@ -16,6 +17,7 @@ export function TabletLayout() {
       // ignore
     } finally {
       clearAuth()
+      useAiChatStore.getState().clearAll()
       toast.success('Đã đăng xuất máy tính bảng')
       navigate('/login')
     }

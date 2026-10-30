@@ -8,6 +8,10 @@ export interface UserItem {
   role: UserRole
   tableId?: number | null
   tableCode?: string | null
+  tableIsActive?: boolean | null
+  hasActiveSession?: boolean | null
+  tableRealtimeStatus?: string | null
+  canDeactivate?: boolean | null
   isActive: boolean
   createdAt: string
   updatedAt?: string
