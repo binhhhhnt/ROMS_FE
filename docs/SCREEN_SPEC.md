@@ -40,7 +40,7 @@
 | FE-SCR-032 | Nguyên liệu và tồn kho | ROMS-043, ROMS-044 | Member 4 | `/inventory/ingredients` | Page + Modal/Action | inventory |
 | FE-SCR-033 | Kiểm kê/điều chỉnh kho | ROMS-048 | Member 4 | `/inventory/checks` | Page + Modal/Action | inventory |
 | FE-SCR-034 | Lịch sử biến động kho | ROMS-049 | Member 4 | `/inventory/movements` | Page | inventory |
-| FE-SCR-035 | Quản lý Recipe/BOM | ROMS-051, ROMS-052, ROMS-053 | Member 4 | `/inventory/recipes` | Page + Drawer/Modal | recipes |
+| FE-SCR-035 | Quản lý Recipe/BOM | ROMS-051, ROMS-052, ROMS-053 | Member 4 | `/kitchen/recipes` | Page + Drawer/Modal | recipes |
 | FE-SCR-036 | Danh sách phiếu mua | ROMS-057 | Member 4 | `/inventory/purchases` | Page | purchasing |
 | FE-SCR-037 | Tạo phiếu mua | ROMS-058 | Member 4 | `/inventory/purchases/new` | Page | purchasing |
 | FE-SCR-038 | Chi tiết/chỉnh sửa phiếu mua | ROMS-059 | Member 4 | `/inventory/purchases/:purchaseId` | Page + Modal/Action | purchasing |
@@ -89,7 +89,7 @@
 - **FE-SCR-032 — Nguyên liệu và tồn kho** (Member 4; ROMS-043, ROMS-044): CRUD master data, tồn kho, minimum_stock, deactivate có kiểm tra recipe
 - **FE-SCR-033 — Kiểm kê/điều chỉnh kho** (Member 4; ROMS-048): Chênh lệch do BE tính; movement append-only
 - **FE-SCR-034 — Lịch sử biến động kho** (Member 4; ROMS-049): Filter movementType, ingredient, phân trang
-- **FE-SCR-035 — Quản lý Recipe/BOM** (Member 4; ROMS-051, ROMS-052, ROMS-053): Danh sách + xem/sửa định lượng; không tự thêm cost queries
+- **FE-SCR-035 — Quản lý Recipe/BOM** (Member 4; ROMS-051, ROMS-052, ROMS-053): Quyền thuộc `OWNER` và `KITCHEN_STAFF` tại `/kitchen/recipes`; danh sách + xem/sửa định lượng; không tự thêm cost queries
 - **FE-SCR-036 — Danh sách phiếu mua** (Member 4; ROMS-057): Phiếu hàng đã nhận, không quản lý PO/supplier
 - **FE-SCR-037 — Tạo phiếu mua** (Member 4; ROMS-058): Tạo phiếu nhập hàng thực tế
 - **FE-SCR-038 — Chi tiết/chỉnh sửa phiếu mua** (Member 4; ROMS-059): Sửa dòng phiếu mua, BE tạo movement bù trừ

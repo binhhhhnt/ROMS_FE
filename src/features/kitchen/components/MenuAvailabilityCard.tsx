@@ -1,4 +1,3 @@
-import { UtensilsCrossed, Power, AlertOctagon } from 'lucide-react'
 import type { MenuItemReadItem } from '@/features/kitchen/types/kitchen.types'
 
 interface MenuAvailabilityCardProps {
@@ -26,37 +25,36 @@ export function MenuAvailabilityCard({
   const isDiscontinued = item.status === 'DISCONTINUED'
 
   return (
-    <div className={`bg-card border rounded-2xl overflow-hidden flex flex-col shadow-xs transition-all hover:shadow-md ${
-      isAvailable
-        ? 'border-border hover:border-primary/40'
-        : isTemporarilyUnavailable
-        ? 'border-status-cooking ring-1 ring-status-cooking/20'
-        : 'border-border/60 opacity-60'
-    }`}>
-      {/* Top Image or Icon Placeholder */}
-      <div className="relative h-40 bg-surface/50 overflow-hidden flex items-center justify-center">
+    <div
+      className={`bg-card border rounded-2xl overflow-hidden flex flex-col shadow-xs transition-all ${
+        isAvailable
+          ? 'border-border'
+          : isTemporarilyUnavailable
+          ? 'border-status-cooking ring-1 ring-status-cooking/30 bg-amber-50/10'
+          : 'border-border/60 opacity-60'
+      }`}
+    >
+      {/* Top Image */}
+      <div className="relative h-36 bg-surface/60 overflow-hidden flex items-center justify-center">
         {primaryImage ? (
           <img
             src={primaryImage}
             alt={item.name}
-            className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+            className="w-full h-full object-cover"
             loading="lazy"
           />
         ) : (
-          <div className="flex flex-col items-center justify-center text-muted gap-2">
-            <UtensilsCrossed className="w-10 h-10" />
-            <span className="text-[11px] font-medium">Chưa có ảnh</span>
-          </div>
+          <div className="text-xs text-muted font-medium">Chưa có ảnh</div>
         )}
 
         {/* Status Badge Overlay */}
         <div className="absolute top-3 right-3">
           {isAvailable ? (
-            <span className="px-2.5 py-1 rounded-full text-xs font-black bg-status-ready text-white shadow-xs">
+            <span className="px-2.5 py-1 rounded-full text-xs font-black bg-status-ready text-white">
               ĐANG BÁN
             </span>
           ) : isTemporarilyUnavailable ? (
-            <span className="px-2.5 py-1 rounded-full text-xs font-black bg-status-cooking text-white shadow-xs">
+            <span className="px-2.5 py-1 rounded-full text-xs font-black bg-status-cooking text-white">
               TẠM NGƯNG
             </span>
           ) : (
@@ -68,7 +66,7 @@ export function MenuAvailabilityCard({
 
         {/* Category Pill */}
         {item.category && (
-          <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-xs text-text text-[11px] font-bold px-2.5 py-0.5 rounded-md border border-border shadow-xs">
+          <div className="absolute bottom-2.5 left-2.5 bg-white/95 text-text text-[11px] font-bold px-2.5 py-0.5 rounded-md border border-border">
             {item.category.name}
           </div>
         )}
@@ -77,43 +75,35 @@ export function MenuAvailabilityCard({
       {/* Info Body */}
       <div className="p-4 flex-1 flex flex-col justify-between gap-3">
         <div>
-          <h3 className="font-extrabold text-base text-text line-clamp-1">
+          <h3 className="font-bold text-base text-text line-clamp-1">
             {item.name}
           </h3>
-          <div className="text-sm font-black text-primary mt-1">
+          <div className="text-sm font-black text-primary mt-0.5">
             {formatPrice(item.price)}
           </div>
-          {item.description && (
-            <p className="text-xs text-muted line-clamp-2 mt-1.5 leading-relaxed">
-              {item.description}
-            </p>
-          )}
         </div>
 
         {/* Action Toggle Footer */}
-        <div className="pt-3 border-t border-border mt-2">
+        <div className="pt-2 border-t border-border">
           {isDiscontinued ? (
-            <div className="text-center py-2 text-xs font-semibold text-muted flex items-center justify-center gap-1.5">
-              <AlertOctagon className="w-4 h-4" />
-              <span>Ngừng bán vĩnh viễn (Chỉ Chủ quán)</span>
+            <div className="text-center py-2 text-xs font-semibold text-muted">
+              Ngừng bán vĩnh viễn (Chỉ Chủ quán)
             </div>
           ) : isAvailable ? (
             <button
               type="button"
               onClick={() => onToggleClick(item)}
-              className="w-full h-10 rounded-xl bg-status-cooking/15 hover:bg-status-cooking/25 active:bg-status-cooking/30 text-status-cooking border border-status-cooking/30 text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer"
+              className="w-full h-10 rounded-xl bg-status-cooking/15 hover:bg-status-cooking/25 active:bg-status-cooking/30 text-status-cooking border border-status-cooking/30 text-xs font-bold transition-colors cursor-pointer"
             >
-              <Power className="w-4 h-4" />
-              <span>Tạm ngưng món này</span>
+              Tạm ngưng món này
             </button>
           ) : (
             <button
               type="button"
               onClick={() => onToggleClick(item)}
-              className="w-full h-10 rounded-xl bg-status-ready hover:bg-emerald-600 active:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer"
+              className="w-full h-10 rounded-xl bg-status-ready hover:bg-emerald-600 active:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-colors cursor-pointer"
             >
-              <Power className="w-4 h-4" />
-              <span>Mở bán lại món</span>
+              Mở bán lại món
             </button>
           )}
         </div>
@@ -121,3 +111,4 @@ export function MenuAvailabilityCard({
     </div>
   )
 }
+export default MenuAvailabilityCard

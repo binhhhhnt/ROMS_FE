@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ArrowLeft, UtensilsCrossed, ShieldAlert } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
 import { toast } from 'sonner'
 
 import { useCartStore } from '@/features/ordering/store/cartStore'
 import { useAuthStore } from '@/app/store/authStore'
 import { orderApi } from '@/features/ordering/api/orderApi'
+import { tableApi } from '@/features/tables/api/tableApi'
 import type {
   InsufficientStockDetails,
 } from '@/features/ordering/types/ordering.types'
@@ -23,8 +25,17 @@ export function TabletCheckoutPage() {
   const [conflictDetails, setConflictDetails] = useState<InsufficientStockDetails | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  // Default sessionId: fallback to 1 (active seed session) if not provided by user session context
-  const [sessionId, setSessionId] = useState<number>(1)
+  // Fetch current table information to get real-time activeSessionId
+  const tableId = user?.tableId
+  const { data: table, isLoading: isLoadingTable } = useQuery({
+    queryKey: ['tabletTableInfo', tableId],
+    queryFn: () => tableApi.getTableById(tableId!),
+    enabled: !!tableId,
+  })
+
+  // Fallback sessionId for non-table users or custom testing
+  const [manualSessionId, setManualSessionId] = useState<number>(1)
+  const effectiveSessionId = table?.activeSessionId || (user?.role === 'TABLE_ACCOUNT' ? table?.activeSessionId : manualSessionId)
 
   const formatPrice = (amount: number) => {
     return new Intl.NumberFormat('vi-VN', {
@@ -41,13 +52,19 @@ export function TabletCheckoutPage() {
       return
     }
 
+    if (!effectiveSessionId) {
+      toast.error('Bàn chưa có phiên phục vụ đang hoạt động. Vui lòng mở phiên phục vụ trước.')
+      setErrorMessage('Bàn chưa có phiên phục vụ đang hoạt động. Vui lòng quay lại trang Chào mừng để bắt đầu phiên phục vụ.')
+      return
+    }
+
     setIsLoading(true)
     setConflictDetails(null)
     setErrorMessage(null)
 
     try {
       const orderPayload = {
-        sessionId: Number(sessionId),
+        sessionId: Number(effectiveSessionId),
         items: items.map((item) => ({
           menuItemId: item.menuItemId,
           quantity: item.quantity,
@@ -151,6 +168,23 @@ export function TabletCheckoutPage() {
         </div>
       </div>
 
+      {/* Alert when table has no active session */}
+      {tableId && !table?.activeSessionId && !isLoadingTable && (
+        <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 text-xs text-amber-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <ShieldAlert className="w-5 h-5 shrink-0 text-amber-600" />
+            <span>
+              Bàn chưa có phiên phục vụ đang hoạt động (ACTIVE). Vui lòng bắt đầu phiên phục vụ trước khi gửi đơn vào bếp.
+            </span>
+          </div>
+          <Link to="/tablet/welcome">
+            <Button size="sm" variant="outline" className="text-xs shrink-0 border-amber-400 bg-white hover:bg-amber-100 font-semibold">
+              Mở phiên ngay
+            </Button>
+          </Link>
+        </div>
+      )}
+
       {/* Stock Conflict Alert if 409 Occurred */}
       {conflictDetails && (
         <StockConflictAlert
@@ -173,7 +207,7 @@ export function TabletCheckoutPage() {
           <CardTitle className="text-base font-semibold flex items-center justify-between">
             <span>Chi tiết các món yêu cầu ({getTotalItemCount()} phần)</span>
             <span className="text-xs font-normal text-muted">
-              Phiên phục vụ: #{sessionId}
+              Phiên phục vụ: {effectiveSessionId ? `#${effectiveSessionId}` : 'Chưa có phiên'}
             </span>
           </CardTitle>
         </CardHeader>
@@ -221,19 +255,25 @@ export function TabletCheckoutPage() {
             </span>
           </div>
 
-          {/* Session ID input for table / staff flexibility */}
+          {/* Session ID display / input */}
           <div className="w-full flex items-center justify-between text-xs text-muted pt-2 border-t border-border/50">
             <span>Mã phiên phục vụ hiện tại:</span>
-            <div className="flex items-center gap-2">
-              <span className="font-medium text-text">Session ID:</span>
-              <input
-                type="number"
-                min="1"
-                value={sessionId}
-                onChange={(e) => setSessionId(Number(e.target.value) || 1)}
-                className="w-16 px-2 py-1 border border-border rounded bg-card text-center font-bold text-primary focus:outline-none focus:border-accent"
-              />
-            </div>
+            {user?.role === 'TABLE_ACCOUNT' ? (
+              <span className="font-bold text-primary">
+                {table?.activeSessionId ? `Phiên #${table.activeSessionId} (Đang mở)` : 'Chưa có phiên hoạt động'}
+              </span>
+            ) : (
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-text">Session ID:</span>
+                <input
+                  type="number"
+                  min="1"
+                  value={effectiveSessionId || ''}
+                  onChange={(e) => setManualSessionId(Number(e.target.value) || 1)}
+                  className="w-16 px-2 py-1 border border-border rounded bg-card text-center font-bold text-primary focus:outline-none focus:border-accent"
+                />
+              </div>
+            )}
           </div>
 
           {/* Action Buttons */}

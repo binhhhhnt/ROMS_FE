@@ -1,4 +1,4 @@
-import { Users, MapPin, Play, ArrowRightLeft, CheckCircle, Settings2, Power, Eye } from 'lucide-react'
+import { Users, MapPin, Play, ArrowRightLeft, CheckCircle, Settings2, Power, Eye, BellRing } from 'lucide-react'
 import type { TableItem } from '@/features/tables/types/table.types'
 import { Badge } from '@/shared/components/ui/badge'
 import { Button } from '@/shared/components/ui/button'
@@ -6,6 +6,7 @@ import { Button } from '@/shared/components/ui/button'
 interface TableCardProps {
   table: TableItem
   isOwner?: boolean
+  readyItemsCount?: number
   onOpenSession: (table: TableItem) => void
   onCloseSession: (table: TableItem) => void
   onTransferTable: (table: TableItem) => void
@@ -17,6 +18,7 @@ interface TableCardProps {
 export function TableCard({
   table,
   isOwner = false,
+  readyItemsCount = 0,
   onOpenSession,
   onCloseSession,
   onTransferTable,
@@ -27,10 +29,19 @@ export function TableCard({
   const isOccupied = table.realtimeStatus === 'OCCUPIED'
   const isEmpty = table.realtimeStatus === 'EMPTY'
   const isOutOfService = !table.isActive || table.realtimeStatus === 'OUT_OF_SERVICE'
+  const hasReadyDishes = isOccupied && readyItemsCount > 0
 
   const statusBadge = () => {
     if (isOutOfService) {
       return <Badge variant="secondary">Bảo trì / Tắt</Badge>
+    }
+    if (hasReadyDishes) {
+      return (
+        <Badge variant="ready" className="bg-status-ready text-white animate-pulse flex items-center gap-1">
+          <BellRing className="w-3 h-3" />
+          {readyItemsCount} món cần bưng
+        </Badge>
+      )
     }
     if (isOccupied) {
       return (
@@ -45,7 +56,9 @@ export function TableCard({
   return (
     <div
       className={`bg-card border rounded-2xl p-5 shadow-xs transition-all hover:shadow-md flex flex-col justify-between text-left ${
-        isOccupied
+        hasReadyDishes
+          ? 'border-status-ready ring-2 ring-status-ready/30 bg-emerald-50/10'
+          : isOccupied
           ? 'border-status-cooking/40 bg-status-cooking/5'
           : isOutOfService
           ? 'border-border/60 opacity-60 bg-surface/20'

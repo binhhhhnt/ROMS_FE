@@ -1,34 +1,12 @@
 import { Link } from 'react-router-dom'
-import { ShoppingCart, Utensils, ArrowLeft, PlusCircle } from 'lucide-react'
+import { ShoppingCart, Utensils, ArrowLeft } from 'lucide-react'
 import { useCartStore } from '@/features/ordering/store/cartStore'
 import { CartItemList } from '@/features/ordering/components/CartItemList'
 import { CartSummary } from '@/features/ordering/components/CartSummary'
 import { Button } from '@/shared/components/ui/button'
 
 export function TabletCartPage() {
-  const { items, addItem } = useCartStore()
-
-  // Helper function to seed mock items for testing
-  const handleAddSampleItems = () => {
-    addItem({
-      menuItemId: 1,
-      name: 'Bò Wagyu Nướng Tảng',
-      price: 350000,
-      note: 'Chín vừa (Medium)',
-    })
-    addItem({
-      menuItemId: 2,
-      name: 'Salad Cá Hồi Xốt Chanh Leo',
-      price: 145000,
-      note: 'Nước xốt để riêng',
-    })
-    addItem({
-      menuItemId: 3,
-      name: 'Trà Đào Cam Sả',
-      price: 45000,
-      note: 'Ít đá, ít ngọt',
-    })
-  }
+  const { items } = useCartStore()
 
   const isEmpty = items.length === 0
 
@@ -51,20 +29,6 @@ export function TabletCartPage() {
             </p>
           </div>
         </div>
-
-        {/* Quick Sample Add Button for testing */}
-        {isEmpty && (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={handleAddSampleItems}
-            className="text-xs text-accent border-accent/40 hover:bg-surface"
-          >
-            <PlusCircle className="w-3.5 h-3.5 mr-1" />
-            Thêm món mẫu thử nghiệm
-          </Button>
-        )}
       </div>
 
       {/* Main Content Area */}
@@ -86,15 +50,6 @@ export function TabletCartPage() {
                 Xem thực đơn ngay
               </Button>
             </Link>
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={handleAddSampleItems}
-              className="text-accent border-accent/40 hover:bg-surface font-semibold"
-            >
-              <PlusCircle className="w-4 h-4 mr-2" />
-              Thêm món mẫu
-            </Button>
           </div>
         </div>
       ) : (

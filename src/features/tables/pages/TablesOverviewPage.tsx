@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -16,6 +16,8 @@ import {
 import { toast } from 'sonner'
 
 import { tableApi } from '@/features/tables/api/tableApi'
+import { kitchenApi } from '@/features/kitchen/api/kitchenApi'
+import { subscribeToTopic } from '@/shared/lib/stomp'
 import type { TableItem } from '@/features/tables/types/table.types'
 import { TableCard } from '@/features/tables/components/TableCard'
 import { TableModal } from '@/features/tables/components/TableModal'
@@ -67,7 +69,37 @@ export function TablesOverviewPage({ initialActiveOnly = false }: TablesOverview
     queryFn: () => tableApi.getAreas(),
   })
 
+  // Fetch active kitchen orders to count dishes waiting to be served
+  const { data: readyKitchenOrders = [], refetch: refetchReadyOrders } = useQuery({
+    queryKey: ['tablesOverviewReadyOrders'],
+    queryFn: () => kitchenApi.getKitchenOrders(),
+    refetchInterval: 10000,
+  })
+
+  // Realtime subscription for kitchen orders
+  useEffect(() => {
+    const unsub = subscribeToTopic('/topic/kitchen/orders', () => {
+      refetchReadyOrders()
+      refetch()
+    })
+    return () => unsub()
+  }, [refetch, refetchReadyOrders])
+
   const tables = tablesData?.content || []
+
+  // Count ready items by tableId
+  const readyCountByTableId = useMemo(() => {
+    const map: Record<number, number> = {}
+    readyKitchenOrders.forEach((order) => {
+      const readyCount = order.items
+        .filter((i) => i.status === 'READY')
+        .reduce((sum, i) => sum + i.quantity, 0)
+      if (readyCount > 0) {
+        map[order.tableId] = (map[order.tableId] || 0) + readyCount
+      }
+    })
+    return map
+  }, [readyKitchenOrders])
 
   // KPI calculations
   const totalTables = tables.length
@@ -329,6 +361,7 @@ export function TablesOverviewPage({ initialActiveOnly = false }: TablesOverview
               key={table.id}
               table={table}
               isOwner={isOwner}
+              readyItemsCount={readyCountByTableId[table.id] || 0}
               onOpenSession={handleOpenSession}
               onCloseSession={handleCloseSession}
               onTransferTable={(t) => setTransferringTable(t)}
@@ -361,7 +394,11 @@ export function TablesOverviewPage({ initialActiveOnly = false }: TablesOverview
                   <td className="py-3.5 px-4 text-muted">{t.capacity} người</td>
                   <td className="py-3.5 px-4 text-muted">{t.area || '-'}</td>
                   <td className="py-3.5 px-4">
-                    {t.realtimeStatus === 'OCCUPIED' ? (
+                    {readyCountByTableId[t.id] && readyCountByTableId[t.id] > 0 ? (
+                      <Badge variant="ready" className="bg-status-ready text-white animate-pulse">
+                        {readyCountByTableId[t.id]} món cần bưng
+                      </Badge>
+                    ) : t.realtimeStatus === 'OCCUPIED' ? (
                       <Badge variant="cooking">Đang phục vụ</Badge>
                     ) : t.realtimeStatus === 'EMPTY' && t.isActive ? (
                       <Badge variant="completed">Bàn trống</Badge>

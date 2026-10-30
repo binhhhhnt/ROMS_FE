@@ -2,15 +2,6 @@ import { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import {
-  Flame,
-  RefreshCw,
-  Clock,
-  CheckCircle2,
-  Utensils,
-  ArrowRight,
-  BellRing,
-} from 'lucide-react'
 
 import { kitchenApi } from '@/features/kitchen/api/kitchenApi'
 import type { OrderItemStatus } from '@/features/ordering/types/ordering.types'
@@ -37,7 +28,6 @@ export function KitchenCookingPage() {
   const {
     data: orders = [],
     isLoading,
-    isRefetching,
     refetch,
   } = useQuery({
     queryKey: ['kitchen', 'orders', 'cooking'],
@@ -106,96 +96,36 @@ export function KitchenCookingPage() {
   }, [orders])
 
   return (
-    <div className="max-w-7xl mx-auto flex flex-col gap-6">
+    <div className="max-w-7xl mx-auto flex flex-col gap-5">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card p-5 rounded-2xl border border-border shadow-xs">
-        <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-xl bg-surface border border-border flex items-center justify-center text-primary font-bold shrink-0">
-            <Flame className="w-6 h-6 animate-pulse text-status-cooking" />
+      <div className="flex items-center justify-between bg-card px-5 py-4 rounded-xl border border-border shadow-xs">
+        <div>
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl sm:text-2xl font-black text-text tracking-tight">
+              ĐANG CHẾ BIẾN
+            </h1>
+            <span className="px-3 py-1 rounded-full text-xs font-black bg-primary text-white">
+              {activeCookingOrders.length} ĐƠN CẦN NẤU ({stats.cookingDishes} SUẤT)
+            </span>
           </div>
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-xl sm:text-2xl font-black text-text tracking-wide">
-                Đang Chế Biến (KDS Cooking)
-              </h1>
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-primary text-white">
-                {activeCookingOrders.length} ĐƠN CẦN NẤU
-              </span>
-            </div>
-            <p className="text-xs text-muted mt-1">
-              Quản lý tiến độ nấu từng món và báo sẵn sàng phục vụ ra bàn
-            </p>
-          </div>
+          <p className="text-xs text-muted mt-0.5">
+            Quản lý tiến độ nấu từng món. Khi món nấu xong, bấm &ldquo;Xong món&rdquo; để chuyển ra quầy chờ bưng
+          </p>
         </div>
 
-        <div className="flex items-center gap-3 self-start sm:self-auto">
-          {/* Live Clock */}
-          <div className="bg-surface border border-border px-3.5 py-1.5 rounded-xl text-center">
-            <div className="text-[10px] text-muted font-bold uppercase tracking-wider">
-              Thời gian
-            </div>
-            <div className="text-sm font-black text-primary font-mono">
-              {currentTime}
-            </div>
+        {/* Live Clock */}
+        <div className="bg-surface border border-border px-3.5 py-1.5 rounded-lg text-right">
+          <div className="text-[10px] text-muted font-bold uppercase tracking-wider">
+            Thời gian
           </div>
-
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => refetch()}
-            disabled={isLoading || isRefetching}
-            className="text-xs h-10 border-border bg-card text-text hover:bg-surface"
-          >
-            <RefreshCw
-              className={`w-4 h-4 mr-1.5 ${isRefetching ? 'animate-spin text-primary' : ''}`}
-            />
-            {isRefetching ? 'Đang tải...' : 'Làm mới'}
-          </Button>
-        </div>
-      </div>
-
-      {/* KPI Stats Row */}
-      <div className="grid grid-cols-3 gap-3 sm:gap-4">
-        <div className="bg-card border border-border p-4 rounded-2xl flex items-center justify-between shadow-xs">
-          <div>
-            <div className="text-xs font-bold text-muted uppercase flex items-center gap-1.5">
-              <Utensils className="w-4 h-4 text-muted" />
-              Tổng suất cần nấu
-            </div>
-            <div className="text-2xl font-black text-text mt-1">
-              {stats.totalDishes} suất
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-card border border-border p-4 rounded-2xl flex items-center justify-between shadow-xs">
-          <div>
-            <div className="text-xs font-bold text-status-cooking uppercase flex items-center gap-1.5">
-              <Flame className="w-4 h-4 text-status-cooking" />
-              Đang trên bếp
-            </div>
-            <div className="text-2xl font-black text-status-cooking mt-1">
-              {stats.cookingDishes} suất
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-card border border-border p-4 rounded-2xl flex items-center justify-between shadow-xs">
-          <div>
-            <div className="text-xs font-bold text-status-ready uppercase flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-status-ready" />
-              Đã xong (READY)
-            </div>
-            <div className="text-2xl font-black text-status-ready mt-1">
-              {stats.readyDishes} suất
-            </div>
+          <div className="text-sm font-black text-primary font-mono">
+            {currentTime}
           </div>
         </div>
       </div>
 
       {/* Filter Tabs Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-surface/60 p-2.5 rounded-xl border border-border">
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-surface/60 px-3 py-2 rounded-xl border border-border">
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -223,11 +153,9 @@ export function KitchenCookingPage() {
 
         <Link
           to="/kitchen/ready"
-          className="text-xs font-semibold text-status-ready hover:text-emerald-700 flex items-center gap-1.5 pr-2"
+          className="text-xs font-semibold text-status-ready hover:underline pr-2"
         >
-          <BellRing className="w-3.5 h-3.5" />
-          <span>Xem khu vực Món sẵn sàng bưng ({stats.readyDishes} suất READY)</span>
-          <ArrowRight className="w-3 h-3" />
+          <span>Xem Quầy chờ bưng món ({stats.readyDishes} suất đã ra quầy)</span>
         </Link>
       </div>
 
@@ -252,18 +180,15 @@ export function KitchenCookingPage() {
           ))}
         </div>
       ) : displayedOrders.length === 0 ? (
-        <div className="bg-card border border-dashed border-border rounded-3xl p-16 text-center flex flex-col items-center justify-center my-8 shadow-xs">
-          <div className="w-20 h-20 rounded-2xl bg-surface border border-border flex items-center justify-center text-status-cooking mb-4 shadow-xs">
-            <Flame className="w-10 h-10 text-muted" />
-          </div>
-          <h2 className="text-xl font-bold text-text mb-2">
+        <div className="bg-card border border-dashed border-border rounded-2xl p-16 text-center flex flex-col items-center justify-center my-8 shadow-xs">
+          <h2 className="text-lg font-bold text-text mb-1">
             {filterMode === 'active' && orders.length > 0
-              ? 'Tất cả các món đã nấu xong (READY)!'
+              ? 'Tất cả các món đã nấu xong & chuyển ra quầy!'
               : 'Hiện không có món nào đang nấu'}
           </h2>
           <p className="text-xs text-muted max-w-md leading-relaxed mb-6">
             {filterMode === 'active' && orders.length > 0
-              ? 'Toàn bộ món ăn của các đơn đang chế biến đã chuyển sang trạng thái Sẵn sàng phục vụ. Bạn có thể sang màn hình Món sẵn sàng để theo dõi.'
+              ? 'Toàn bộ món ăn của các đơn đang chế biến đã chuyển sang quầy chờ bưng. Bạn có thể sang màn hình Quầy chờ bưng món để theo dõi phục vụ.'
               : 'Bếp đã hoàn thành tất cả các món ăn hoặc chưa nhận đơn mới từ Hàng đợi.'}
           </p>
           <div className="flex gap-3">
@@ -273,18 +198,15 @@ export function KitchenCookingPage() {
                 size="md"
                 className="bg-status-ready hover:bg-emerald-600 font-bold"
               >
-                <BellRing className="w-4 h-4 mr-2" />
-                Xem Món Sẵn Sàng (READY)
-                <ArrowRight className="w-4 h-4 ml-1.5" />
+                Xem Quầy Chờ Bưng Món
               </Button>
             </Link>
             <Link to="/kitchen/queue">
               <Button
                 variant="outline"
                 size="md"
-                className="border-border text-text hover:bg-surface"
+                className="border-border text-text hover:bg-surface font-semibold"
               >
-                <Clock className="w-4 h-4 mr-2" />
                 Hàng đợi KDS
               </Button>
             </Link>

@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import {
@@ -12,9 +12,13 @@ import {
   DollarSign,
   User,
   Info,
+  CheckCircle2,
 } from 'lucide-react'
+import { toast } from 'sonner'
 
 import { orderApi } from '@/features/ordering/api/orderApi'
+import { kitchenApi } from '@/features/kitchen/api/kitchenApi'
+import { getApiErrorMessage } from '@/shared/lib/axios'
 import type {
   OrderStatus,
   OrderItemStatus,
@@ -50,6 +54,41 @@ export function StaffOrderDetailPage() {
       unsubSession()
     }
   }, [refetch])
+
+  const [servingItemId, setServingItemId] = useState<number | null>(null)
+  const [isServingAll, setIsServingAll] = useState(false)
+
+  const handleCompleteItem = async (itemId: number, itemName: string) => {
+    setServingItemId(itemId)
+    try {
+      await kitchenApi.updateOrderItemStatus(parsedOrderId, itemId, 'COMPLETED')
+      toast.success(`Đã xác nhận bưng món "${itemName}" ra Bàn ${order?.tableCode}!`)
+      await refetch()
+    } catch (err) {
+      toast.error(getApiErrorMessage(err))
+    } finally {
+      setServingItemId(null)
+    }
+  }
+
+  const handleCompleteAllReady = async () => {
+    const readyItems = order?.items.filter((i) => i.status === 'READY') || []
+    if (readyItems.length === 0) return
+    setIsServingAll(true)
+    try {
+      for (const item of readyItems) {
+        await kitchenApi.updateOrderItemStatus(parsedOrderId, item.id, 'COMPLETED')
+      }
+      toast.success(
+        `Đã bưng tất cả ${readyItems.length} món sẵn sàng ra Bàn ${order?.tableCode}!`
+      )
+      await refetch()
+    } catch (err) {
+      toast.error(getApiErrorMessage(err))
+    } finally {
+      setIsServingAll(false)
+    }
+  }
 
   const formatPrice = (amount: number) => {
     return new Intl.NumberFormat('vi-VN', {
@@ -187,7 +226,7 @@ export function StaffOrderDetailPage() {
 
       {/* Ready Alert Notice */}
       {readyItemsCount > 0 && (
-        <div className="bg-emerald-500/15 border border-emerald-500/30 rounded-xl p-4 flex items-center justify-between gap-3 text-status-ready shadow-xs">
+        <div className="bg-emerald-500/15 border border-emerald-500/30 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-status-ready shadow-xs">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-status-ready/20 flex items-center justify-center shrink-0">
               <BellRing className="w-5 h-5 animate-bounce" />
@@ -202,9 +241,22 @@ export function StaffOrderDetailPage() {
               </p>
             </div>
           </div>
-          <span className="hidden sm:inline-block text-xs bg-status-ready text-white px-3 py-1 rounded-full font-bold">
-            ƯU TIÊN PHỤC VỤ
-          </span>
+          <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+            {readyItemsCount > 1 && (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handleCompleteAllReady}
+                disabled={isServingAll}
+                className="bg-status-ready hover:bg-emerald-600 font-bold text-xs text-white shadow-xs"
+              >
+                {isServingAll ? 'Đang cập nhật...' : `Bưng tất cả (${readyItemsCount} món)`}
+              </Button>
+            )}
+            <span className="hidden sm:inline-block text-xs bg-status-ready text-white px-3 py-1 rounded-full font-bold">
+              ƯU TIÊN PHỤC VỤ
+            </span>
+          </div>
         </div>
       )}
 
@@ -342,8 +394,28 @@ export function StaffOrderDetailPage() {
                   </div>
                 </div>
 
-                <div className="min-w-[130px] flex justify-end">
-                  {getItemStatusBadge(item.status)}
+                <div className="min-w-[130px] flex items-center justify-end gap-2">
+                  {item.status === 'READY' ? (
+                    <Button
+                      type="button"
+                      variant="primary"
+                      size="sm"
+                      onClick={() => handleCompleteItem(item.id, item.menuItemName)}
+                      disabled={servingItemId === item.id}
+                      className="bg-status-ready hover:bg-emerald-600 font-bold text-xs text-white shadow-xs h-8 px-3"
+                    >
+                      {servingItemId === item.id ? (
+                        'Đang lưu...'
+                      ) : (
+                        <>
+                          <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+                          Đã bưng ra bàn
+                        </>
+                      )}
+                    </Button>
+                  ) : (
+                    getItemStatusBadge(item.status)
+                  )}
                 </div>
               </div>
             </div>

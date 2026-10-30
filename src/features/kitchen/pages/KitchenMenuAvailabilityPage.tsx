@@ -1,29 +1,21 @@
 import { useState, useMemo } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import {
-  UtensilsCrossed,
-  Search,
-  Filter,
-  RefreshCw,
-  AlertCircle,
-  CheckCircle2,
-  AlertTriangle,
-  Ban,
-} from 'lucide-react'
+import { Search, Filter } from 'lucide-react'
 
 import { kitchenApi } from '@/features/kitchen/api/kitchenApi'
 import type {
   MenuItemReadItem,
   MenuItemAvailabilityStatus,
 } from '@/features/kitchen/types/kitchen.types'
+import type { PageResponse } from '@/shared/types/api.types'
 import { getApiErrorMessage } from '@/shared/lib/axios'
 import { MenuAvailabilityCard } from '@/features/kitchen/components/MenuAvailabilityCard'
 import { MenuStatusConfirmModal } from '@/features/kitchen/components/MenuStatusConfirmModal'
-import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 
 export function KitchenMenuAvailabilityPage() {
+  const queryClient = useQueryClient()
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL')
   const [selectedStatus, setSelectedStatus] = useState<string>('ALL')
@@ -44,8 +36,6 @@ export function KitchenMenuAvailabilityPage() {
   const {
     data: menuData,
     isLoading: isLoadingMenu,
-    isRefetching: isRefetchingMenu,
-    refetch: refetchMenu,
   } = useQuery({
     queryKey: ['kitchen', 'menu-items'],
     queryFn: () => kitchenApi.getMenuItems(undefined, 0, 100),
@@ -116,27 +106,56 @@ export function KitchenMenuAvailabilityPage() {
     })
   }
 
-  // Execute status update on modal confirm
+  // Execute status update with instant Optimistic Update
   const handleConfirmStatusChange = async () => {
     if (!modalState.item) return
 
+    const targetItem = modalState.item
+    const targetStatus = modalState.targetStatus
+
+    // Close modal immediately for instant UI feedback
+    setModalState({ isOpen: false, item: null, targetStatus: 'AVAILABLE' })
+
+    // Optimistically update React Query cache immediately
+    queryClient.setQueryData(
+      ['kitchen', 'menu-items'],
+      (oldData: PageResponse<MenuItemReadItem> | undefined) => {
+        if (!oldData) return oldData
+        return {
+          ...oldData,
+          content: oldData.content.map((item) =>
+            item.id === targetItem.id ? { ...item, status: targetStatus } : item
+          ),
+        }
+      }
+    )
+
     setIsUpdating(true)
     try {
-      await kitchenApi.updateMenuStatus(
-        modalState.item.id,
-        modalState.targetStatus
-      )
+      await kitchenApi.updateMenuStatus(targetItem.id, targetStatus)
       toast.success(
-        modalState.targetStatus === 'AVAILABLE'
-          ? `Đã mở bán lại món "${modalState.item.name}"!`
-          : `Đã tạm ngưng món "${modalState.item.name}"!`
+        targetStatus === 'AVAILABLE'
+          ? `Đã mở bán lại món "${targetItem.name}"!`
+          : `Đã tạm ngưng món "${targetItem.name}"!`
       )
-      await refetchMenu()
-      setModalState((prev) => ({ ...prev, isOpen: false, item: null }))
     } catch (err) {
+      // Rollback cache on error
+      queryClient.setQueryData(
+        ['kitchen', 'menu-items'],
+        (oldData: PageResponse<MenuItemReadItem> | undefined) => {
+          if (!oldData) return oldData
+          return {
+            ...oldData,
+            content: oldData.content.map((item) =>
+              item.id === targetItem.id
+                ? { ...item, status: targetItem.status }
+                : item
+            ),
+          }
+        }
+      )
       const msg = getApiErrorMessage(err)
       toast.error(msg)
-      // Per spec: Keep old state and inform user if error
     } finally {
       setIsUpdating(false)
     }
@@ -162,85 +181,16 @@ export function KitchenMenuAvailabilityPage() {
   ]
 
   return (
-    <div className="max-w-7xl mx-auto flex flex-col gap-6">
+    <div className="max-w-7xl mx-auto flex flex-col gap-5">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card p-5 rounded-2xl border border-border shadow-xs">
-        <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-xl bg-surface border border-border flex items-center justify-center text-primary font-bold shrink-0">
-            <UtensilsCrossed className="w-6 h-6" />
-          </div>
-          <div>
-            <h1 className="text-xl sm:text-2xl font-black text-text tracking-wide">
-              Quản lý Trạng thái Món ăn (Menu Availability)
-            </h1>
-            <p className="text-xs text-muted mt-1">
-              Bật / tắt nhanh khả năng đặt món tại bếp khi hết nguyên liệu đột xuất hoặc mở bán lại
-            </p>
-          </div>
-        </div>
-
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => refetchMenu()}
-          disabled={isLoadingMenu || isRefetchingMenu}
-          className="text-xs h-10 border-border bg-card text-text hover:bg-surface self-start sm:self-auto"
-        >
-          <RefreshCw
-            className={`w-4 h-4 mr-1.5 ${isRefetchingMenu ? 'animate-spin text-primary' : ''}`}
-          />
-          {isRefetchingMenu ? 'Đang tải...' : 'Làm mới'}
-        </Button>
-      </div>
-
-      {/* KPI Stats Row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <div className="bg-card border border-border p-4 rounded-2xl flex items-center justify-between shadow-xs">
-          <div>
-            <div className="text-xs font-bold text-muted uppercase">
-              Tổng số món
-            </div>
-            <div className="text-2xl font-black text-text mt-1">
-              {kpiCounts.total}
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-card border border-border p-4 rounded-2xl flex items-center justify-between shadow-xs">
-          <div>
-            <div className="text-xs font-bold text-status-ready uppercase flex items-center gap-1">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              Đang phục vụ
-            </div>
-            <div className="text-2xl font-black text-status-ready mt-1">
-              {kpiCounts.available}
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-card border border-border p-4 rounded-2xl flex items-center justify-between shadow-xs">
-          <div>
-            <div className="text-xs font-bold text-status-cooking uppercase flex items-center gap-1">
-              <AlertTriangle className="w-3.5 h-3.5" />
-              Tạm ngưng bán
-            </div>
-            <div className="text-2xl font-black text-status-cooking mt-1">
-              {kpiCounts.tempUnavailable}
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-card border border-border p-4 rounded-2xl flex items-center justify-between shadow-xs">
-          <div>
-            <div className="text-xs font-bold text-muted uppercase flex items-center gap-1">
-              <Ban className="w-3.5 h-3.5" />
-              Ngừng vĩnh viễn
-            </div>
-            <div className="text-2xl font-black text-muted mt-1">
-              {kpiCounts.discontinued}
-            </div>
-          </div>
+      <div className="flex items-center justify-between bg-card px-5 py-4 rounded-xl border border-border shadow-xs">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-black text-text tracking-tight">
+            TRẠNG THÁI MÓN ĂN (MENU AVAILABILITY)
+          </h1>
+          <p className="text-xs text-muted mt-0.5">
+            Bật / tắt nhanh khả năng đặt món tại bếp khi hết nguyên liệu đột xuất hoặc mở bán lại
+          </p>
         </div>
       </div>
 
@@ -318,10 +268,7 @@ export function KitchenMenuAvailabilityPage() {
           ))}
         </div>
       ) : filteredItems.length === 0 ? (
-        <div className="bg-card border border-dashed border-border rounded-3xl p-16 text-center flex flex-col items-center justify-center my-8 shadow-xs">
-          <div className="w-16 h-16 rounded-2xl bg-surface border border-border flex items-center justify-center text-muted mb-3">
-            <AlertCircle className="w-8 h-8" />
-          </div>
+        <div className="bg-card border border-dashed border-border rounded-2xl p-16 text-center flex flex-col items-center justify-center my-8 shadow-xs">
           <h3 className="text-base font-bold text-text mb-1">
             Không tìm thấy món ăn nào
           </h3>

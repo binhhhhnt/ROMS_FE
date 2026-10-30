@@ -15,11 +15,22 @@ import { subscribeToTopic } from '@/shared/lib/stomp'
 import { getApiErrorMessage } from '@/shared/lib/axios'
 import { OrderProgressCard } from '@/features/ordering/components/OrderProgressCard'
 import { CancelItemModal } from '@/features/ordering/components/CancelItemModal'
+import { tableApi } from '@/features/tables/api/tableApi'
 import { Button } from '@/shared/components/ui/button'
 
 export function TabletOrderTrackingPage() {
   const { user } = useAuthStore()
   const [selectedFilter, setSelectedFilter] = useState<string>('ALL')
+
+  // Fetch current table information to get real-time activeSessionId
+  const tableId = user?.tableId
+  const { data: table } = useQuery({
+    queryKey: ['tabletTableInfo', tableId],
+    queryFn: () => tableApi.getTableById(tableId!),
+    enabled: !!tableId,
+  })
+
+  const activeSessionId = table?.activeSessionId
 
   // Cancel modal state
   const [modalState, setModalState] = useState<{
@@ -41,24 +52,24 @@ export function TabletOrderTrackingPage() {
     isRefetching,
     refetch,
   } = useQuery({
-    queryKey: ['orders', 'tablet', user?.tableId],
-    queryFn: () => orderApi.getOrders(),
+    queryKey: ['orders', 'tablet', user?.tableId, activeSessionId],
+    queryFn: () => orderApi.getOrders(activeSessionId || undefined),
   })
 
   // Realtime STOMP Subscription
   useEffect(() => {
-    // Subscribe to session topic (session 1 or dynamic)
-    const unsubscribeSession = subscribeToTopic(
-      '/topic/session/1/orders',
-      () => {
-        refetch()
-      }
-    )
+    const topic = activeSessionId
+      ? `/topic/session/${activeSessionId}/orders`
+      : '/topic/kitchen/orders'
+
+    const unsubscribeSession = subscribeToTopic(topic, () => {
+      refetch()
+    })
 
     return () => {
       unsubscribeSession()
     }
-  }, [refetch])
+  }, [activeSessionId, refetch])
 
   // Open cancel modal for single item
   const handleOpenCancelItem = (orderId: number, item: OrderItemResponse) => {

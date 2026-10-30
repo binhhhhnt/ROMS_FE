@@ -24,9 +24,9 @@
 | FE-006 | Danh sách order phục vụ (`FE-SCR-006`; Page) | ROMS-033 | BINH-DEV | Done | Tích hợp GET /api/orders, STOMP realtime, KPI stats, lọc bàn, trạng thái, thời gian, tìm kiếm, build verified |
 | FE-007 | Chi tiết order phục vụ (`FE-SCR-007`; Page) | ROMS-034, ROMS-035 | BINH-DEV | Done | Tích hợp GET /api/orders/{id}, STOMP realtime, hiển thị tiến độ món, ghi chú, lý do hủy từ BE, cảnh báo món READY cần bưng, build verified |
 | FE-008 | KDS hàng đợi (`FE-SCR-008`; Page + Action) | ROMS-037, ROMS-039, ROMS-042 | BINH-DEV | Done | Tích hợp GET /api/kitchen/orders?status=PENDING, POST /api/kitchen/orders/{id}/accept, STOMP realtime, cảnh báo chờ lâu; KHÔNG có nút hủy cho bếp (ROMS-042 trong tracker cũ mâu thuẫn quyền BE), build verified |
-| FE-009 | KDS chi tiết order (`FE-SCR-009`; Page) | ROMS-038 | BINH-DEV | Done | Tích hợp GET /api/kitchen/orders/{id}, STOMP realtime, hiển thị món & ghi chú, cập nhật item COOKING→READY, build verified |
-| FE-010 | KDS đang chế biến (`FE-SCR-010`; Page + Action) | ROMS-040 | BINH-DEV | Done | Tích hợp GET /api/kitchen/orders?status=COOKING, PATCH /items/{id}/status, STOMP realtime, chuyển item sang READY, build verified |
-| FE-011 | KDS món sẵn sàng (`FE-SCR-011`; Page + Action) | ROMS-041 | BINH-DEV | Done | Item READY, service staff cập nhật COMPLETED khi phục vụ; verify route/UI manually |
+| FE-009 | KDS chi tiết order (`FE-SCR-009`; Page) | ROMS-038 | BINH-DEV | Done | Đã tối ưu tích hợp chi tiết trực tiếp trên thẻ KDS và lược bỏ màn hình chi tiết riêng lẻ theo yêu cầu UX KDS tối giản; route redirect về /kitchen/cooking; build verified |
+| FE-010 | KDS đang chế biến (`FE-SCR-010`; Page + Action) | ROMS-040 | BINH-DEV | Done | Tích hợp GET /api/kitchen/orders?status=COOKING, PATCH /items/{id}/status, STOMP realtime, chuyển item sang READY (đặt tại quầy chờ bưng), build verified |
+| FE-011 | KDS Quầy chờ bưng món (`FE-SCR-011`; Page + Action) | ROMS-041 | BINH-DEV | Done | Quầy chờ bưng món READY; phục vụ/bếp xác nhận Đã bưng ra bàn chuyển sang COMPLETED; UI tối giản, build verified |
 | FE-046 | Rapid Menu Availability (`FE-SCR-046`; Page + Confirmation Modal) | BE-008 (no separate ROMS ticket) | BINH-DEV | Done | Tích hợp GET /api/menu-items, GET /api/categories, PATCH /api/menu-items/{id}/status, modal xác nhận bắt buộc, chặn Kitchen bật DISCONTINUED, build verified |
 | FE-012 | Quên mật khẩu (`FE-SCR-012`; Page) | ROMS-002 | QUANG | Done | Gửi OTP email Gmail SMTP (qua BE); form validation Zod, state thông báo gửi mail, build verified |
 | FE-013 | Đặt lại mật khẩu (`FE-SCR-013`; Page) | ROMS-003 | QUANG | Done | OTP 6 số, 5 phút, tối đa 5 lần sai; form xác nhận mật khẩu mới, liên kết từ quên mật khẩu, build verified |
@@ -51,7 +51,7 @@
 | FE-032 | Nguyên liệu và tồn kho (`FE-SCR-032`; Page + Modal/Action) | ROMS-043, ROMS-044 | Member 4 | Todo | CRUD master data, tồn kho, minimum_stock, deactivate có kiểm tra recipe; verify route/UI manually |
 | FE-033 | Kiểm kê/điều chỉnh kho (`FE-SCR-033`; Page + Modal/Action) | ROMS-048 | Member 4 | Todo | Chênh lệch do BE tính; movement append-only; verify route/UI manually |
 | FE-034 | Lịch sử biến động kho (`FE-SCR-034`; Page) | ROMS-049 | Member 4 | Todo | Filter movementType, ingredient, phân trang; verify route/UI manually |
-| FE-035 | Quản lý Recipe/BOM (`FE-SCR-035`; Page + Drawer/Modal) | ROMS-051, ROMS-052, ROMS-053 | Member 4 | Todo | Danh sách + xem/sửa định lượng; không tự thêm cost queries; verify route/UI manually |
+| FE-035 | Quản lý Recipe/BOM (`FE-SCR-035`; Page + Drawer/Modal) | ROMS-051, ROMS-052, ROMS-053 | Member 4 | Todo | Route `/kitchen/recipes` (OWNER & KITCHEN_STAFF); danh sách + xem/sửa định lượng; không tự thêm cost queries; verify route/UI manually |
 | FE-036 | Danh sách phiếu mua (`FE-SCR-036`; Page) | ROMS-057 | Member 4 | Todo | Phiếu hàng đã nhận, không quản lý PO/supplier; verify route/UI manually |
 | FE-037 | Tạo phiếu mua (`FE-SCR-037`; Page) | ROMS-058 | Member 4 | Todo | Tạo phiếu nhập hàng thực tế; verify route/UI manually |
 | FE-038 | Chi tiết/chỉnh sửa phiếu mua (`FE-SCR-038`; Page + Modal/Action) | ROMS-059 | Member 4 | Todo | Sửa dòng phiếu mua, BE tạo movement bù trừ; verify route/UI manually |

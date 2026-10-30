@@ -23,7 +23,6 @@ import { TabletOrderTrackingPage } from '@/features/ordering/pages/TabletOrderTr
 import { StaffOrdersPage } from '@/features/ordering/pages/StaffOrdersPage'
 import { StaffOrderDetailPage } from '@/features/ordering/pages/StaffOrderDetailPage'
 import { KitchenQueuePage } from '@/features/kitchen/pages/KitchenQueuePage'
-import { KitchenOrderDetailPage } from '@/features/kitchen/pages/KitchenOrderDetailPage'
 import { KitchenCookingPage } from '@/features/kitchen/pages/KitchenCookingPage'
 import { KitchenReadyPage } from '@/features/kitchen/pages/KitchenReadyPage'
 import { KitchenMenuAvailabilityPage } from '@/features/kitchen/pages/KitchenMenuAvailabilityPage'
@@ -110,7 +109,6 @@ export function AppRoutes() {
               <Route path="/inventory/ingredients" element={<IngredientsPage />} />
               <Route path="/inventory/movements" element={<StockMovementsPage />} />
               <Route path="/inventory/checks" element={<InventoryChecksPage />} />
-              <Route path="/inventory/recipes" element={<RecipesPage />} />
               <Route path="/inventory/purchases" element={<PurchasesPage />} />
               <Route path="/inventory/purchases/new" element={<CreatePurchasePage />} />
               <Route path="/inventory/purchases/:purchaseId" element={<PurchaseDetailPage />} />
@@ -123,18 +121,22 @@ export function AppRoutes() {
           </Route>
         </Route>
 
-        {/* Kitchen Layout (KDS) */}
+        {/* Kitchen Layout (KDS) & Recipes */}
         <Route
           element={<RoleGuard allowedRoles={['KITCHEN_STAFF', 'OWNER']} />}
         >
           <Route element={<KitchenLayout />}>
             <Route path="/kitchen/queue" element={<KitchenQueuePage />} />
-            <Route path="/kitchen/orders/:orderId" element={<KitchenOrderDetailPage />} />
+            <Route path="/kitchen/orders/:orderId" element={<Navigate to="/kitchen/cooking" replace />} />
             <Route path="/kitchen/cooking" element={<KitchenCookingPage />} />
             <Route path="/kitchen/ready" element={<KitchenReadyPage />} />
             <Route path="/kitchen/menu-availability" element={<KitchenMenuAvailabilityPage />} />
+            <Route path="/kitchen/recipes" element={<RecipesPage />} />
           </Route>
         </Route>
+
+        {/* Backward Compatibility Redirect */}
+        <Route path="/inventory/recipes" element={<Navigate to="/kitchen/recipes" replace />} />
 
         {/* Tablet Layout */}
         <Route

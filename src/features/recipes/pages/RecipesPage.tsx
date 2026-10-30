@@ -23,7 +23,7 @@ import {
 
 export function RecipesPage() {
   const { user } = useAuthStore()
-  const isOwner = user?.role === 'OWNER'
+  const canManage = user?.role === 'OWNER' || user?.role === 'KITCHEN_STAFF'
 
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL')
@@ -105,15 +105,15 @@ export function RecipesPage() {
             <Badge
               variant="outline"
               className={
-                isOwner
+                canManage
                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
                   : 'bg-surface text-muted-foreground border-border'
               }
             >
-              {isOwner ? (
+              {canManage ? (
                 <span className="flex items-center gap-1">
                   <ShieldCheck className="w-3 h-3" />
-                  Quyền Quản lý (OWNER)
+                  Quyền Quản lý ({user?.role === 'OWNER' ? 'OWNER' : 'KITCHEN'})
                 </span>
               ) : (
                 <span className="flex items-center gap-1">
@@ -372,15 +372,15 @@ export function RecipesPage() {
                       <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
                         <Button
                           size="sm"
-                          variant={isOwner ? 'primary' : 'outline'}
+                          variant={canManage ? 'primary' : 'outline'}
                           onClick={() => handleOpenDrawer(item)}
                           className={
-                            isOwner
+                            canManage
                               ? 'h-8 px-3 text-xs bg-accent hover:bg-accent-hover text-white flex items-center gap-1.5'
                               : 'h-8 px-3 text-xs flex items-center gap-1.5'
                           }
                         >
-                          {isOwner ? (
+                          {canManage ? (
                             <>
                               <SlidersHorizontal className="w-3.5 h-3.5" />
                               <span>Định lượng</span>

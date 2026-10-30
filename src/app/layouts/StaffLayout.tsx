@@ -185,13 +185,15 @@ export function StaffLayout() {
                 <ClipboardCheck className="w-4 h-4 text-accent" />
                 Kiểm kê kho
               </Link>
-              <Link
-                to="/inventory/recipes"
-                className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text hover:bg-surface/50 transition-colors"
-              >
-                <BookOpen className="w-4 h-4 text-accent" />
-                Công thức món (BOM)
-              </Link>
+              {user?.role === 'OWNER' && (
+                <Link
+                  to="/kitchen/recipes"
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text hover:bg-surface/50 transition-colors"
+                >
+                  <BookOpen className="w-4 h-4 text-accent" />
+                  Công thức món (BOM)
+                </Link>
+              )}
               <Link
                 to="/inventory/purchases"
                 className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text hover:bg-surface/50 transition-colors"

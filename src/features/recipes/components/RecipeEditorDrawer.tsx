@@ -38,7 +38,7 @@ export function RecipeEditorDrawer({
   onRecipeUpdated,
 }: RecipeEditorDrawerProps) {
   const { user } = useAuthStore()
-  const isOwner = user?.role === 'OWNER'
+  const canManage = user?.role === 'OWNER' || user?.role === 'KITCHEN_STAFF'
   const queryClient = useQueryClient()
 
   // Add Item Form State
@@ -64,7 +64,7 @@ export function RecipeEditorDrawer({
   const { data: ingredientsData, isLoading: isLoadingIngredients } = useQuery({
     queryKey: ['ingredients', 'active-for-recipe'],
     queryFn: () => ingredientApi.getIngredients({ isActive: true, size: 300 }),
-    enabled: isOpen && isOwner,
+    enabled: isOpen && canManage,
   })
 
   const availableIngredients = ingredientsData?.content || []
@@ -216,17 +216,17 @@ export function RecipeEditorDrawer({
         {/* Content Body */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Permission notice */}
-          {!isOwner && (
+          {!canManage && (
             <div className="p-3.5 bg-amber-500/10 border border-amber-500/20 rounded-lg text-amber-800 dark:text-amber-300 text-xs flex items-center gap-2.5">
               <ShieldAlert className="w-4 h-4 flex-shrink-0" />
               <span>
-                <strong>Chế độ Chỉ đọc:</strong> Chỉ Quản lý/Chủ nhà hàng (OWNER) mới có quyền thêm, sửa hoặc xóa định lượng nguyên liệu cho món này.
+                <strong>Chế độ Chỉ đọc:</strong> Chỉ Quản lý (OWNER) hoặc Đầu bếp (KITCHEN_STAFF) mới có quyền thêm, sửa hoặc xóa định lượng nguyên liệu cho món này.
               </span>
             </div>
           )}
 
-          {/* Add Item Card (OWNER only) */}
-          {isOwner && (
+          {/* Add Item Card */}
+          {canManage && (
             <div className="p-4 rounded-xl border border-accent/20 bg-accent/5 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-accent uppercase tracking-wider flex items-center gap-1.5">
@@ -334,7 +334,7 @@ export function RecipeEditorDrawer({
                       <th className="px-4 py-2.5 text-left">Nguyên liệu</th>
                       <th className="px-3 py-2.5 text-center">Đơn vị</th>
                       <th className="px-3 py-2.5 text-right">Định lượng / phần</th>
-                      {isOwner && <th className="px-4 py-2.5 text-right">Thao tác</th>}
+                      {canManage && <th className="px-4 py-2.5 text-right">Thao tác</th>}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
@@ -371,7 +371,7 @@ export function RecipeEditorDrawer({
                               </span>
                             )}
                           </td>
-                          {isOwner && (
+                          {canManage && (
                             <td className="px-4 py-3 text-right">
                               {isEditing ? (
                                 <div className="flex items-center justify-end gap-1">
@@ -439,7 +439,7 @@ export function RecipeEditorDrawer({
                 <p className="text-xs text-muted-foreground max-w-sm mx-auto mt-1">
                   Món ăn này chưa được gán nguyên vật liệu tiêu hao. Khi bán món, hệ thống sẽ không thể tự động trừ kho.
                 </p>
-                {isOwner && (
+                {canManage && (
                   <p className="text-xs text-accent font-medium mt-3">
                     ↑ Hãy chọn nguyên liệu và định lượng ở phía trên để thêm mới.
                   </p>
