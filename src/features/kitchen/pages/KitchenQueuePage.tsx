@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { kitchenApi } from '@/features/kitchen/api/kitchenApi'
@@ -9,6 +9,7 @@ import { getApiErrorMessage } from '@/shared/lib/axios'
 import { KitchenQueueOrderCard } from '@/features/kitchen/components/KitchenQueueOrderCard'
 
 export function KitchenQueuePage() {
+  const queryClient = useQueryClient()
   const [currentTime, setCurrentTime] = useState<string>(
     new Date().toLocaleTimeString('vi-VN')
   )
@@ -29,6 +30,8 @@ export function KitchenQueuePage() {
   } = useQuery({
     queryKey: ['kitchen', 'orders', 'queue'],
     queryFn: () => kitchenApi.getKitchenOrders(),
+    staleTime: 0,
+    refetchOnMount: 'always',
   })
 
   // Realtime STOMP Subscription
@@ -69,7 +72,7 @@ export function KitchenQueuePage() {
     try {
       await kitchenApi.updateOrderItemStatus(orderId, itemId, 'COOKING')
       toast.success('Đã nhận món vào chế biến!')
-      await refetch()
+      await queryClient.invalidateQueries({ queryKey: ['kitchen', 'orders'] })
     } catch (err) {
       const msg = getApiErrorMessage(err)
       toast.error(msg)
@@ -86,7 +89,7 @@ export function KitchenQueuePage() {
         await kitchenApi.updateOrderItemStatus(orderId, item.id, 'COOKING')
       }
       toast.success(`Đã nhận toàn bộ ${items.length} món vào chế biến!`)
-      await refetch()
+      await queryClient.invalidateQueries({ queryKey: ['kitchen', 'orders'] })
     } catch (err) {
       const msg = getApiErrorMessage(err)
       toast.error(msg)

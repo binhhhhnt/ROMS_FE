@@ -21,6 +21,8 @@ export function AccessDeniedPage() {
       navigate('/kitchen/queue', { replace: true })
     } else if (user.role === 'OWNER') {
       navigate('/owner/dashboard', { replace: true })
+    } else if (user.role === 'SERVICE_STAFF') {
+      navigate('/tables', { replace: true })
     } else {
       navigate('/staff/orders', { replace: true })
     }

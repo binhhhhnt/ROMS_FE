@@ -1,6 +1,12 @@
-import { Outlet, Link, useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
+import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuthStore } from '@/app/store/authStore'
 import { authApi } from '@/features/auth/api/authApi'
+import { tableApi } from '@/features/tables/api/tableApi'
+import { useAiChatStore } from '@/features/tables/store/aiChatStore'
+import { useCartStore } from '@/features/ordering/store/cartStore'
+import { subscribeToTopic } from '@/shared/lib/stomp'
 import { Button } from '@/shared/components/ui/button'
 import { Utensils, ShoppingCart, Clock, LogOut, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
@@ -8,6 +14,55 @@ import { toast } from 'sonner'
 export function TabletLayout() {
   const { user, clearAuth } = useAuthStore()
   const navigate = useNavigate()
+  const location = useLocation()
+  const queryClient = useQueryClient()
+  const tableId = user?.tableId
+
+  // Query current table information and session status
+  const { data: table } = useQuery({
+    queryKey: ['tabletTableInfo', tableId],
+    queryFn: () => tableApi.getTableById(tableId!),
+    enabled: !!tableId,
+    refetchInterval: 5000,
+  })
+
+  const activeSessionId = table?.activeSessionId
+
+  const resetTabletData = () => {
+    useCartStore.getState().clearCart()
+    useAiChatStore.getState().clearAll()
+    queryClient.removeQueries({ queryKey: ['orders'] })
+    queryClient.invalidateQueries({ queryKey: ['tabletTableInfo', tableId] })
+  }
+
+  // 1. Realtime STOMP Subscription for session closed event
+  useEffect(() => {
+    if (!activeSessionId) return
+
+    const unsub = subscribeToTopic(
+      `/topic/session/${activeSessionId}/orders`,
+      (event: any) => {
+        if (event?.status === 'CLOSED') {
+          resetTabletData()
+          toast.info('Phiên phục vụ của bàn đã kết thúc. Cảm ơn quý khách!')
+          navigate('/tablet/welcome', { replace: true })
+        }
+      }
+    )
+
+    return () => {
+      unsub()
+    }
+  }, [activeSessionId, tableId, navigate])
+
+  // 2. Fallback check: if table has no active session and user is not on welcome page
+  useEffect(() => {
+    if (table && !table.activeSessionId && location.pathname !== '/tablet/welcome') {
+      resetTabletData()
+      toast.info('Phiên phục vụ của bàn đã kết thúc. Cảm ơn quý khách!')
+      navigate('/tablet/welcome', { replace: true })
+    }
+  }, [table?.activeSessionId, location.pathname, navigate])
 
   const handleLogout = async () => {
     try {
@@ -16,6 +71,8 @@ export function TabletLayout() {
       // ignore
     } finally {
       clearAuth()
+      useAiChatStore.getState().clearAll()
+      useCartStore.getState().clearCart()
       toast.success('Đã đăng xuất máy tính bảng')
       navigate('/login')
     }

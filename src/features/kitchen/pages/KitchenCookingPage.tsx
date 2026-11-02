@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { kitchenApi } from '@/features/kitchen/api/kitchenApi'
@@ -11,6 +11,7 @@ import { KitchenCookingOrderCard } from '@/features/kitchen/components/KitchenCo
 import { Button } from '@/shared/components/ui/button'
 
 export function KitchenCookingPage() {
+  const queryClient = useQueryClient()
   const [currentTime, setCurrentTime] = useState<string>(
     new Date().toLocaleTimeString('vi-VN')
   )
@@ -24,26 +25,27 @@ export function KitchenCookingPage() {
     return () => clearInterval(timer)
   }, [])
 
-  // Query COOKING orders for Kitchen
+  // Query active orders for Kitchen cooking screen
   const {
     data: orders = [],
     isLoading,
-    refetch,
   } = useQuery({
     queryKey: ['kitchen', 'orders', 'cooking'],
-    queryFn: () => kitchenApi.getKitchenOrders('COOKING'),
+    queryFn: () => kitchenApi.getKitchenOrders(),
+    staleTime: 0,
+    refetchOnMount: 'always',
   })
 
   // Realtime STOMP Subscription
   useEffect(() => {
     const unsubKitchen = subscribeToTopic('/topic/kitchen/orders', () => {
-      refetch()
+      queryClient.invalidateQueries({ queryKey: ['kitchen', 'orders'] })
     })
 
     return () => {
       unsubKitchen()
     }
-  }, [refetch])
+  }, [queryClient])
 
   // Update item status handler
   const handleUpdateItemStatus = async (
@@ -58,18 +60,16 @@ export function KitchenCookingPage() {
           ? 'Đã báo món nấu xong (READY)!'
           : 'Đã cập nhật trạng thái món!'
       )
-      await refetch()
+      await queryClient.invalidateQueries({ queryKey: ['kitchen', 'orders'] })
     } catch (err) {
       toast.error(getApiErrorMessage(err))
     }
   }
 
-  // Active cooking orders: at least 1 item is still COOKING or PENDING
+  // Active cooking orders: at least 1 item is currently COOKING
   const activeCookingOrders = useMemo(() => {
     return orders.filter((order) =>
-      order.items.some(
-        (item) => item.status === 'COOKING' || item.status === 'PENDING'
-      )
+      order.items.some((item) => item.status === 'COOKING')
     )
   }, [orders])
 

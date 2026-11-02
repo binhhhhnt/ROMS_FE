@@ -56,13 +56,12 @@ export function KitchenCookingOrderCard({
 
   return (
     <div
-      className={`bg-card border rounded-2xl shadow-xs overflow-hidden flex flex-col transition-all ${
-        isAllReady
+      className={`bg-card border rounded-2xl shadow-xs overflow-hidden flex flex-col transition-all ${isAllReady
           ? 'border-status-ready/60 bg-status-ready/5'
           : isCookingLong
-          ? 'border-status-cooking ring-1 ring-status-cooking/40'
-          : 'border-border'
-      }`}
+            ? 'border-status-cooking ring-1 ring-status-cooking/40'
+            : 'border-border'
+        }`}
     >
       {/* Header: Table, Order ID, and Elapsed Time */}
       <div className="bg-surface/50 p-4 border-b border-border flex items-center justify-between">
@@ -87,13 +86,12 @@ export function KitchenCookingOrderCard({
 
         {/* Elapsed Timer Badge */}
         <div
-          className={`px-3 py-1.5 rounded-lg text-xs font-bold ${
-            isAllReady
+          className={`px-3 py-1.5 rounded-lg text-xs font-bold ${isAllReady
               ? 'bg-status-ready/20 text-status-ready border border-status-ready/30'
               : isCookingLong
-              ? 'bg-status-cooking/20 text-status-cooking border border-status-cooking/40'
-              : 'bg-surface text-muted border border-border'
-          }`}
+                ? 'bg-status-cooking/20 text-status-cooking border border-status-cooking/40'
+                : 'bg-surface text-muted border border-border'
+            }`}
         >
           {isAllReady ? 'Đã xong toàn bộ' : `Đã nấu ${elapsedMinutes} phút`}
         </div>
@@ -114,18 +112,16 @@ export function KitchenCookingOrderCard({
           {order.items.map((item) => (
             <div
               key={item.id}
-              className={`flex items-center justify-between gap-3 p-3 rounded-xl border transition-colors ${
-                item.status === 'READY'
+              className={`flex items-center justify-between gap-3 p-3 rounded-xl border transition-colors ${item.status === 'READY'
                   ? 'bg-emerald-50/60 border-emerald-200'
                   : 'bg-surface/30 border-border'
-              }`}
+                }`}
             >
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span
-                    className={`font-bold text-base block leading-snug ${
-                      item.status === 'READY' ? 'text-status-ready' : 'text-text'
-                    }`}
+                    className={`font-bold text-base block leading-snug ${item.status === 'READY' ? 'text-status-ready' : 'text-text'
+                      }`}
                   >
                     {item.menuItemName}
                   </span>
@@ -177,7 +173,7 @@ export function KitchenCookingOrderCard({
                     disabled={updatingItemId === item.id}
                     className="h-10 px-4 bg-status-ready hover:bg-emerald-600 active:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs cursor-pointer transition-colors disabled:opacity-60"
                   >
-                    {updatingItemId === item.id ? 'Đang lưu...' : 'Xong món (Ra quầy)'}
+                    {updatingItemId === item.id ? 'Đang lưu...' : 'Xong món'}
                   </button>
                 )}
               </div>
