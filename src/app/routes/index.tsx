@@ -39,6 +39,8 @@ import { RecipesPage } from '@/features/recipes/pages/RecipesPage'
 import { PurchasesPage } from '@/features/purchasing/pages/PurchasesPage'
 import { CreatePurchasePage } from '@/features/purchasing/pages/CreatePurchasePage'
 import { PurchaseDetailPage } from '@/features/purchasing/pages/PurchaseDetailPage'
+import { InvoiceCheckoutPage } from '@/features/invoices/pages/InvoiceCheckoutPage'
+import { InvoiceHistoryPage } from '@/features/invoices/pages/InvoiceHistoryPage'
 
 import { UserManagementPage } from '@/features/users/pages/UserManagementPage'
 import { TablesOverviewPage } from '@/features/tables/pages/TablesOverviewPage'
@@ -95,10 +97,15 @@ export function AppRoutes() {
               <Route path="/staff/active-tables" element={<TablesOverviewPage initialActiveOnly={true} />} />
               <Route path="/tables/:tableId" element={<TableDetailPage />} />
               <Route path="/staff/tables/:tableId" element={<TableDetailPage />} />
+              <Route path="/tables/:tableId/checkout" element={<InvoiceCheckoutPage />} />
               <Route path="/sessions/:sessionId" element={<SessionDetailPage />} />
               <Route path="/staff/sessions/:sessionId" element={<SessionDetailPage />} />
+              <Route path="/staff/sessions/:sessionId/checkout" element={<InvoiceCheckoutPage />} />
               <Route path="/sessions/history" element={<SessionHistoryPage />} />
               <Route path="/staff/sessions/history" element={<SessionHistoryPage />} />
+              <Route path="/invoices" element={<InvoiceHistoryPage />} />
+              <Route path="/staff/invoices" element={<InvoiceHistoryPage />} />
+              <Route path="/owner/invoices" element={<InvoiceHistoryPage />} />
               <Route path="/ai-assistant" element={<AiAssistantPage />} />
               <Route path="/staff/orders" element={<StaffOrdersPage />} />
               <Route path="/staff/orders/:orderId" element={<StaffOrderDetailPage />} />

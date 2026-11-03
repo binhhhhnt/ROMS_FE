@@ -15,6 +15,7 @@ import {
   BellRing,
   Utensils,
   CheckCircle2,
+  Receipt,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -192,6 +193,44 @@ export function TableDetailPage() {
     },
   })
 
+  // Check order status before close / checkout
+  const hasUnfinishedDishes = useMemo(() => {
+    return sessionOrders.some(
+      (o) =>
+        o.status === 'PENDING' ||
+        o.status === 'COOKING' ||
+        o.items?.some(
+          (i) => i.status === 'PENDING' || i.status === 'COOKING' || i.status === 'READY'
+        )
+    )
+  }, [sessionOrders])
+
+  const hasCompletedDishes = useMemo(() => {
+    return sessionOrders.some(
+      (o) =>
+        o.status === 'COMPLETED' ||
+        o.items?.some((i) => i.status === 'COMPLETED')
+    )
+  }, [sessionOrders])
+
+  const handleInitiateCloseOrCheckout = () => {
+    if (hasUnfinishedDishes) {
+      toast.error(
+        'Bàn vẫn còn món chưa hoàn thành (đang chờ, đang nấu hoặc chưa bưng ra bàn). Vui lòng hoàn tất hoặc hủy trước khi đóng phiên!',
+        { duration: 6000 }
+      )
+      return
+    }
+
+    if (hasCompletedDishes) {
+      navigate(`/tables/${id}/checkout`)
+      return
+    }
+
+    // Không có món nào hoàn thành -> Đóng trực tiếp
+    setIsCloseConfirmOpen(true)
+  }
+
   // Close session mutation
   const closeSessionMutation = useMutation({
     mutationFn: () => tableApi.closeSession(activeSessionId!),
@@ -367,12 +406,21 @@ export function TableDetailPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setIsCloseConfirmOpen(true)}
+                    onClick={handleInitiateCloseOrCheckout}
                     isLoading={closeSessionMutation.isPending}
                     className="text-xs text-status-cancelled hover:bg-status-cancelled/10 border-status-cancelled/30"
                   >
-                    <CheckCircle className="w-3.5 h-3.5 mr-1" />
-                    Đóng phiên
+                    {hasCompletedDishes ? (
+                      <>
+                        <Receipt className="w-3.5 h-3.5 mr-1" />
+                        Thanh toán & Đóng phiên
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="w-3.5 h-3.5 mr-1" />
+                        Đóng phiên
+                      </>
+                    )}
                   </Button>
                 </div>
               </div>
@@ -634,7 +682,7 @@ export function TableDetailPage() {
         title={`Xác nhận đóng phiên Bàn ${table?.tableCode}`}
         description={
           <span>
-            Bạn có chắc chắn muốn hoàn tất và đóng phiên phục vụ cho{' '}
+            Bàn này hiện không có đơn gọi món nào (hoặc đã hủy hết). Bạn có chắc chắn muốn đóng trực tiếp phiên phục vụ cho{' '}
             <strong className="text-text">Bàn {table?.tableCode}</strong>?
             <span className="block mt-1 text-[11px] text-muted">
               Lưu ý: Sau khi đóng phiên, bàn sẽ trở về trạng thái trống và sẵn sàng đón lượt khách mới.

@@ -14,8 +14,10 @@ import {
 import { toast } from 'sonner'
 
 import { tableApi } from '@/features/tables/api/tableApi'
+import { orderApi } from '@/features/ordering/api/orderApi'
 import type { TableTransferHistoryItem } from '@/features/tables/types/table.types'
 import { TransferTableModal } from '@/features/tables/components/TransferTableModal'
+import { ConfirmDialog } from '@/shared/components/ui/confirm-dialog'
 import { getApiErrorMessage } from '@/shared/lib/axios'
 import { Button } from '@/shared/components/ui/button'
 import { Badge } from '@/shared/components/ui/badge'
@@ -27,6 +29,50 @@ export function SessionDetailPage() {
   const queryClient = useQueryClient()
 
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false)
+  const [isCloseConfirmOpen, setIsCloseConfirmOpen] = useState(false)
+  const [isCheckingOrders, setIsCheckingOrders] = useState(false)
+
+  const handleInitiateClose = async () => {
+    if (!sId) return
+    setIsCheckingOrders(true)
+    try {
+      const orders = await orderApi.getOrders(sId)
+      const hasUnfinished = orders.some(
+        (o) =>
+          o.status === 'PENDING' ||
+          o.status === 'COOKING' ||
+          o.items?.some(
+            (i) => i.status === 'PENDING' || i.status === 'COOKING' || i.status === 'READY'
+          )
+      )
+
+      if (hasUnfinished) {
+        toast.error(
+          'Bàn vẫn còn món chưa hoàn thành (đang chờ, đang nấu hoặc chưa bưng ra bàn). Vui lòng hoàn tất hoặc hủy trước khi đóng phiên!',
+          { duration: 6000 }
+        )
+        return
+      }
+
+      const hasCompleted = orders.some(
+        (o) =>
+          o.status === 'COMPLETED' ||
+          o.items?.some((i) => i.status === 'COMPLETED')
+      )
+
+      if (hasCompleted) {
+        navigate(`/staff/sessions/${sId}/checkout`)
+        return
+      }
+
+      // Không có món nào hoàn tất -> mở popup xác nhận đóng trực tiếp
+      setIsCloseConfirmOpen(true)
+    } catch (err) {
+      toast.error(getApiErrorMessage(err) || 'Không thể kiểm tra đơn gọi món của phiên')
+    } finally {
+      setIsCheckingOrders(false)
+    }
+  }
 
   // Fetch session detail
   const {
@@ -150,15 +196,11 @@ export function SessionDetailPage() {
               </Button>
               <Button
                 variant="destructive"
-                onClick={() => {
-                  if (confirm('Bạn có chắc chắn muốn kết thúc phiên phục vụ này? Sau khi đóng, bàn sẽ trở về trạng thái trống.')) {
-                    closeSessionMutation.mutate()
-                  }
-                }}
-                disabled={closeSessionMutation.isPending}
+                onClick={handleInitiateClose}
+                disabled={closeSessionMutation.isPending || isCheckingOrders}
               >
                 <CheckCircle className="h-4 w-4 mr-2" />
-                Kết thúc phiên
+                {isCheckingOrders ? 'Đang kiểm tra...' : 'Kết thúc phiên'}
               </Button>
             </>
           )}
@@ -291,6 +333,20 @@ export function SessionDetailPage() {
           }}
         />
       )}
+          <ConfirmDialog
+        isOpen={isCloseConfirmOpen}
+        onClose={() => setIsCloseConfirmOpen(false)}
+        onConfirm={() => {
+          setIsCloseConfirmOpen(false)
+          closeSessionMutation.mutate()
+        }}
+        title="Xác nhận kết thúc phiên"
+        description="Phiên phục vụ này không có món ăn nào cần thanh toán. Bạn có chắc chắn muốn kết thúc phiên phục vụ này? Sau khi đóng, bàn sẽ trở về trạng thái trống."
+        confirmText="Kết thúc phiên"
+        cancelText="Hủy"
+        variant="destructive"
+        isLoading={closeSessionMutation.isPending}
+      />
     </div>
   )
 }

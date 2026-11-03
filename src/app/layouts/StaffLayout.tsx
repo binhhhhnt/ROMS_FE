@@ -152,6 +152,13 @@ export function StaffLayout() {
                 Lịch sử phiên bàn
               </Link>
               <Link
+                to="/invoices"
+                className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text hover:bg-surface/50 transition-colors"
+              >
+                <Receipt className="w-4 h-4 text-accent" />
+                Lịch sử hóa đơn
+              </Link>
+              <Link
                 to="/ai-assistant"
                 className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text hover:bg-surface/50 transition-colors"
               >

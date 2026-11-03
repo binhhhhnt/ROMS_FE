@@ -52,19 +52,35 @@ export function TabletCheckoutPage() {
       return
     }
 
-    if (!effectiveSessionId) {
-      toast.error('Bàn chưa có phiên phục vụ đang hoạt động. Vui lòng mở phiên phục vụ trước.')
-      setErrorMessage('Bàn chưa có phiên phục vụ đang hoạt động. Vui lòng quay lại trang Chào mừng để bắt đầu phiên phục vụ.')
-      return
-    }
-
     setIsLoading(true)
     setConflictDetails(null)
     setErrorMessage(null)
 
+    let currentSessionId = effectiveSessionId
+    if (!currentSessionId && tableId) {
+      try {
+        const newSession = await tableApi.openSession(tableId)
+        currentSessionId = newSession.id
+        queryClient.invalidateQueries({ queryKey: ['tabletTableInfo', tableId] })
+        toast.success('Đã tự động khởi tạo phiên phục vụ mới cho bàn!')
+      } catch (err) {
+        toast.error(getApiErrorMessage(err) || 'Không thể mở phiên phục vụ cho bàn')
+        setErrorMessage('Không thể mở phiên phục vụ cho bàn. Vui lòng liên hệ nhân viên.')
+        setIsLoading(false)
+        return
+      }
+    }
+
+    if (!currentSessionId) {
+      toast.error('Bàn chưa có phiên phục vụ đang hoạt động. Vui lòng quay lại trang Chào mừng.')
+      setErrorMessage('Bàn chưa có phiên phục vụ đang hoạt động. Vui lòng quay lại trang Chào mừng để bắt đầu phiên phục vụ.')
+      setIsLoading(false)
+      return
+    }
+
     try {
       const orderPayload = {
-        sessionId: Number(effectiveSessionId),
+        sessionId: Number(currentSessionId),
         items: items.map((item) => ({
           menuItemId: item.menuItemId,
           quantity: item.quantity,
