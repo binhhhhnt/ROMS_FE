@@ -9,6 +9,7 @@ import { MenuFeedback } from '../components/MenuFeedback'
 import { MenuPagination } from '../components/MenuPagination'
 import { MenuStatusBadge } from '../components/MenuStatusBadge'
 import { MenuImage } from '../components/MenuImage'
+import { CatalogDeleteButton } from '../components/CatalogDeleteButton'
 import { formatMenuPrice, getMenuErrorMessage, orderedMenuImages } from '../utils/menu'
 
 export function MenuItemListPage() {
@@ -33,7 +34,7 @@ export function MenuItemListPage() {
             : <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm" aria-busy={query.isFetching}>
               <table className="w-full text-left text-sm">
                 <caption className="sr-only">Danh sách món theo danh mục và trạng thái</caption>
-                <thead className="bg-surface/30 text-xs text-muted"><tr><th scope="col" className="px-5 py-4">Món ăn</th><th scope="col" className="px-5 py-4">Danh mục</th><th scope="col" className="px-5 py-4">Giá</th><th scope="col" className="px-5 py-4">Trạng thái</th><th scope="col" className="px-5 py-4">Khả dụng hiện tại</th></tr></thead>
+                <thead className="bg-surface/30 text-xs text-muted"><tr><th scope="col" className="px-5 py-4">Món ăn</th><th scope="col" className="px-5 py-4">Danh mục</th><th scope="col" className="px-5 py-4">Giá</th><th scope="col" className="px-5 py-4">Trạng thái</th><th scope="col" className="px-5 py-4">Khả dụng hiện tại</th><th scope="col" className="px-5 py-4 text-right">Thao tác</th></tr></thead>
                 <tbody className="divide-y divide-border">
                   {data?.content.map((item) => <tr key={item.id} className="hover:bg-surface/20">
                     <th scope="row" className="min-w-56 px-5 py-4"><div className="flex items-center gap-3"><MenuImage src={orderedMenuImages(item.images)[0]?.imageUrl} name={item.name} className="h-14 w-14 shrink-0 rounded-lg" /><div><Link className="font-semibold text-primary hover:underline focus-visible:outline-accent" to={`/owner/menu-items/${item.id}`}>{item.name}</Link>{item.isFeatured && <div className="mt-1"><Badge variant="secondary">Nổi bật</Badge></div>}</div></div></th>
@@ -41,6 +42,12 @@ export function MenuItemListPage() {
                     <td className="whitespace-nowrap px-5 py-4 font-semibold">{formatMenuPrice(item.price)}</td>
                     <td className="whitespace-nowrap px-5 py-4"><MenuStatusBadge status={item.status} /></td>
                     <td className="min-w-44 px-5 py-4 text-muted">{item.availability.sellable ? 'Có thể đặt món' : 'Hiện chưa thể đặt món'}</td>
+                    <td className="px-5 py-4"><div className="flex items-center justify-end gap-2 whitespace-nowrap">
+                      <Link to={`/owner/menu-items/${item.id}`} className="inline-flex min-h-10 items-center rounded-md px-3 text-sm font-medium text-primary hover:bg-surface/40">Chỉnh sửa</Link>
+                      <CatalogDeleteButton kind="dish" id={item.id} name={item.name} onDeleted={() => {
+                        if (data.content.length === 1 && filters.params.page > 0) filters.change('page', String(filters.params.page - 1))
+                      }} />
+                    </div></td>
                   </tr>)}
                 </tbody>
               </table>

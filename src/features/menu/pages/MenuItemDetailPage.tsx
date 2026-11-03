@@ -1,4 +1,4 @@
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { menuApi } from '../api/menuApi'
 import { useMenuItem, useRefreshMenu } from '../hooks/useMenu'
@@ -11,6 +11,7 @@ import type { MenuItemWriteRequest } from '../types/menu.types'
 
 export function MenuItemDetailPage() {
   const { itemId } = useParams()
+  const navigate = useNavigate()
   const id = positiveMenuId(itemId)
   const query = useMenuItem(id)
   const refresh = useRefreshMenu()
@@ -29,7 +30,7 @@ export function MenuItemDetailPage() {
         : query.isPending ? <MenuFeedback message="Đang tải thông tin món..." loading />
         : query.isError ? <MenuFeedback message={getMenuErrorMessage(query.error)} retry={() => void query.refetch()} />
         : item && <>
-          <MenuItemForm key={item.id} item={item} onSave={save} />
+          <MenuItemForm key={item.id} item={item} onSave={save} onDeleted={() => navigate('/owner/menu-items', { replace: true })} />
           <MenuStatusControl key={`${item.id}-${item.status}`} item={item} onChanged={refresh} />
           <MenuImageManager key={item.id} menuItemId={item.id} images={item.images} onChanged={refresh} />
         </>}

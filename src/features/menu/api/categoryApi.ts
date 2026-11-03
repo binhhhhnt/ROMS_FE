@@ -4,6 +4,9 @@ import type { ApiResponse, PageResponse } from '@/shared/types/api.types'
 import type { CategoryResponse, CategoryWriteRequest } from '../types/category.types'
 
 export const categoryApi = {
+  async remove(id: number) {
+    await apiClient.delete(`/api/categories/${id}`)
+  },
   async list(page: number, size: number, signal?: AbortSignal) {
     const response = await apiClient.get<ApiResponse<PageResponse<CategoryResponse>>>(
       '/api/categories',

@@ -1,116 +1,41 @@
 import { Link } from 'react-router-dom'
-import { ShoppingCart, Utensils, ArrowLeft, PlusCircle } from 'lucide-react'
+import { ShoppingCart, Utensils, ArrowLeft, Plus } from 'lucide-react'
 import { useCartStore } from '@/features/ordering/store/cartStore'
 import { CartItemList } from '@/features/ordering/components/CartItemList'
 import { CartSummary } from '@/features/ordering/components/CartSummary'
-import { Button } from '@/shared/components/ui/button'
 
 export function TabletCartPage() {
-  const { items, addItem } = useCartStore()
-
-  // Helper function to seed mock items for testing
-  const handleAddSampleItems = () => {
-    addItem({
-      menuItemId: 1,
-      name: 'Bò Wagyu Nướng Tảng',
-      price: 350000,
-      note: 'Chín vừa (Medium)',
-    })
-    addItem({
-      menuItemId: 2,
-      name: 'Salad Cá Hồi Xốt Chanh Leo',
-      price: 145000,
-      note: 'Nước xốt để riêng',
-    })
-    addItem({
-      menuItemId: 3,
-      name: 'Trà Đào Cam Sả',
-      price: 45000,
-      note: 'Ít đá, ít ngọt',
-    })
-  }
-
+  const items = useCartStore((state) => state.items)
   const isEmpty = items.length === 0
 
   return (
-    <div className="flex flex-col gap-6 max-w-6xl mx-auto pb-12">
-      {/* Top Header Bar */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Link to="/tablet/menu">
-            <Button variant="ghost" size="icon" className="h-9 w-9 text-text">
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-          </Link>
-          <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-text">
-              Giỏ hàng của bàn
-            </h2>
-            <p className="text-xs text-muted">
-              Kiểm tra các món ăn trước khi chuyển bếp chế biến
-            </p>
-          </div>
+    <section className="mx-auto flex max-w-6xl flex-col gap-6 pb-8">
+      <Link to="/tablet/menu" className="inline-flex min-h-11 w-fit items-center gap-2 rounded-lg text-sm font-semibold text-muted hover:text-primary focus-visible:outline-2 focus-visible:outline-accent">
+        <ArrowLeft className="h-4 w-4" aria-hidden="true" />Về thực đơn
+      </Link>
+      <header className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-6">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted">Gọi món tại bàn · ROMS</p>
+          <h1 className="mt-2 text-2xl font-bold tracking-tight text-primary md:text-3xl">Giỏ hàng của bạn</h1>
+          <p className="mt-2 text-sm text-muted">Món ngon đã chọn, kiểm tra một chút trước khi gửi bếp nhé.</p>
         </div>
-
-        {/* Quick Sample Add Button for testing */}
-        {isEmpty && (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={handleAddSampleItems}
-            className="text-xs text-accent border-accent/40 hover:bg-surface"
-          >
-            <PlusCircle className="w-3.5 h-3.5 mr-1" />
-            Thêm món mẫu thử nghiệm
-          </Button>
-        )}
-      </div>
-
-      {/* Main Content Area */}
-      {isEmpty ? (
-        <div className="bg-card border border-dashed border-border rounded-2xl p-12 text-center flex flex-col items-center justify-center my-6 shadow-sm">
-          <div className="w-20 h-20 rounded-full bg-surface/60 flex items-center justify-center text-accent mb-4">
-            <ShoppingCart className="w-10 h-10 text-accent/80" />
-          </div>
-          <h3 className="text-lg font-bold text-text mb-1">
-            Giỏ hàng của bạn đang trống
-          </h3>
-          <p className="text-sm text-muted max-w-sm mb-6">
-            Bàn của bạn chưa chọn món nào. Hãy khám phá thực đơn để thưởng thức các món ăn ngon miệng!
-          </p>
-          <div className="flex items-center gap-3">
-            <Link to="/tablet/menu">
-              <Button variant="primary" size="lg" className="font-semibold shadow-md">
-                <Utensils className="w-4 h-4 mr-2" />
-                Xem thực đơn ngay
-              </Button>
-            </Link>
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={handleAddSampleItems}
-              className="text-accent border-accent/40 hover:bg-surface font-semibold"
-            >
-              <PlusCircle className="w-4 h-4 mr-2" />
-              Thêm món mẫu
-            </Button>
-          </div>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Left Column: Items List */}
-          <div className="lg:col-span-7 xl:col-span-8">
-            <CartItemList items={items} />
-          </div>
-
-          {/* Right Column: Order Summary */}
-          <div className="lg:col-span-5 xl:col-span-4">
-            <CartSummary />
-          </div>
-        </div>
-      )}
-    </div>
+        {!isEmpty && <Link to="/tablet/menu" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-border bg-card px-4 text-sm font-semibold text-primary transition-colors hover:bg-surface/40">
+          <Plus className="h-4 w-4" aria-hidden="true" />Chọn thêm món
+        </Link>}
+      </header>
+      {isEmpty ? <div className="flex flex-col items-center rounded-2xl border border-border bg-card px-6 py-16 text-center">
+        <span className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-surface/50"><ShoppingCart className="h-8 w-8 text-accent" aria-hidden="true" /></span>
+        <h2 className="text-xl font-bold text-primary">Giỏ hàng đang chờ món ngon</h2>
+        <p className="mt-2 max-w-sm text-sm leading-relaxed text-muted">Khám phá thực đơn và chọn món yêu thích cho bàn của bạn.</p>
+        <Link to="/tablet/menu" className="mt-6 inline-flex min-h-12 items-center gap-2 rounded-xl bg-primary px-6 text-sm font-semibold text-white hover:bg-primary-hover">
+          <Utensils className="h-4 w-4" aria-hidden="true" />Khám phá thực đơn
+        </Link>
+      </div> : <>
+        <CartItemList items={items} />
+        <CartSummary />
+      </>}
+    </section>
   )
 }
+
 export default TabletCartPage

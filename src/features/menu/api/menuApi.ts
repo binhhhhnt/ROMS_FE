@@ -6,6 +6,9 @@ import type {
 } from '../types/menu.types'
 
 export const menuApi = {
+  async remove(id: number) {
+    await apiClient.delete(`/api/menu-items/${id}`)
+  },
   async list(params: MenuListParams, signal?: AbortSignal) {
     const response = await apiClient.get<ApiResponse<PageResponse<MenuItemReadResponse>>>(
       '/api/menu-items', { params, signal },

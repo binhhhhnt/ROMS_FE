@@ -8,6 +8,7 @@ import { AuthGuard, PublicOnlyGuard, RoleGuard } from '@/app/routes/guards'
 import { LoginPage } from '@/features/auth/pages/LoginPage'
 import { AccessDeniedPage } from '@/features/auth/pages/AccessDeniedPage'
 import { CategoryManagementPage } from '@/features/menu/pages/CategoryManagementPage'
+import { MenuExcelImportPage } from '@/features/menu/pages/MenuExcelImportPage'
 import { MenuItemListPage } from '@/features/menu/pages/MenuItemListPage'
 import { MenuItemCreatePage } from '@/features/menu/pages/MenuItemCreatePage'
 import { MenuItemDetailPage } from '@/features/menu/pages/MenuItemDetailPage'
@@ -54,6 +55,7 @@ export function AppRoutes() {
           <Route element={<StaffLayout />}>
             <Route element={<RoleGuard allowedRoles={['OWNER']} />}>
               <Route path="/owner/categories" element={<CategoryManagementPage />} />
+              <Route path="/owner/categories/import" element={<MenuExcelImportPage />} />
               <Route path="/owner/menu-items" element={<MenuItemListPage />} />
               <Route path="/owner/menu-items/new" element={<MenuItemCreatePage />} />
               <Route path="/owner/menu-items/:itemId" element={<MenuItemDetailPage />} />
