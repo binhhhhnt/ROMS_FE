@@ -58,13 +58,14 @@ export function TabletOrderTrackingPage() {
 
   // Realtime STOMP Subscription
   useEffect(() => {
-    const topic = activeSessionId
-      ? `/topic/session/${activeSessionId}/orders`
-      : '/topic/kitchen/orders'
+    if (!activeSessionId) return
 
-    const unsubscribeSession = subscribeToTopic(topic, () => {
-      refetch()
-    })
+    const unsubscribeSession = subscribeToTopic(
+      `/topic/session/${activeSessionId}/orders`,
+      () => {
+        refetch()
+      }
+    )
 
     return () => {
       unsubscribeSession()
