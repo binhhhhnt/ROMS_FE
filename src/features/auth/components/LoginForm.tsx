@@ -53,7 +53,7 @@ export function LoginForm() {
       if (userProfile.role === 'TABLE_ACCOUNT') {
         navigate('/tablet/welcome', { replace: true })
       } else if (userProfile.role === 'KITCHEN_STAFF') {
-        navigate('/kitchen/queue', { replace: true })
+        navigate('/kitchen/cooking', { replace: true })
       } else if (userProfile.role === 'OWNER') {
         navigate('/owner/dashboard', { replace: true })
       } else if (userProfile.role === 'SERVICE_STAFF') {

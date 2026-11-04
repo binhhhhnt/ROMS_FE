@@ -5,7 +5,7 @@ import { useAuthStore } from '@/app/store/authStore'
 import { authApi } from '@/features/auth/api/authApi'
 import { subscribeToTopic } from '@/shared/lib/stomp'
 import { Button } from '@/shared/components/ui/button'
-import { ChefHat, LogOut, Clock, Flame, CheckCircle2, UtensilsCrossed, BookOpen } from 'lucide-react'
+import { ChefHat, LogOut, Flame, Layers, CheckCircle2, UtensilsCrossed, BookOpen } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/shared/utils/cn'
 
@@ -39,8 +39,8 @@ export function KitchenLayout() {
   }
 
   const navItems = [
-    { label: 'Hàng đợi', path: '/kitchen/queue', icon: Clock },
-    { label: 'Đang nấu', path: '/kitchen/cooking', icon: Flame },
+    { label: 'Chế biến', path: '/kitchen/cooking', icon: Flame },
+    { label: 'Tổng hợp chế biến', path: '/kitchen/summary', icon: Layers },
     { label: 'Chờ bưng món', path: '/kitchen/ready', icon: CheckCircle2 },
     { label: 'Trạng thái món', path: '/kitchen/menu-availability', icon: UtensilsCrossed },
     { label: 'Công thức (BOM)', path: '/kitchen/recipes', icon: BookOpen },

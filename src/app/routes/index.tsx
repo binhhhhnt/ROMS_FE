@@ -22,8 +22,8 @@ import { TabletOrderSuccessPage } from '@/features/ordering/pages/TabletOrderSuc
 import { TabletOrderTrackingPage } from '@/features/ordering/pages/TabletOrderTrackingPage'
 import { StaffOrdersPage } from '@/features/ordering/pages/StaffOrdersPage'
 import { StaffOrderDetailPage } from '@/features/ordering/pages/StaffOrderDetailPage'
-import { KitchenQueuePage } from '@/features/kitchen/pages/KitchenQueuePage'
 import { KitchenCookingPage } from '@/features/kitchen/pages/KitchenCookingPage'
+import { KitchenSummaryPage } from '@/features/kitchen/pages/KitchenSummaryPage'
 import { KitchenReadyPage } from '@/features/kitchen/pages/KitchenReadyPage'
 import { KitchenMenuAvailabilityPage } from '@/features/kitchen/pages/KitchenMenuAvailabilityPage'
 import { ExpensesPage } from '@/features/expenses/pages/ExpensesPage'
@@ -90,24 +90,8 @@ export function AppRoutes() {
               <Route path="/owner/settings" element={<RestaurantSettingsPage />} />
             </Route>
 
-            {/* Service Staff & Owner Routes */}
-            <Route element={<RoleGuard allowedRoles={['OWNER', 'SERVICE_STAFF']} />}>
-              <Route path="/tables" element={<TablesOverviewPage />} />
-              <Route path="/staff/tables" element={<TablesOverviewPage />} />
-              <Route path="/staff/active-tables" element={<TablesOverviewPage initialActiveOnly={true} />} />
-              <Route path="/tables/:tableId" element={<TableDetailPage />} />
-              <Route path="/staff/tables/:tableId" element={<TableDetailPage />} />
-              <Route path="/sessions/:sessionId" element={<SessionDetailPage />} />
-              <Route path="/staff/sessions/:sessionId" element={<SessionDetailPage />} />
-              <Route path="/sessions/history" element={<SessionHistoryPage />} />
-              <Route path="/staff/sessions/history" element={<SessionHistoryPage />} />
-              <Route path="/ai-assistant" element={<AiAssistantPage />} />
-              <Route path="/staff/orders" element={<StaffOrdersPage />} />
-              <Route path="/staff/orders/:orderId" element={<StaffOrderDetailPage />} />
-            </Route>
-
             {/* Inventory Staff & Owner Routes */}
-            <Route element={<RoleGuard allowedRoles={['OWNER', 'INVENTORY_STAFF']} />}>
+            <Route element={<RoleGuard allowedRoles={['INVENTORY_STAFF', 'OWNER']} />}>
               <Route path="/inventory/ingredients" element={<IngredientsPage />} />
               <Route path="/inventory/movements" element={<StockMovementsPage />} />
               <Route path="/inventory/checks" element={<InventoryChecksPage />} />
@@ -116,7 +100,19 @@ export function AppRoutes() {
               <Route path="/inventory/purchases/:purchaseId" element={<PurchaseDetailPage />} />
             </Route>
 
-            {/* Shared Profile & Settings (All Staff & Owner) */}
+            {/* Service Staff & Owner Routes */}
+            <Route element={<RoleGuard allowedRoles={['SERVICE_STAFF', 'OWNER']} />}>
+              <Route path="/tables" element={<TablesOverviewPage />} />
+              <Route path="/tables/:tableId" element={<TableDetailPage />} />
+              <Route path="/sessions/:sessionId" element={<SessionDetailPage />} />
+              <Route path="/sessions/:sessionId/history" element={<SessionHistoryPage />} />
+              <Route path="/orders" element={<StaffOrdersPage />} />
+              <Route path="/orders/:orderId" element={<StaffOrderDetailPage />} />
+            </Route>
+
+            {/* Common Authenticated Routes */}
+            <Route path="/staff/orders" element={<StaffOrdersPage />} />
+            <Route path="/staff/orders/:orderId" element={<StaffOrderDetailPage />} />
             <Route path="/profile" element={<ProfilePage defaultTab="profile" />} />
             <Route path="/profile/change-password" element={<ProfilePage defaultTab="password" />} />
             <Route path="/settings/change-password" element={<ProfilePage defaultTab="password" />} />
@@ -128,9 +124,11 @@ export function AppRoutes() {
           element={<RoleGuard allowedRoles={['KITCHEN_STAFF', 'OWNER']} />}
         >
           <Route element={<KitchenLayout />}>
-            <Route path="/kitchen/queue" element={<KitchenQueuePage />} />
+            <Route path="/kitchen" element={<Navigate to="/kitchen/cooking" replace />} />
+            <Route path="/kitchen/queue" element={<Navigate to="/kitchen/cooking" replace />} />
             <Route path="/kitchen/orders/:orderId" element={<Navigate to="/kitchen/cooking" replace />} />
             <Route path="/kitchen/cooking" element={<KitchenCookingPage />} />
+            <Route path="/kitchen/summary" element={<KitchenSummaryPage />} />
             <Route path="/kitchen/ready" element={<KitchenReadyPage />} />
             <Route path="/kitchen/menu-availability" element={<KitchenMenuAvailabilityPage />} />
             <Route path="/kitchen/recipes" element={<RecipesPage />} />

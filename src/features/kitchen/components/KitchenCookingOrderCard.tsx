@@ -10,12 +10,14 @@ interface KitchenCookingOrderCardProps {
     targetStatus: OrderItemStatus
   ) => Promise<void>
   onReadyAll?: (orderId: number) => Promise<void>
+  onCookAll?: (orderId: number) => Promise<void>
 }
 
 export function KitchenCookingOrderCard({
   order,
   onUpdateItemStatus,
   onReadyAll,
+  onCookAll,
 }: KitchenCookingOrderCardProps) {
   const [updatingItemId, setUpdatingItemId] = useState<number | null>(null)
   const [isFinishingAll, setIsFinishingAll] = useState(false)
@@ -41,17 +43,36 @@ export function KitchenCookingOrderCard({
   const cookingItems = order.items.filter(
     (i) => i.status === 'COOKING' || i.status === 'PENDING'
   )
+  const pendingItems = order.items.filter((i) => i.status === 'PENDING')
+  const hasPendingItems = pendingItems.length > 0
   const readyItems = order.items.filter((i) => i.status === 'READY')
   const isAllReady = cookingItems.length === 0 && readyItems.length > 0
 
-  // Finish all remaining cooking items in this order -> move to READY
+  // Cook all pending items in this order -> move to COOKING
+  const handleCookAllItems = async () => {
+    setIsFinishingAll(true)
+    try {
+      if (onCookAll) {
+        await onCookAll(order.id)
+      } else {
+        for (const item of pendingItems) {
+          await onUpdateItemStatus(order.id, item.id, 'COOKING')
+        }
+      }
+    } finally {
+      setIsFinishingAll(false)
+    }
+  }
+
+  // Finish all COOKING items in this order -> move to READY
   const handleFinishAllItems = async () => {
     setIsFinishingAll(true)
     try {
       if (onReadyAll) {
         await onReadyAll(order.id)
       } else {
-        for (const item of cookingItems) {
+        const currentlyCooking = order.items.filter((i) => i.status === 'COOKING')
+        for (const item of currentlyCooking) {
           await onUpdateItemStatus(order.id, item.id, 'READY')
         }
       }
@@ -101,7 +122,7 @@ export function KitchenCookingOrderCard({
                 : 'bg-surface text-muted border border-border'
           }`}
         >
-          {isAllReady ? 'Đã xong toàn bộ' : `Đã nấu ${elapsedMinutes} phút`}
+          {isAllReady ? 'Đã xong toàn bộ' : `Đã nhận ${elapsedMinutes} phút`}
         </div>
       </div>
 
@@ -128,12 +149,12 @@ export function KitchenCookingOrderCard({
                 className="flex items-center justify-between gap-3 p-3 rounded-xl border transition-colors bg-surface/30 border-border"
               >
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-base block leading-snug text-text">
-                      {item.menuItemName}
-                    </span>
+                  <div className="flex items-center gap-2.5">
                     <span className="w-8 h-8 rounded-lg bg-surface border border-border text-primary flex items-center justify-center font-black text-sm shrink-0">
                       x{item.quantity}
+                    </span>
+                    <span className="font-bold text-base block leading-snug text-text">
+                      {item.menuItemName}
                     </span>
                   </div>
 
@@ -144,7 +165,7 @@ export function KitchenCookingOrderCard({
                   )}
                 </div>
 
-                {/* Status Action Button */}
+                {/* 1 Button Duy Nhất Chuyển Đổi Trạng Thái: Chờ nấu -> Nấu -> Ra món */}
                 <div className="shrink-0">
                   {item.status === 'PENDING' ? (
                     <button
@@ -158,7 +179,8 @@ export function KitchenCookingOrderCard({
                         }
                       }}
                       disabled={updatingItemId === item.id}
-                      className="h-10 px-3.5 bg-surface hover:bg-surface-hover active:bg-surface text-status-cooking font-bold text-xs rounded-xl border border-border cursor-pointer disabled:opacity-60"
+                      className="h-10 px-4 bg-status-cooking/10 hover:bg-status-cooking/20 active:bg-status-cooking/30 text-status-cooking font-bold text-xs rounded-xl border border-status-cooking/30 cursor-pointer disabled:opacity-60 transition-colors shadow-xs"
+                      title="Bắt đầu nấu món này"
                     >
                       {updatingItemId === item.id ? 'Đang lưu...' : 'Nấu'}
                     </button>
@@ -175,6 +197,7 @@ export function KitchenCookingOrderCard({
                       }}
                       disabled={updatingItemId === item.id}
                       className="h-10 px-4 bg-status-ready hover:bg-emerald-600 active:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs cursor-pointer transition-colors disabled:opacity-60"
+                      title="Báo món đã nấu xong và chuyển ra quầy"
                     >
                       {updatingItemId === item.id ? 'Đang lưu...' : 'Ra món'}
                     </button>
@@ -186,21 +209,36 @@ export function KitchenCookingOrderCard({
         </div>
       </div>
 
-      {/* Card Footer: Touch Action */}
+      {/* Card Footer: 1 Nút Chuyển Đổi (Nấu tất cả -> Ra tất cả) */}
       <div className="bg-surface/40 p-4 border-t border-border mt-auto">
         {cookingItems.length > 0 ? (
-          <button
-            type="button"
-            onClick={handleFinishAllItems}
-            disabled={isFinishingAll}
-            className="w-full h-11 bg-primary hover:bg-primary-hover active:bg-primary text-white font-bold text-sm rounded-xl flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer disabled:opacity-60"
-          >
-            {isFinishingAll ? (
-              <span>Đang lưu...</span>
-            ) : (
-              <span>Ra tất cả ({cookingItems.length})</span>
-            )}
-          </button>
+          hasPendingItems ? (
+            <button
+              type="button"
+              onClick={handleCookAllItems}
+              disabled={isFinishingAll}
+              className="w-full h-11 bg-status-cooking hover:bg-orange-600 active:bg-orange-700 text-white font-bold text-sm rounded-xl flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer disabled:opacity-60"
+            >
+              {isFinishingAll ? (
+                <span>Đang lưu...</span>
+              ) : (
+                <span>Nấu tất cả</span>
+              )}
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleFinishAllItems}
+              disabled={isFinishingAll}
+              className="w-full h-11 bg-status-ready hover:bg-emerald-600 active:bg-emerald-700 text-white font-bold text-sm rounded-xl flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer disabled:opacity-60"
+            >
+              {isFinishingAll ? (
+                <span>Đang lưu...</span>
+              ) : (
+                <span>Ra tất cả</span>
+              )}
+            </button>
+          )
         ) : (
           <div className="text-center text-xs font-bold text-status-ready py-1">
             Toàn bộ món đã nấu xong & chuyển ra quầy chờ bưng

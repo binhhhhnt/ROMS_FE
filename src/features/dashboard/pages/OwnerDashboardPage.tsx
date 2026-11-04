@@ -246,7 +246,7 @@ export function OwnerDashboardPage() {
               </Link>
 
               <Link
-                to="/kitchen/queue"
+                to="/kitchen/cooking"
                 className="flex items-center justify-between p-2.5 rounded-lg border border-border hover:bg-surface/50 text-text transition-colors"
               >
                 <div className="flex items-center gap-2">

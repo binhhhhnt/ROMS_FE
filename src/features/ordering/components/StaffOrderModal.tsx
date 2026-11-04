@@ -276,11 +276,10 @@ export function StaffOrderModal({
                 <button
                   type="button"
                   onClick={() => setSelectedCategory('ALL')}
-                  className={`text-xs px-3 py-1.5 rounded-lg whitespace-nowrap font-medium transition-colors ${
-                    selectedCategory === 'ALL'
+                  className={`text-xs px-3 py-1.5 rounded-lg whitespace-nowrap font-medium transition-colors ${selectedCategory === 'ALL'
                       ? 'bg-primary text-white shadow-xs'
                       : 'bg-surface hover:bg-surface/80 text-muted'
-                  }`}
+                    }`}
                 >
                   Tất cả
                 </button>
@@ -289,11 +288,10 @@ export function StaffOrderModal({
                     key={cat.id}
                     type="button"
                     onClick={() => setSelectedCategory(cat.id.toString())}
-                    className={`text-xs px-3 py-1.5 rounded-lg whitespace-nowrap font-medium transition-colors ${
-                      selectedCategory === cat.id.toString()
+                    className={`text-xs px-3 py-1.5 rounded-lg whitespace-nowrap font-medium transition-colors ${selectedCategory === cat.id.toString()
                         ? 'bg-primary text-white shadow-xs'
                         : 'bg-surface hover:bg-surface/80 text-muted'
-                    }`}
+                      }`}
                   >
                     {cat.name}
                   </button>
@@ -321,11 +319,10 @@ export function StaffOrderModal({
                     return (
                       <div
                         key={item.id}
-                        className={`p-3 rounded-xl border flex flex-col justify-between gap-2.5 transition-all ${
-                          qty > 0
+                        className={`p-3 rounded-xl border flex flex-col justify-between gap-2.5 transition-all ${qty > 0
                             ? 'border-primary/50 bg-primary/5 shadow-xs'
                             : 'border-border bg-card hover:border-accent/40'
-                        }`}
+                          }`}
                       >
                         <div>
                           <div className="flex items-start justify-between gap-2">
@@ -511,7 +508,7 @@ export function StaffOrderModal({
                   className="flex-2 bg-primary hover:bg-primary-hover text-white text-xs font-bold gap-1.5 shadow-sm"
                 >
                   <Send className="w-3.5 h-3.5" />
-                  {isSubmitting ? 'Đang gửi...' : 'Gửi bếp (PENDING)'}
+                  {isSubmitting ? 'Đang gửi...' : 'Gửi bếp'}
                 </Button>
               </div>
             </div>

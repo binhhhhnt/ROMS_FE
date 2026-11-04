@@ -54,15 +54,15 @@ export function KitchenReadyTableCard({
           {readyItems.map((item) => (
             <div
               key={item.id}
-              className="flex items-center justify-between gap-3 p-3 rounded-xl bg-surface/30 border border-border"
+              className="flex items-center justify-between gap-3 p-3 rounded-xl bg-surface/30 border border-border transition-colors"
             >
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-text text-base block leading-snug">
-                    {item.menuItemName}
-                  </span>
                   <span className="w-8 h-8 rounded-lg bg-surface border border-border text-primary flex items-center justify-center font-black text-sm shrink-0">
                     x{item.quantity}
+                  </span>
+                  <span className="font-bold text-text text-base block leading-snug">
+                    {item.menuItemName}
                   </span>
                 </div>
 
@@ -84,7 +84,7 @@ export function KitchenReadyTableCard({
         </div>
       </div>
 
-      {/* Footer Info */}
+      {/* Footer Info: Read-only Monitoring */}
       <div className="bg-surface/40 p-4 border-t border-border flex items-center justify-between gap-3 mt-auto">
         <span className="text-xs text-muted">
           Tổng: <strong>{readyItems.reduce((s, i) => s + i.quantity, 0)}</strong> suất tại quầy

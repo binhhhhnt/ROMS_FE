@@ -15,7 +15,6 @@ export function KitchenCookingPage() {
   const [currentTime, setCurrentTime] = useState<string>(
     new Date().toLocaleTimeString('vi-VN')
   )
-  const [filterMode, setFilterMode] = useState<'active' | 'all'>('active')
 
   // Real-time ticking clock
   useEffect(() => {
@@ -47,18 +46,25 @@ export function KitchenCookingPage() {
     }
   }, [queryClient])
 
-  // Update item status handler
+  // Update item status handler (Strict state machine: PENDING -> COOKING -> READY)
   const handleUpdateItemStatus = async (
     orderId: number,
     itemId: number,
     targetStatus: OrderItemStatus
   ) => {
     try {
+      const order = orders.find((o) => o.id === orderId)
+      const currentItem = order?.items.find((i) => i.id === itemId)
+      if (currentItem?.status === 'PENDING' && targetStatus !== 'COOKING') {
+        toast.error('Món chưa nấu, phải bắt đầu "Nấu" trước khi ra món!')
+        return
+      }
+
       await kitchenApi.updateOrderItemStatus(orderId, itemId, targetStatus)
       toast.success(
         targetStatus === 'READY'
           ? 'Đã báo món nấu xong (READY)!'
-          : 'Đã cập nhật trạng thái món!'
+          : 'Đã nhận món vào chế biến (COOKING)!'
       )
       await queryClient.invalidateQueries({ queryKey: ['kitchen', 'orders'] })
     } catch (err) {
@@ -66,27 +72,43 @@ export function KitchenCookingPage() {
     }
   }
 
-  // Ready all items in an order
-  const handleReadyAll = async (orderId: number) => {
+  // Cook all pending items in an order
+  const handleCookAll = async (orderId: number) => {
     try {
-      await kitchenApi.readyAll(orderId)
-      toast.success(`Đã ra tất cả món cho đơn #${orderId}!`)
+      await kitchenApi.cookAll(orderId)
+      toast.success(`Đã nhận nấu tất cả món cho đơn #${orderId}!`)
       await queryClient.invalidateQueries({ queryKey: ['kitchen', 'orders'] })
     } catch (err) {
       toast.error(getApiErrorMessage(err))
     }
   }
 
-  // Active cooking orders: at least 1 item is currently COOKING
+  // Ready all items in an order that are currently COOKING
+  const handleReadyAll = async (orderId: number) => {
+    try {
+      const order = orders.find((o) => o.id === orderId)
+      if (!order) return
+      const cookingItems = order.items.filter((i) => i.status === 'COOKING')
+      if (cookingItems.length === 0) {
+        toast.error('Chưa có món nào đang nấu để ra quầy!')
+        return
+      }
+      await kitchenApi.readyAll(orderId)
+      toast.success(`Đã ra tất cả món đang nấu cho đơn #${orderId}!`)
+      await queryClient.invalidateQueries({ queryKey: ['kitchen', 'orders'] })
+    } catch (err) {
+      toast.error(getApiErrorMessage(err))
+    }
+  }
+
+  // Active cooking orders: includes orders with items that are COOKING or PENDING
   const activeCookingOrders = useMemo(() => {
     return orders.filter((order) =>
-      order.items.some((item) => item.status === 'COOKING')
+      order.items.some((item) => item.status === 'COOKING' || item.status === 'PENDING')
     )
   }, [orders])
 
-  const displayedOrders = filterMode === 'active' ? activeCookingOrders : orders
-
-  // Calculate statistics across active cooking orders
+  // Calculate statistics across active orders
   const stats = useMemo(() => {
     let totalDishes = 0
     let cookingDishes = 0
@@ -120,7 +142,7 @@ export function KitchenCookingPage() {
             </span>
           </div>
           <p className="text-xs text-muted mt-0.5">
-            Quản lý tiến độ nấu từng món. Khi món nấu xong, bấm &ldquo;Xong món&rdquo; để chuyển ra quầy chờ bưng
+            Quản lý tiến độ nấu từng món. Khi món nấu xong, bấm &ldquo;Ra món&rdquo; để chuyển ra quầy chờ bưng
           </p>
         </div>
 
@@ -133,41 +155,6 @@ export function KitchenCookingPage() {
             {currentTime}
           </div>
         </div>
-      </div>
-
-      {/* Filter Tabs Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-surface/60 px-3 py-2 rounded-xl border border-border">
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setFilterMode('active')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
-              filterMode === 'active'
-                ? 'bg-primary text-white shadow-xs'
-                : 'text-muted hover:text-text hover:bg-surface'
-            }`}
-          >
-            Đang cần nấu ({activeCookingOrders.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setFilterMode('all')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
-              filterMode === 'all'
-                ? 'bg-primary text-white shadow-xs'
-                : 'text-muted hover:text-text hover:bg-surface'
-            }`}
-          >
-            Tất cả đơn ({orders.length})
-          </button>
-        </div>
-
-        <Link
-          to="/kitchen/ready"
-          className="text-xs font-semibold text-status-ready hover:underline pr-2"
-        >
-          <span>Xem Quầy chờ bưng món ({stats.readyDishes} suất đã ra quầy)</span>
-        </Link>
       </div>
 
       {/* Main Grid */}
@@ -190,17 +177,17 @@ export function KitchenCookingPage() {
             </div>
           ))}
         </div>
-      ) : displayedOrders.length === 0 ? (
+      ) : activeCookingOrders.length === 0 ? (
         <div className="bg-card border border-dashed border-border rounded-2xl p-16 text-center flex flex-col items-center justify-center my-8 shadow-xs">
           <h2 className="text-lg font-bold text-text mb-1">
-            {filterMode === 'active' && orders.length > 0
+            {orders.length > 0
               ? 'Tất cả các món đã nấu xong & chuyển ra quầy!'
-              : 'Hiện không có món nào đang nấu'}
+              : 'Hiện không có món nào cần nấu'}
           </h2>
           <p className="text-xs text-muted max-w-md leading-relaxed mb-6">
-            {filterMode === 'active' && orders.length > 0
+            {orders.length > 0
               ? 'Toàn bộ món ăn của các đơn đang chế biến đã chuyển sang quầy chờ bưng. Bạn có thể sang màn hình Quầy chờ bưng món để theo dõi phục vụ.'
-              : 'Bếp đã hoàn thành tất cả các món ăn hoặc chưa nhận đơn mới từ Hàng đợi.'}
+              : 'Bếp đã hoàn thành tất cả các món ăn hoặc chưa có đơn hàng mới được đặt từ khách.'}
           </p>
           <div className="flex gap-3">
             <Link to="/kitchen/ready">
@@ -212,25 +199,17 @@ export function KitchenCookingPage() {
                 Xem Quầy Chờ Bưng Món
               </Button>
             </Link>
-            <Link to="/kitchen/queue">
-              <Button
-                variant="outline"
-                size="md"
-                className="border-border text-text hover:bg-surface font-semibold"
-              >
-                Hàng đợi KDS
-              </Button>
-            </Link>
           </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {displayedOrders.map((order) => (
+          {activeCookingOrders.map((order) => (
             <KitchenCookingOrderCard
               key={order.id}
               order={order}
               onUpdateItemStatus={handleUpdateItemStatus}
               onReadyAll={handleReadyAll}
+              onCookAll={handleCookAll}
             />
           ))}
         </div>
