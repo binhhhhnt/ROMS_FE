@@ -43,7 +43,7 @@ export const orderApi = {
   ): Promise<OrderResponse> {
     const res = await apiClient.post<ApiResponse<OrderResponse>>(
       `/api/orders/${id}/cancel`,
-      cancelReason ? { cancelReason } : {}
+      cancelReason ? { reason: cancelReason } : {}
     )
     return res.data.data
   },
@@ -55,7 +55,17 @@ export const orderApi = {
   ): Promise<OrderItemResponse> {
     const res = await apiClient.post<ApiResponse<OrderItemResponse>>(
       `/api/orders/${orderId}/items/${itemId}/cancel`,
-      cancelReason ? { cancelReason } : {}
+      cancelReason ? { reason: cancelReason } : {}
+    )
+    return res.data.data
+  },
+
+  async completeOrderItem(
+    orderId: number,
+    itemId: number
+  ): Promise<OrderItemResponse> {
+    const res = await apiClient.patch<ApiResponse<OrderItemResponse>>(
+      `/api/orders/${orderId}/items/${itemId}/complete`
     )
     return res.data.data
   },

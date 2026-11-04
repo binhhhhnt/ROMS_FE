@@ -251,7 +251,7 @@ export function RecipeEditorDrawer({
                     <option value="">-- Chọn nguyên liệu kho --</option>
                     {selectableIngredients.map((ing) => (
                       <option key={ing.id} value={ing.id}>
-                        {ing.name} ({ing.unit}) — Còn: {ing.currentStock} {ing.unit}
+                        {ing.name} ({ing.unit})
                       </option>
                     ))}
                   </select>

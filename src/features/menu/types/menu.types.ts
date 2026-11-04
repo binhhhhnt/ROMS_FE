@@ -20,6 +20,10 @@ export interface MenuAvailability {
 export interface MenuItemReadResponse {
   id: number
   category: CategoryResponse
+  taxCategoryId?: number
+  tax_category_id?: number
+  taxRate?: number
+  tax_rate?: number
   name: string
   description: string | null
   price: number
@@ -31,6 +35,7 @@ export interface MenuItemReadResponse {
 
 export interface MenuItemWriteRequest {
   categoryId: number
+  taxCategoryId?: number
   name: string
   description: string
   price: number
@@ -39,6 +44,8 @@ export interface MenuItemWriteRequest {
 
 export interface MenuItemWriteResponse extends Omit<MenuItemWriteRequest, 'description'> {
   id: number
+  taxCategoryId?: number
+  taxRate?: number
   description: string | null
   status: MenuStatus
 }
@@ -57,4 +64,12 @@ export interface MenuListParams {
   status?: MenuStatus
   sort: string
   quantity?: number
+}
+
+export interface ExcelImportResult {
+  totalRows: number
+  insertedCount: number
+  updatedCount: number
+  errorCount: number
+  errors: string[]
 }

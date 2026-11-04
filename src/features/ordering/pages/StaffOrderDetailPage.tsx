@@ -17,7 +17,6 @@ import {
 import { toast } from 'sonner'
 
 import { orderApi } from '@/features/ordering/api/orderApi'
-import { kitchenApi } from '@/features/kitchen/api/kitchenApi'
 import { getApiErrorMessage } from '@/shared/lib/axios'
 import type {
   OrderStatus,
@@ -26,6 +25,7 @@ import type {
 import { subscribeToTopic } from '@/shared/lib/stomp'
 import { Badge } from '@/shared/components/ui/badge'
 import { Button } from '@/shared/components/ui/button'
+import { CancelItemModal } from '@/features/ordering/components/CancelItemModal'
 
 export function StaffOrderDetailPage() {
   const { orderId } = useParams<{ orderId: string }>()
@@ -58,11 +58,36 @@ export function StaffOrderDetailPage() {
   const [servingItemId, setServingItemId] = useState<number | null>(null)
   const [isServingAll, setIsServingAll] = useState(false)
 
+  const [cancelTarget, setCancelTarget] = useState<
+    { type: 'ORDER' } | { type: 'ITEM'; itemId: number; itemName: string } | null
+  >(null)
+  const [isCancelling, setIsCancelling] = useState(false)
+
+  const handleCancelConfirm = async (reason: string) => {
+    if (!cancelTarget || !order) return
+    setIsCancelling(true)
+    try {
+      if (cancelTarget.type === 'ORDER') {
+        await orderApi.cancelOrder(order.id, reason)
+        toast.success('Đã hủy đơn hàng thành công, nguyên liệu đã được hoàn lại vào kho!')
+      } else {
+        await orderApi.cancelOrderItem(order.id, cancelTarget.itemId, reason)
+        toast.success(`Đã hủy món "${cancelTarget.itemName}" thành công, nguyên liệu đã được hoàn lại!`)
+      }
+      await refetch()
+    } catch (err) {
+      toast.error(getApiErrorMessage(err) || 'Không thể hủy. Vui lòng thử lại.')
+    } finally {
+      setIsCancelling(false)
+      setCancelTarget(null)
+    }
+  }
+
   const handleCompleteItem = async (itemId: number, itemName: string) => {
     setServingItemId(itemId)
     try {
-      await kitchenApi.updateOrderItemStatus(parsedOrderId, itemId, 'COMPLETED')
-      toast.success(`Đã xác nhận bưng món "${itemName}" ra Bàn ${order?.tableCode}!`)
+      await orderApi.completeOrderItem(parsedOrderId, itemId)
+      toast.success(`Đã xác nhận bưng món "${itemName}" ra Bàn ${order?.tableCode || ''}!`)
       await refetch()
     } catch (err) {
       toast.error(getApiErrorMessage(err))
@@ -77,10 +102,10 @@ export function StaffOrderDetailPage() {
     setIsServingAll(true)
     try {
       for (const item of readyItems) {
-        await kitchenApi.updateOrderItemStatus(parsedOrderId, item.id, 'COMPLETED')
+        await orderApi.completeOrderItem(parsedOrderId, item.id)
       }
       toast.success(
-        `Đã bưng tất cả ${readyItems.length} món sẵn sàng ra Bàn ${order?.tableCode}!`
+        `Đã bưng tất cả ${readyItems.length} món sẵn sàng ra Bàn ${order?.tableCode || ''}!`
       )
       await refetch()
     } catch (err) {
@@ -301,6 +326,17 @@ export function StaffOrderDetailPage() {
 
           <div className="flex items-center gap-3">
             {getOrderStatusBadge(order.status)}
+            {order.status === 'PENDING' && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setCancelTarget({ type: 'ORDER' })}
+                className="text-xs h-8 text-status-cancelled border-status-cancelled/30 hover:bg-status-cancelled hover:text-white"
+              >
+                Hủy đơn hàng
+              </Button>
+            )}
           </div>
         </div>
 
@@ -414,7 +450,20 @@ export function StaffOrderDetailPage() {
                       )}
                     </Button>
                   ) : (
-                    getItemStatusBadge(item.status)
+                    <div className="flex items-center gap-2">
+                      {getItemStatusBadge(item.status)}
+                      {item.status === 'PENDING' && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setCancelTarget({ type: 'ITEM', itemId: item.id, itemName: item.menuItemName })}
+                          className="text-xs h-7 text-status-cancelled hover:bg-status-cancelled/10 px-2"
+                        >
+                          Hủy món
+                        </Button>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
@@ -427,7 +476,7 @@ export function StaffOrderDetailPage() {
           <div className="flex items-center gap-2 text-xs text-muted">
             <Info className="w-4 h-4 text-accent shrink-0" />
             <span>
-              Quy tắc hệ thống: Việc hủy món/đơn chỉ được thực hiện trực tiếp từ Tablet của khách khi ở trạng thái Chờ tiếp nhận.
+              Quy tắc vận hành: Nhân viên phục vụ có toàn quyền hủy đơn hàng hoặc từng món ăn khi ở trạng thái Chờ tiếp nhận (PENDING). Khi hủy, nguyên liệu sẽ được tự động hoàn lại vào kho.
             </span>
           </div>
 
@@ -442,6 +491,16 @@ export function StaffOrderDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Cancel Order / Item Modal */}
+      <CancelItemModal
+        isOpen={cancelTarget !== null}
+        onClose={() => setCancelTarget(null)}
+        onConfirm={handleCancelConfirm}
+        title={cancelTarget?.type === 'ORDER' ? 'Xác nhận hủy toàn bộ đơn hàng' : 'Xác nhận hủy món ăn'}
+        itemName={cancelTarget?.type === 'ITEM' ? cancelTarget.itemName : undefined}
+        isLoading={isCancelling}
+      />
     </div>
   )
 }

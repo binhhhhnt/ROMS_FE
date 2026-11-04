@@ -13,16 +13,22 @@ import {
   ChevronLeft,
   ChevronRight,
   RefreshCw,
+  FileCheck,
+  FileSpreadsheet,
+  Upload,
 } from 'lucide-react'
+import { toast } from 'sonner'
 
 import { ingredientApi } from '@/features/inventory/api/ingredientApi'
 import type { IngredientResponse, StockStatus } from '@/features/inventory/types/ingredient.types'
 import { IngredientFormModal } from '@/features/inventory/components/IngredientFormModal'
 import { DeactivateIngredientModal } from '@/features/inventory/components/DeactivateIngredientModal'
+import { IngredientExcelImportModal } from '@/features/inventory/components/IngredientExcelImportModal'
 import { useAuthStore } from '@/app/store/authStore'
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 import { Badge } from '@/shared/components/ui/badge'
+import { getApiErrorMessage } from '@/shared/lib/axios'
 
 const PAGE_SIZE = 15
 
@@ -36,8 +42,11 @@ export function IngredientsPage() {
   const [stockStatusFilter, setStockStatusFilter] = useState<'ALL' | StockStatus>('ALL')
   const [searchQuery, setSearchQuery] = useState('')
 
-  // Modals
+  // Modals & Excel state
   const [isFormModalOpen, setIsFormModalOpen] = useState(false)
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false)
+  const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false)
+  const [isExportingExcel, setIsExportingExcel] = useState(false)
   const [editingIngredient, setEditingIngredient] = useState<IngredientResponse | null>(null)
   const [deactivatingIngredient, setDeactivatingIngredient] = useState<IngredientResponse | null>(null)
 
@@ -110,6 +119,46 @@ export function IngredientsPage() {
     queryClient.invalidateQueries({ queryKey: ['ingredients'] })
   }
 
+  const handleDownloadTemplate = async () => {
+    try {
+      setIsDownloadingTemplate(true)
+      const blob = await ingredientApi.downloadTemplate()
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = 'ingredients_template.xlsx'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+      toast.success('Đã tải file mẫu Excel nguyên liệu!')
+    } catch (err) {
+      toast.error('Lỗi khi tải file mẫu: ' + getApiErrorMessage(err))
+    } finally {
+      setIsDownloadingTemplate(false)
+    }
+  }
+
+  const handleExportExcel = async () => {
+    try {
+      setIsExportingExcel(true)
+      const blob = await ingredientApi.exportExcel()
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `ingredients_export_${new Date().toISOString().split('T')[0]}.xlsx`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+      toast.success('Đã xuất danh sách nguyên liệu ra file Excel!')
+    } catch (err) {
+      toast.error('Lỗi khi xuất file Excel: ' + getApiErrorMessage(err))
+    } finally {
+      setIsExportingExcel(false)
+    }
+  }
+
   const formatNumber = (num: number | null | undefined) => {
     if (num === null || num === undefined) return '—'
     return Number(num).toLocaleString('vi-VN', {
@@ -131,13 +180,47 @@ export function IngredientsPage() {
                 Nguyên liệu & Tồn kho
               </h1>
               <p className="text-xs md:text-sm text-muted">
-                Quản lý danh mục nguyên vật liệu, theo dõi mức tồn thực tế và định mức cảnh báo.
+                Quản lý danh mục nguyên vật liệu, theo dõi mức tồn thực tế và xuất nhập file Excel.
               </p>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={isDownloadingTemplate}
+            onClick={handleDownloadTemplate}
+            className="gap-1.5 text-xs font-semibold"
+          >
+            <FileCheck className="h-3.5 w-3.5 text-accent" />
+            {isDownloadingTemplate ? 'Đang tải...' : 'Tải file mẫu'}
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={isExportingExcel}
+            onClick={handleExportExcel}
+            className="gap-1.5 text-xs font-semibold"
+          >
+            <FileSpreadsheet className="h-3.5 w-3.5 text-primary" />
+            {isExportingExcel ? 'Đang xuất...' : 'Xuất Excel'}
+          </Button>
+
+          {canModify && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsImportModalOpen(true)}
+              className="gap-1.5 text-xs font-semibold"
+            >
+              <Upload className="h-3.5 w-3.5 text-status-ready" />
+              Nhập Excel
+            </Button>
+          )}
+
           <Button
             variant="outline"
             size="sm"
@@ -447,6 +530,12 @@ export function IngredientsPage() {
         isOpen={Boolean(deactivatingIngredient)}
         onClose={() => setDeactivatingIngredient(null)}
         ingredient={deactivatingIngredient}
+        onSuccess={handleMutationSuccess}
+      />
+
+      <IngredientExcelImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
         onSuccess={handleMutationSuccess}
       />
     </div>

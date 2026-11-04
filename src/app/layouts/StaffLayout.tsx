@@ -19,6 +19,7 @@ import {
   Users,
   Layers,
   Sparkles,
+  Sliders,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -123,6 +124,13 @@ export function StaffLayout() {
               >
                 <BarChart3 className="w-4 h-4 text-accent" />
                 Báo cáo & Thống kê
+              </Link>
+              <Link
+                to="/owner/settings"
+                className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text hover:bg-surface/50 transition-colors"
+              >
+                <Sliders className="w-4 h-4 text-accent" />
+                Cài đặt & Thuế
               </Link>
             </>
           )}

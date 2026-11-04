@@ -3,7 +3,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { kitchenApi } from '@/features/kitchen/api/kitchenApi'
-import type { OrderItemResponse } from '@/features/ordering/types/ordering.types'
 import { subscribeToTopic } from '@/shared/lib/stomp'
 import { getApiErrorMessage } from '@/shared/lib/axios'
 import { KitchenQueueOrderCard } from '@/features/kitchen/components/KitchenQueueOrderCard'
@@ -80,15 +79,10 @@ export function KitchenQueuePage() {
   }
 
   // Accept all pending items for an order into cooking
-  const handleAcceptAllOrderItems = async (
-    orderId: number,
-    items: OrderItemResponse[]
-  ) => {
+  const handleAcceptAllOrderItems = async (orderId: number) => {
     try {
-      for (const item of items) {
-        await kitchenApi.updateOrderItemStatus(orderId, item.id, 'COOKING')
-      }
-      toast.success(`Đã nhận toàn bộ ${items.length} món vào chế biến!`)
+      await kitchenApi.cookAll(orderId)
+      toast.success('Đã nhận toàn bộ món vào chế biến!')
       await queryClient.invalidateQueries({ queryKey: ['kitchen', 'orders'] })
     } catch (err) {
       const msg = getApiErrorMessage(err)

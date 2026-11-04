@@ -5,6 +5,7 @@ import type {
   CreateIngredientRequest,
   UpdateIngredientRequest,
   IngredientFilterParams,
+  ExcelImportResult,
 } from '@/features/inventory/types/ingredient.types'
 
 export const ingredientApi = {
@@ -47,6 +48,33 @@ export const ingredientApi = {
 
   async deactivateIngredient(id: number): Promise<IngredientResponse> {
     const res = await apiClient.patch<ApiResponse<IngredientResponse>>(`/api/ingredients/${id}/deactivate`)
+    return res.data.data
+  },
+
+  async downloadTemplate(): Promise<Blob> {
+    const res = await apiClient.get('/api/ingredients/excel/template', {
+      responseType: 'blob',
+    })
+    return res.data
+  },
+
+  async exportExcel(): Promise<Blob> {
+    const res = await apiClient.get('/api/ingredients/excel/export', {
+      responseType: 'blob',
+    })
+    return res.data
+  },
+
+  async importExcel(file: File): Promise<ExcelImportResult> {
+    const body = new FormData()
+    body.append('file', file)
+    const res = await apiClient.post<ApiResponse<ExcelImportResult>>(
+      '/api/ingredients/excel/import',
+      body,
+      {
+        headers: { 'Content-Type': undefined },
+      }
+    )
     return res.data.data
   },
 }

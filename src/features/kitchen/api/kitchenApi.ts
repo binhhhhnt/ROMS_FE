@@ -37,6 +37,20 @@ export const kitchenApi = {
     return res.data.data
   },
 
+  async cookAll(id: number): Promise<KitchenOrderResponse> {
+    const res = await apiClient.post<ApiResponse<KitchenOrderResponse>>(
+      `/api/kitchen/orders/${id}/cook-all`
+    )
+    return res.data.data
+  },
+
+  async readyAll(id: number): Promise<KitchenOrderResponse> {
+    const res = await apiClient.post<ApiResponse<KitchenOrderResponse>>(
+      `/api/kitchen/orders/${id}/ready-all`
+    )
+    return res.data.data
+  },
+
   async updateOrderItemStatus(
     orderId: number,
     itemId: number,

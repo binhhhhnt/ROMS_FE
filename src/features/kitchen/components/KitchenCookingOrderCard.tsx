@@ -9,11 +9,13 @@ interface KitchenCookingOrderCardProps {
     itemId: number,
     targetStatus: OrderItemStatus
   ) => Promise<void>
+  onReadyAll?: (orderId: number) => Promise<void>
 }
 
 export function KitchenCookingOrderCard({
   order,
   onUpdateItemStatus,
+  onReadyAll,
 }: KitchenCookingOrderCardProps) {
   const [updatingItemId, setUpdatingItemId] = useState<number | null>(null)
   const [isFinishingAll, setIsFinishingAll] = useState(false)
@@ -46,8 +48,12 @@ export function KitchenCookingOrderCard({
   const handleFinishAllItems = async () => {
     setIsFinishingAll(true)
     try {
-      for (const item of cookingItems) {
-        await onUpdateItemStatus(order.id, item.id, 'READY')
+      if (onReadyAll) {
+        await onReadyAll(order.id)
+      } else {
+        for (const item of cookingItems) {
+          await onUpdateItemStatus(order.id, item.id, 'READY')
+        }
       }
     } finally {
       setIsFinishingAll(false)
@@ -56,12 +62,13 @@ export function KitchenCookingOrderCard({
 
   return (
     <div
-      className={`bg-card border rounded-2xl shadow-xs overflow-hidden flex flex-col transition-all ${isAllReady
+      className={`bg-card border rounded-2xl shadow-xs overflow-hidden flex flex-col transition-all ${
+        isAllReady
           ? 'border-status-ready/60 bg-status-ready/5'
           : isCookingLong
             ? 'border-status-cooking ring-1 ring-status-cooking/40'
             : 'border-border'
-        }`}
+      }`}
     >
       {/* Header: Table, Order ID, and Elapsed Time */}
       <div className="bg-surface/50 p-4 border-b border-border flex items-center justify-between">
@@ -86,12 +93,13 @@ export function KitchenCookingOrderCard({
 
         {/* Elapsed Timer Badge */}
         <div
-          className={`px-3 py-1.5 rounded-lg text-xs font-bold ${isAllReady
+          className={`px-3 py-1.5 rounded-lg text-xs font-bold ${
+            isAllReady
               ? 'bg-status-ready/20 text-status-ready border border-status-ready/30'
               : isCookingLong
                 ? 'bg-status-cooking/20 text-status-cooking border border-status-cooking/40'
                 : 'bg-surface text-muted border border-border'
-            }`}
+          }`}
         >
           {isAllReady ? 'Đã xong toàn bộ' : `Đã nấu ${elapsedMinutes} phút`}
         </div>
@@ -104,81 +112,77 @@ export function KitchenCookingOrderCard({
             Tiến độ: {readyItems.length}/{order.items.length} món xong
           </span>
           <span className="text-primary font-bold">
-            Tổng {order.items.reduce((sum, i) => sum + i.quantity, 0)} suất
+            Còn lại {cookingItems.reduce((sum, i) => sum + i.quantity, 0)} suất
           </span>
         </div>
 
         <div className="space-y-2.5 pt-1">
-          {order.items.map((item) => (
-            <div
-              key={item.id}
-              className={`flex items-center justify-between gap-3 p-3 rounded-xl border transition-colors ${item.status === 'READY'
-                  ? 'bg-emerald-50/60 border-emerald-200'
-                  : 'bg-surface/30 border-border'
-                }`}
-            >
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`font-bold text-base block leading-snug ${item.status === 'READY' ? 'text-status-ready' : 'text-text'
-                      }`}
-                  >
-                    {item.menuItemName}
-                  </span>
-                  <span className="w-8 h-8 rounded-lg bg-surface border border-border text-primary flex items-center justify-center font-black text-sm shrink-0">
-                    x{item.quantity}
-                  </span>
+          {cookingItems.length === 0 ? (
+            <div className="text-center py-6 text-xs font-semibold text-status-ready bg-status-ready/5 rounded-xl border border-status-ready/20">
+              Tất cả món đã nấu xong ({readyItems.length} món đã chuyển sang quầy chờ bưng)
+            </div>
+          ) : (
+            cookingItems.map((item) => (
+              <div
+                key={item.id}
+                className="flex items-center justify-between gap-3 p-3 rounded-xl border transition-colors bg-surface/30 border-border"
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-base block leading-snug text-text">
+                      {item.menuItemName}
+                    </span>
+                    <span className="w-8 h-8 rounded-lg bg-surface border border-border text-primary flex items-center justify-center font-black text-sm shrink-0">
+                      x{item.quantity}
+                    </span>
+                  </div>
+
+                  {item.note && (
+                    <p className="text-xs font-semibold text-amber-800 mt-1 bg-amber-50 px-2.5 py-1 rounded border border-amber-200">
+                      Ghi chú: {item.note}
+                    </p>
+                  )}
                 </div>
 
-                {item.note && (
-                  <p className="text-xs font-semibold text-amber-800 mt-1 bg-amber-50 px-2.5 py-1 rounded border border-amber-200">
-                    Ghi chú: {item.note}
-                  </p>
-                )}
+                {/* Status Action Button */}
+                <div className="shrink-0">
+                  {item.status === 'PENDING' ? (
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        setUpdatingItemId(item.id)
+                        try {
+                          await onUpdateItemStatus(order.id, item.id, 'COOKING')
+                        } finally {
+                          setUpdatingItemId(null)
+                        }
+                      }}
+                      disabled={updatingItemId === item.id}
+                      className="h-10 px-3.5 bg-surface hover:bg-surface-hover active:bg-surface text-status-cooking font-bold text-xs rounded-xl border border-border cursor-pointer disabled:opacity-60"
+                    >
+                      {updatingItemId === item.id ? 'Đang lưu...' : 'Nấu'}
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        setUpdatingItemId(item.id)
+                        try {
+                          await onUpdateItemStatus(order.id, item.id, 'READY')
+                        } finally {
+                          setUpdatingItemId(null)
+                        }
+                      }}
+                      disabled={updatingItemId === item.id}
+                      className="h-10 px-4 bg-status-ready hover:bg-emerald-600 active:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs cursor-pointer transition-colors disabled:opacity-60"
+                    >
+                      {updatingItemId === item.id ? 'Đang lưu...' : 'Ra món'}
+                    </button>
+                  )}
+                </div>
               </div>
-
-              {/* Status Action Button / Badge */}
-              <div className="shrink-0">
-                {item.status === 'READY' ? (
-                  <span className="px-3 py-1.5 rounded-lg bg-status-ready/15 text-status-ready border border-status-ready/30 text-xs font-bold">
-                    Đã ra quầy (Chờ bưng)
-                  </span>
-                ) : item.status === 'PENDING' ? (
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      setUpdatingItemId(item.id)
-                      try {
-                        await onUpdateItemStatus(order.id, item.id, 'COOKING')
-                      } finally {
-                        setUpdatingItemId(null)
-                      }
-                    }}
-                    disabled={updatingItemId === item.id}
-                    className="h-10 px-3.5 bg-surface hover:bg-surface-hover active:bg-surface text-status-cooking font-bold text-xs rounded-xl border border-border cursor-pointer disabled:opacity-60"
-                  >
-                    {updatingItemId === item.id ? 'Đang lưu...' : 'Nấu món'}
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      setUpdatingItemId(item.id)
-                      try {
-                        await onUpdateItemStatus(order.id, item.id, 'READY')
-                      } finally {
-                        setUpdatingItemId(null)
-                      }
-                    }}
-                    disabled={updatingItemId === item.id}
-                    className="h-10 px-4 bg-status-ready hover:bg-emerald-600 active:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs cursor-pointer transition-colors disabled:opacity-60"
-                  >
-                    {updatingItemId === item.id ? 'Đang lưu...' : 'Xong món'}
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
 
@@ -194,7 +198,7 @@ export function KitchenCookingOrderCard({
             {isFinishingAll ? (
               <span>Đang lưu...</span>
             ) : (
-              <span>Xong tất cả món ({cookingItems.length})</span>
+              <span>Ra tất cả ({cookingItems.length})</span>
             )}
           </button>
         ) : (

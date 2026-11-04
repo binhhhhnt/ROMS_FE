@@ -30,3 +30,11 @@ export interface IngredientFilterParams {
   size?: number
   sort?: string
 }
+
+export interface ExcelImportResult {
+  totalRows: number
+  insertedCount: number
+  updatedCount: number
+  errorCount: number
+  errors: string[]
+}

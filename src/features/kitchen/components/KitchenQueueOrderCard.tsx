@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import type { KitchenOrderResponse } from '@/features/kitchen/types/kitchen.types'
 import type { OrderItemResponse } from '@/features/ordering/types/ordering.types'
+import { Flame } from 'lucide-react'
 
 interface KitchenQueueOrderCardProps {
   order: KitchenOrderResponse
   pendingItems: OrderItemResponse[]
   onAcceptItem: (orderId: number, itemId: number) => Promise<void>
-  onAcceptAll: (orderId: number, items: OrderItemResponse[]) => Promise<void>
+  onAcceptAll: (orderId: number) => Promise<void>
 }
 
 export function KitchenQueueOrderCard({
@@ -30,7 +31,7 @@ export function KitchenQueueOrderCard({
   const handleAcceptAll = async () => {
     setIsAcceptingAll(true)
     try {
-      await onAcceptAll(order.id, pendingItems)
+      await onAcceptAll(order.id)
     } finally {
       setIsAcceptingAll(false)
     }
@@ -127,15 +128,16 @@ export function KitchenQueueOrderCard({
                 )}
               </div>
 
-              {/* Action Button: Nấu món này */}
+              {/* Action Button: Nấu */}
               <div className="shrink-0">
                 <button
                   type="button"
                   onClick={() => handleAcceptItem(item.id)}
                   disabled={acceptingItemId === item.id || isAcceptingAll}
-                  className="h-9 px-3.5 bg-primary hover:bg-primary-hover active:bg-primary text-white font-bold text-xs rounded-xl shadow-xs cursor-pointer transition-colors disabled:opacity-60"
+                  className="h-9 px-4 bg-primary hover:bg-primary-hover active:bg-primary text-white font-bold text-xs rounded-xl shadow-xs cursor-pointer transition-colors disabled:opacity-60 flex items-center gap-1.5"
                 >
-                  {acceptingItemId === item.id ? 'Đang lưu...' : 'Nấu món'}
+                  <Flame className="w-3.5 h-3.5" />
+                  {acceptingItemId === item.id ? 'Đang lưu...' : 'Nấu'}
                 </button>
               </div>
             </div>
@@ -143,7 +145,7 @@ export function KitchenQueueOrderCard({
         </div>
       </div>
 
-      {/* Card Action Footer: Accept All Pending Dishes in this order */}
+      {/* Card Action Footer: Nấu tất cả */}
       <div className="bg-surface/40 p-4 border-t border-border mt-auto">
         <button
           type="button"
@@ -151,10 +153,11 @@ export function KitchenQueueOrderCard({
           disabled={isAcceptingAll || acceptingItemId !== null}
           className="w-full h-11 bg-primary hover:bg-primary-hover active:bg-primary text-white font-bold text-sm rounded-xl flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer disabled:opacity-60"
         >
+          <Flame className="w-4 h-4" />
           {isAcceptingAll ? (
             <span>Đang lưu...</span>
           ) : (
-            <span>Nhận tất cả món vào nấu ({pendingItems.length})</span>
+            <span>Nấu tất cả ({pendingItems.length} món)</span>
           )}
         </button>
       </div>

@@ -10,12 +10,17 @@ import {
   Layers,
   AlertCircle,
   User,
+  Utensils,
+  ClipboardList,
+  Plus,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { tableApi } from '@/features/tables/api/tableApi'
 import type { TableTransferHistoryItem } from '@/features/tables/types/table.types'
 import { TransferTableModal } from '@/features/tables/components/TransferTableModal'
+import { StaffOrderModal } from '@/features/ordering/components/StaffOrderModal'
+import { orderApi } from '@/features/ordering/api/orderApi'
 import { getApiErrorMessage } from '@/shared/lib/axios'
 import { Button } from '@/shared/components/ui/button'
 import { Badge } from '@/shared/components/ui/badge'
@@ -27,6 +32,14 @@ export function SessionDetailPage() {
   const queryClient = useQueryClient()
 
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false)
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false)
+
+  // Fetch orders belonging to this session
+  const { data: sessionOrders = [], refetch: refetchOrders } = useQuery({
+    queryKey: ['sessionOrders', sId],
+    queryFn: () => orderApi.getOrders(sId),
+    enabled: !!sId,
+  })
 
   // Fetch session detail
   const {
@@ -142,6 +155,13 @@ export function SessionDetailPage() {
           {isActive && (
             <>
               <Button
+                onClick={() => setIsOrderModalOpen(true)}
+                className="bg-primary hover:bg-primary-hover text-white font-bold"
+              >
+                <Utensils className="h-4 w-4 mr-2" />
+                + Đặt món cho bàn
+              </Button>
+              <Button
                 variant="outline"
                 onClick={() => setIsTransferModalOpen(true)}
               >
@@ -240,6 +260,81 @@ export function SessionDetailPage() {
         </div>
       </div>
 
+
+      {/* Session Orders List */}
+      <div className="rounded-xl border border-border bg-card p-6 shadow-xs space-y-4">
+        <div className="flex items-center justify-between border-b border-border pb-3">
+          <h2 className="text-base font-semibold text-text flex items-center gap-2">
+            <ClipboardList className="h-4 w-4 text-primary" />
+            Các đơn gọi món trong phiên ({sessionOrders.length})
+          </h2>
+          {isActive && (
+            <Button
+              size="sm"
+              onClick={() => setIsOrderModalOpen(true)}
+              className="text-xs h-8 bg-primary hover:bg-primary-hover text-white font-semibold gap-1"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Thêm món
+            </Button>
+          )}
+        </div>
+
+        {sessionOrders.length === 0 ? (
+          <div className="text-center py-8 text-muted text-sm">
+            <Utensils className="w-8 h-8 mx-auto mb-2 opacity-30" />
+            <p>Phiên phục vụ này chưa có đơn gọi món nào.</p>
+            {isActive && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsOrderModalOpen(true)}
+                className="mt-3 text-xs"
+              >
+                Bấm vào đây để đặt món ngay
+              </Button>
+            )}
+          </div>
+        ) : (
+          <div className="divide-y divide-border/60">
+            {sessionOrders.map((order) => (
+              <div key={order.id} className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2.5">
+                    <span className="font-bold text-sm text-text">Đơn #{order.id}</span>
+                    <Badge variant={
+                      order.status === 'PENDING' ? 'pending' :
+                      order.status === 'COOKING' ? 'cooking' :
+                      order.status === 'COMPLETED' ? 'completed' : 'cancelled'
+                    }>
+                      {order.status === 'PENDING' ? 'Chờ tiếp nhận' :
+                       order.status === 'COOKING' ? 'Đang nấu' :
+                       order.status === 'COMPLETED' ? 'Hoàn thành' : 'Đã hủy'}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted">
+                    {order.items.map((i) => `${i.menuItemName} x${i.quantity}`).join(', ')}
+                  </p>
+                  <span className="text-[11px] text-muted block">
+                    Đặt lúc: {new Date(order.createdAt).toLocaleTimeString('vi-VN')}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between sm:justify-end gap-4">
+                  <span className="font-extrabold text-sm text-primary">
+                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.totalAmount)}
+                  </span>
+                  <Link to={`/staff/orders/${order.id}`}>
+                    <Button variant="outline" size="sm" className="text-xs h-8">
+                      Chi tiết
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
       {/* Transfer History */}
       <div className="rounded-xl border border-border bg-card p-6 shadow-xs space-y-4">
         <h2 className="text-base font-semibold text-text flex items-center gap-2 border-b border-border pb-3">
@@ -291,6 +386,19 @@ export function SessionDetailPage() {
           }}
         />
       )}
+
+      {/* Staff Direct Ordering Modal */}
+      <StaffOrderModal
+        isOpen={isOrderModalOpen}
+        onClose={() => setIsOrderModalOpen(false)}
+        initialSessionId={sId}
+        initialTableCode={session.tableCode}
+        onSuccess={() => {
+          refetchOrders()
+          queryClient.invalidateQueries({ queryKey: ['sessionOrders', sId] })
+          queryClient.invalidateQueries({ queryKey: ['orders'] })
+        }}
+      />
     </div>
   )
 }

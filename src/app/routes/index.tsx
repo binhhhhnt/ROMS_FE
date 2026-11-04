@@ -47,6 +47,7 @@ import { SessionDetailPage } from '@/features/tables/pages/SessionDetailPage'
 import { SessionHistoryPage } from '@/features/tables/pages/SessionHistoryPage'
 import { TabletWelcomePage } from '@/features/tables/pages/TabletWelcomePage'
 import { AiAssistantPage } from '@/features/tables/pages/AiAssistantPage'
+import { RestaurantSettingsPage } from '@/features/settings/pages/RestaurantSettingsPage'
 
 export function AppRoutes() {
   return (
@@ -86,6 +87,7 @@ export function AppRoutes() {
               <Route path="/owner/reports/popular-items" element={<PopularItemsReportPage />} />
               <Route path="/owner/reports/profit" element={<ProfitReportPage />} />
               <Route path="/owner/reports/operations" element={<OperationsReportPage />} />
+              <Route path="/owner/settings" element={<RestaurantSettingsPage />} />
             </Route>
 
             {/* Service Staff & Owner Routes */}

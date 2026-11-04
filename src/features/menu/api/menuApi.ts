@@ -2,7 +2,7 @@ import { apiClient } from '@/shared/lib/axios'
 import type { ApiResponse, PageResponse } from '@/shared/types/api.types'
 import type {
   MenuItemImage, MenuItemReadResponse, MenuItemWriteRequest, MenuItemWriteResponse,
-  MenuListParams, MenuStatus, MenuStatusResponse,
+  MenuListParams, MenuStatus, MenuStatusResponse, ExcelImportResult,
 } from '../types/menu.types'
 
 export const menuApi = {
@@ -42,5 +42,29 @@ export const menuApi = {
   },
   async deleteImage(id: number, imageId: number) {
     await apiClient.delete(`/api/menu-items/${id}/images/${imageId}`)
+  },
+  async downloadTemplate(): Promise<Blob> {
+    const response = await apiClient.get('/api/menu-items/excel/template', {
+      responseType: 'blob',
+    })
+    return response.data
+  },
+  async exportExcel(): Promise<Blob> {
+    const response = await apiClient.get('/api/menu-items/excel/export', {
+      responseType: 'blob',
+    })
+    return response.data
+  },
+  async importExcel(file: File): Promise<ExcelImportResult> {
+    const body = new FormData()
+    body.append('file', file)
+    const response = await apiClient.post<ApiResponse<ExcelImportResult>>(
+      '/api/menu-items/excel/import',
+      body,
+      {
+        headers: { 'Content-Type': undefined },
+      },
+    )
+    return response.data.data
   },
 }

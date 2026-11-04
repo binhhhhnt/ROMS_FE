@@ -66,6 +66,17 @@ export function KitchenCookingPage() {
     }
   }
 
+  // Ready all items in an order
+  const handleReadyAll = async (orderId: number) => {
+    try {
+      await kitchenApi.readyAll(orderId)
+      toast.success(`Đã ra tất cả món cho đơn #${orderId}!`)
+      await queryClient.invalidateQueries({ queryKey: ['kitchen', 'orders'] })
+    } catch (err) {
+      toast.error(getApiErrorMessage(err))
+    }
+  }
+
   // Active cooking orders: at least 1 item is currently COOKING
   const activeCookingOrders = useMemo(() => {
     return orders.filter((order) =>
@@ -219,6 +230,7 @@ export function KitchenCookingPage() {
               key={order.id}
               order={order}
               onUpdateItemStatus={handleUpdateItemStatus}
+              onReadyAll={handleReadyAll}
             />
           ))}
         </div>

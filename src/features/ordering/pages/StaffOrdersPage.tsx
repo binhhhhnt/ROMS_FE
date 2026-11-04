@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   BellRing,
+  Plus,
 } from 'lucide-react'
 
 import { orderApi } from '@/features/ordering/api/orderApi'
@@ -19,6 +20,7 @@ import { subscribeToTopic } from '@/shared/lib/stomp'
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 import { StaffOrderCard } from '@/features/ordering/components/StaffOrderCard'
+import { StaffOrderModal } from '@/features/ordering/components/StaffOrderModal'
 
 type SortOption = 'newest' | 'oldest' | 'highest_amount'
 
@@ -27,6 +29,7 @@ export function StaffOrdersPage() {
   const [selectedTable, setSelectedTable] = useState<string>('ALL')
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [sortBy, setSortBy] = useState<SortOption>('newest')
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false)
 
   // Query all orders for service staff
   const {
@@ -179,11 +182,19 @@ export function StaffOrdersPage() {
             className="text-xs h-9 font-medium"
           >
             <RefreshCw
-              className={`w-3.5 h-3.5 mr-1.5 ${
-                isRefetching ? 'animate-spin' : ''
-              }`}
+              className={`w-3.5 h-3.5 mr-1.5 ${isRefetching ? 'animate-spin' : ''
+                }`}
             />
             {isRefetching ? 'Đang tải...' : 'Làm mới'}
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            onClick={() => setIsOrderModalOpen(true)}
+            className="bg-primary hover:bg-primary-hover text-white text-xs h-9 font-bold gap-1.5 shadow-xs"
+          >
+            <Plus className="w-4 h-4" />
+            Đặt món tại bàn
           </Button>
         </div>
       </div>
@@ -191,11 +202,10 @@ export function StaffOrdersPage() {
       {/* KPI Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Ready to Serve Alert Card */}
-        <div className={`p-4 rounded-xl border flex items-center justify-between transition-all ${
-          kpiCounts.readyItems > 0
+        <div className={`p-4 rounded-xl border flex items-center justify-between transition-all ${kpiCounts.readyItems > 0
             ? 'bg-emerald-500/10 border-status-ready/60 ring-1 ring-status-ready/30'
             : 'bg-card border-border'
-        }`}>
+          }`}>
           <div>
             <div className="text-xs font-semibold text-muted flex items-center gap-1.5">
               <BellRing className={`w-4 h-4 ${kpiCounts.readyItems > 0 ? 'text-status-ready animate-bounce' : 'text-muted'}`} />
@@ -270,19 +280,17 @@ export function StaffOrdersPage() {
                 key={tab.value}
                 type="button"
                 onClick={() => setSelectedStatus(tab.value as OrderStatus | 'ALL')}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors flex items-center gap-2 cursor-pointer ${
-                  isActive
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors flex items-center gap-2 cursor-pointer ${isActive
                     ? 'bg-primary text-white shadow-xs'
                     : 'text-muted hover:bg-surface/50 hover:text-text'
-                }`}
+                  }`}
               >
                 <span>{tab.label}</span>
                 <span
-                  className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
-                    isActive
+                  className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${isActive
                       ? 'bg-white/20 text-white'
                       : 'bg-surface text-muted'
-                  }`}
+                    }`}
                 >
                   {tab.count}
                 </span>
@@ -395,6 +403,13 @@ export function StaffOrdersPage() {
           ))}
         </div>
       )}
+
+      {/* Staff Direct Ordering Modal */}
+      <StaffOrderModal
+        isOpen={isOrderModalOpen}
+        onClose={() => setIsOrderModalOpen(false)}
+        onSuccess={() => refetch()}
+      />
     </div>
   )
 }
