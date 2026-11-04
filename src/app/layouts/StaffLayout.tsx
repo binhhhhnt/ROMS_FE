@@ -1,4 +1,4 @@
-import { Outlet, Link, useNavigate } from 'react-router-dom'
+import { Outlet, Link, NavLink, useNavigate, useMatch } from 'react-router-dom'
 import { useAuthStore } from '@/app/store/authStore'
 import { authApi } from '@/features/auth/api/authApi'
 import { Button } from '@/shared/components/ui/button'
@@ -21,10 +21,20 @@ import {
   Sparkles,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { cn } from '@/shared/utils/cn'
+
+const getNavLinkClassName = ({ isActive }: { isActive: boolean }) =>
+  cn(
+    'flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+    isActive
+      ? 'bg-surface text-primary font-semibold shadow-[inset_3px_0_0_var(--color-accent)]'
+      : 'text-text hover:bg-surface/50'
+  )
 
 export function StaffLayout() {
   const { user, clearAuth } = useAuthStore()
   const navigate = useNavigate()
+  const isReportsPage = Boolean(useMatch('/owner/reports/*'))
 
   const handleLogout = async () => {
     try {
@@ -82,143 +92,146 @@ export function StaffLayout() {
           {/* OWNER Links */}
           {user?.role === 'OWNER' && (
             <>
-              <Link
+              <NavLink
                 to="/owner/dashboard"
-                className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text hover:bg-surface/50 transition-colors"
+                className={getNavLinkClassName}
               >
                 <LayoutDashboard className="w-4 h-4 text-accent" />
                 Tổng quan
-              </Link>
-              <Link
+              </NavLink>
+              <NavLink
                 to="/owner/users"
-                className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text hover:bg-surface/50 transition-colors"
+                className={getNavLinkClassName}
               >
                 <Users className="w-4 h-4 text-accent" />
                 Quản lý tài khoản
-              </Link>
-              <Link
+              </NavLink>
+              <NavLink
                 to="/owner/categories"
-                className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text hover:bg-surface/50 transition-colors"
+                className={getNavLinkClassName}
               >
                 <FolderOpen className="w-4 h-4 text-accent" />
                 Danh mục món
-              </Link>
-              <Link
+              </NavLink>
+              <NavLink
                 to="/owner/menu-items"
-                className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text hover:bg-surface/50 transition-colors"
+                className={getNavLinkClassName}
               >
                 <UtensilsCrossed className="w-4 h-4 text-accent" />
                 Danh sách món
-              </Link>
-              <Link
+              </NavLink>
+              <NavLink
                 to="/owner/expenses"
-                className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text hover:bg-surface/50 transition-colors"
+                className={getNavLinkClassName}
               >
                 <Receipt className="w-4 h-4 text-accent" />
                 Quản lý Chi phí
-              </Link>
-              <Link
+              </NavLink>
+              <NavLink
                 to="/owner/reports/revenue"
-                className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text hover:bg-surface/50 transition-colors"
+                aria-current={isReportsPage ? 'page' : undefined}
+                className={() => getNavLinkClassName({ isActive: isReportsPage })}
               >
                 <BarChart3 className="w-4 h-4 text-accent" />
                 Báo cáo & Thống kê
-              </Link>
+              </NavLink>
             </>
           )}
 
           {/* SERVICE_STAFF & OWNER Links */}
           {(user?.role === 'OWNER' || user?.role === 'SERVICE_STAFF') && (
             <>
-              <Link
+              <NavLink
                 to="/tables"
-                className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text hover:bg-surface/50 transition-colors"
+                className={getNavLinkClassName}
               >
                 <Layers className="w-4 h-4 text-accent" />
                 Sơ đồ bàn
-              </Link>
-              <Link
+              </NavLink>
+              <NavLink
                 to="/staff/orders"
-                className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text hover:bg-surface/50 transition-colors"
+                className={getNavLinkClassName}
               >
                 <ClipboardList className="w-4 h-4 text-accent" />
                 Danh sách Order
-              </Link>
-              <Link
+              </NavLink>
+              <NavLink
                 to="/sessions/history"
-                className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text hover:bg-surface/50 transition-colors"
+                className={getNavLinkClassName}
               >
                 <History className="w-4 h-4 text-accent" />
                 Lịch sử phiên bàn
-              </Link>
-              <Link
+              </NavLink>
+              <NavLink
                 to="/invoices"
-                className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text hover:bg-surface/50 transition-colors"
+                className={getNavLinkClassName}
               >
                 <Receipt className="w-4 h-4 text-accent" />
                 Lịch sử hóa đơn
-              </Link>
-              <Link
+              </NavLink>
+              <NavLink
                 to="/ai-assistant"
-                className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text hover:bg-surface/50 transition-colors"
+                className={getNavLinkClassName}
               >
                 <Sparkles className="w-4 h-4 text-accent" />
                 Trợ lý AI Gemini
-              </Link>
+              </NavLink>
             </>
           )}
 
           {/* INVENTORY_STAFF & OWNER Links */}
           {(user?.role === 'OWNER' || user?.role === 'INVENTORY_STAFF') && (
             <>
-              <Link
+              <NavLink
                 to="/inventory/ingredients"
-                className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text hover:bg-surface/50 transition-colors"
+                className={getNavLinkClassName}
               >
                 <Boxes className="w-4 h-4 text-accent" />
                 Nguyên liệu & Tồn kho
-              </Link>
-              <Link
+              </NavLink>
+              <NavLink
                 to="/inventory/movements"
-                className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text hover:bg-surface/50 transition-colors"
+                className={getNavLinkClassName}
               >
                 <History className="w-4 h-4 text-accent" />
                 Biến động kho
-              </Link>
-              <Link
+              </NavLink>
+              <NavLink
                 to="/inventory/checks"
-                className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text hover:bg-surface/50 transition-colors"
+                className={getNavLinkClassName}
               >
                 <ClipboardCheck className="w-4 h-4 text-accent" />
                 Kiểm kê kho
-              </Link>
+              </NavLink>
               {user?.role === 'OWNER' && (
-                <Link
+                <NavLink
                   to="/kitchen/recipes"
-                  className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text hover:bg-surface/50 transition-colors"
+                  className={getNavLinkClassName}
                 >
                   <BookOpen className="w-4 h-4 text-accent" />
                   Công thức món (BOM)
-                </Link>
+                </NavLink>
               )}
-              <Link
+              <NavLink
                 to="/inventory/purchases"
-                className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text hover:bg-surface/50 transition-colors"
+                className={getNavLinkClassName}
               >
                 <ShoppingBag className="w-4 h-4 text-accent" />
                 Phiếu nhập hàng
-              </Link>
+              </NavLink>
             </>
           )}
 
           {/* Bottom Profile Link */}
-          <Link
+          <NavLink
             to="/profile"
-            className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text hover:bg-surface/50 transition-colors mt-auto pt-2 border-t border-border"
+            className={({ isActive }) =>
+              cn(getNavLinkClassName({ isActive }), 'mt-auto pt-2 border-t border-border')
+            }
           >
             <UserCog className="w-4 h-4 text-accent" />
             Hồ sơ & Bảo mật
-          </Link>
+          </NavLink>
         </aside>
 
         {/* Page Content */}

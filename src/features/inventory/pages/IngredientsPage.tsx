@@ -13,18 +13,20 @@ import {
   ChevronLeft,
   ChevronRight,
   RefreshCw,
+  FileSpreadsheet,
 } from 'lucide-react'
 
 import { ingredientApi } from '@/features/inventory/api/ingredientApi'
 import type { IngredientResponse, StockStatus } from '@/features/inventory/types/ingredient.types'
 import { IngredientFormModal } from '@/features/inventory/components/IngredientFormModal'
+import { ImportIngredientsModal } from '@/features/inventory/components/ImportIngredientsModal'
 import { DeactivateIngredientModal } from '@/features/inventory/components/DeactivateIngredientModal'
 import { useAuthStore } from '@/app/store/authStore'
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 import { Badge } from '@/shared/components/ui/badge'
 
-const PAGE_SIZE = 15
+const PAGE_SIZE = 12
 
 export function IngredientsPage() {
   const queryClient = useQueryClient()
@@ -38,6 +40,7 @@ export function IngredientsPage() {
 
   // Modals
   const [isFormModalOpen, setIsFormModalOpen] = useState(false)
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false)
   const [editingIngredient, setEditingIngredient] = useState<IngredientResponse | null>(null)
   const [deactivatingIngredient, setDeactivatingIngredient] = useState<IngredientResponse | null>(null)
 
@@ -79,7 +82,7 @@ export function IngredientsPage() {
 
       return matchSearch && matchStockStatus
     })
-  }, [pageData?.content, searchQuery, stockStatusFilter])
+  }, [pageData, searchQuery, stockStatusFilter])
 
   // Aggregate stats across current page content
   const stats = useMemo(() => {
@@ -137,7 +140,7 @@ export function IngredientsPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
           <Button
             variant="outline"
             size="sm"
@@ -148,6 +151,13 @@ export function IngredientsPage() {
           >
             <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
           </Button>
+
+          {canModify && (
+            <Button variant="outline" onClick={() => setIsImportModalOpen(true)}>
+              <FileSpreadsheet className="w-4 h-4 mr-1.5" />
+              Nhập Excel
+            </Button>
+          )}
 
           {canModify && (
             <Button
@@ -256,7 +266,7 @@ export function IngredientsPage() {
           <table className="w-full text-left text-sm">
             <thead className="bg-surface/60 border-b border-border text-xs uppercase text-primary font-semibold tracking-wider">
               <tr>
-                <th className="py-3 px-4 w-16">Mã</th>
+                <th className="py-3 px-4 w-16">STT</th>
                 <th className="py-3 px-4">Tên nguyên liệu</th>
                 <th className="py-3 px-4 w-28">Đơn vị</th>
                 <th className="py-3 px-4 w-36 text-right">Tồn hiện tại</th>
@@ -286,15 +296,15 @@ export function IngredientsPage() {
                   </td>
                 </tr>
               ) : (
-                displayedItems.map((item) => {
+                displayedItems.map((item, index) => {
                   return (
                     <tr
                       key={item.id}
                       className="hover:bg-surface/20 transition-colors"
                     >
-                      {/* ID */}
+                      {/* Row number across pages */}
                       <td className="py-3.5 px-4 font-mono text-xs text-muted">
-                        #{item.id}
+                        {page * PAGE_SIZE + index + 1}
                       </td>
 
                       {/* Name */}
@@ -436,6 +446,13 @@ export function IngredientsPage() {
       </div>
 
       {/* Modals */}
+      {canModify && isImportModalOpen && (
+        <ImportIngredientsModal
+          onClose={() => setIsImportModalOpen(false)}
+          onSuccess={handleMutationSuccess}
+        />
+      )}
+
       <IngredientFormModal
         isOpen={isFormModalOpen}
         onClose={() => setIsFormModalOpen(false)}

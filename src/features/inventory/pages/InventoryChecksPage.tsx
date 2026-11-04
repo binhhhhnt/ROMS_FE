@@ -17,7 +17,7 @@ import { InventoryCheckDetailDrawer } from '@/features/inventory/components/Inve
 import { useAuthStore } from '@/app/store/authStore'
 import { Button } from '@/shared/components/ui/button'
 
-const PAGE_SIZE = 15
+const PAGE_SIZE = 12
 
 export function InventoryChecksPage() {
   const queryClient = useQueryClient()
@@ -137,7 +137,7 @@ export function InventoryChecksPage() {
           <table className="w-full text-left text-sm">
             <thead className="bg-surface/60 border-b border-border text-xs uppercase text-primary font-semibold tracking-wider">
               <tr>
-                <th className="py-3 px-4 w-20">Mã đợt</th>
+                <th className="py-3 px-4 w-20">STT</th>
                 <th className="py-3 px-4 w-44">Thời điểm kiểm</th>
                 <th className="py-3 px-4 w-48">Người thực hiện</th>
                 <th className="py-3 px-4 w-36 text-center">Số mặt hàng</th>
@@ -166,16 +166,16 @@ export function InventoryChecksPage() {
                   </td>
                 </tr>
               ) : (
-                pageData.content.map((check) => {
+                pageData.content.map((check, index) => {
                   const itemsCount = check.items?.length || 0
                   const diffItemsCount =
                     check.items?.filter((i) => i.difference !== 0).length || 0
 
                   return (
                     <tr key={check.id} className="hover:bg-surface/20 transition-colors">
-                      {/* ID */}
+                      {/* Row number across pages */}
                       <td className="py-3.5 px-4 font-mono font-bold text-xs text-text">
-                        #{check.id}
+                        {page * PAGE_SIZE + index + 1}
                       </td>
 
                       {/* Checked At */}

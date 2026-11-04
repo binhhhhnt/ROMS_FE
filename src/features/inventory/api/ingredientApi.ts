@@ -40,6 +40,11 @@ export const ingredientApi = {
     return res.data.data
   },
 
+  async importIngredients(ingredients: CreateIngredientRequest[]): Promise<IngredientResponse[]> {
+    const res = await apiClient.post<ApiResponse<IngredientResponse[]>>('/api/ingredients/import', { ingredients })
+    return res.data.data
+  },
+
   async updateIngredient(id: number, request: UpdateIngredientRequest): Promise<IngredientResponse> {
     const res = await apiClient.put<ApiResponse<IngredientResponse>>(`/api/ingredients/${id}`, request)
     return res.data.data

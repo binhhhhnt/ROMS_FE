@@ -1,8 +1,15 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, type ChangeEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { purchaseApi } from '@/features/purchasing/api/purchaseApi'
+import { ImportPurchaseModal } from '@/features/purchasing/components/ImportPurchaseModal'
 import { ingredientApi } from '@/features/inventory/api/ingredientApi'
+import type { IngredientResponse } from '@/features/inventory/types/ingredient.types'
+import {
+  downloadPurchaseTemplate, getPurchaseRowIssues, matchPurchaseRows, readPurchaseExcel,
+  MAX_PURCHASE_IMPORT_BYTES, MAX_PURCHASE_IMPORT_ROWS, type PurchaseFormRow,
+} from '@/features/purchasing/utils/purchaseImport'
+import { getApiErrorMessage } from '@/shared/lib/axios'
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 import { Badge } from '@/shared/components/ui/badge'
@@ -17,21 +24,22 @@ import {
   AlertCircle,
   Receipt,
   CheckCircle2,
+  FileSpreadsheet,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import type { AxiosError } from 'axios'
 import type { ApiResponse } from '@/shared/types/api.types'
 
-interface FormItemRow {
-  tempId: string
-  ingredientId: number | ''
-  quantity: string
-  unitPrice: string
-}
+const EMPTY_INGREDIENTS: IngredientResponse[] = []
 
 export function CreatePurchasePage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false)
+  const [isImporting, setIsImporting] = useState(false)
+  const [isDownloading, setIsDownloading] = useState(false)
+  const [importError, setImportError] = useState('')
+  const [importFileName, setImportFileName] = useState('')
 
   // Form general state
   const [purchaseDate, setPurchaseDate] = useState<string>(
@@ -40,7 +48,7 @@ export function CreatePurchasePage() {
   const [note, setNote] = useState<string>('')
 
   // Item rows state (starts with 1 empty row)
-  const [rows, setRows] = useState<FormItemRow[]>([
+  const [rows, setRows] = useState<PurchaseFormRow[]>([
     {
       tempId: 'row-1',
       ingredientId: '',
@@ -49,13 +57,66 @@ export function CreatePurchasePage() {
     },
   ])
 
-  // Fetch active ingredients list
-  const { data: ingredientsData, isLoading: isLoadingIngredients } = useQuery({
-    queryKey: ['ingredients', 'active-for-purchase'],
-    queryFn: () => ingredientApi.getIngredients({ isActive: true, size: 300 }),
+  // Load every page, including inactive ingredients so imports can explain invalid matches.
+  const { data: ingredientsData, isLoading: isLoadingIngredients, isError: ingredientLoadError,
+    refetch: refetchIngredients } = useQuery({
+    queryKey: ['ingredients', 'purchase-catalog'],
+    queryFn: async () => {
+      const first = await ingredientApi.getIngredients({ page: 0, size: 200, sort: 'id,asc' })
+      const all = [...first.content]
+      for (let page = 1; page < first.totalPages; page++) {
+        const next = await ingredientApi.getIngredients({ page, size: 200, sort: 'id,asc' })
+        all.push(...next.content)
+      }
+      return all
+    },
   })
 
-  const ingredients = ingredientsData?.content || []
+  const allIngredients = ingredientsData ?? EMPTY_INGREDIENTS
+  const ingredients = useMemo(() => allIngredients.filter((item) => item.isActive), [allIngredients])
+  const rowIssues = useMemo(() => rows.map((row) => getPurchaseRowIssues(row, allIngredients)), [rows, allIngredients])
+  const invalidRowCount = rowIssues.filter((issues) => issues.length > 0).length
+
+  const handleImportFile = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+    setImportError('')
+    if (!/\.xlsx$/i.test(file.name) || file.size > MAX_PURCHASE_IMPORT_BYTES) {
+      setImportError('Vui lòng chọn file .xlsx tối đa 5 MB. Với file .xls, hãy lưu lại dưới dạng .xlsx.')
+      return
+    }
+    setIsImporting(true)
+    try {
+      const imported = await readPurchaseExcel(await file.arrayBuffer())
+      const catalog = await refetchIngredients()
+      if (catalog.error || !catalog.data) throw new Error('Không tải được danh mục kho để đối chiếu. Vui lòng thử lại.')
+      const added = matchPurchaseRows(imported, catalog.data)
+      const kept = rows.filter((row) => row.ingredientId !== '' || row.quantity || row.unitPrice || row.imported)
+      if (kept.length + added.length > MAX_PURCHASE_IMPORT_ROWS) {
+        throw new Error(`Phiếu nhập tối đa ${MAX_PURCHASE_IMPORT_ROWS} dòng. Hãy chia nhỏ file hoặc xóa bớt dòng hiện tại.`)
+      }
+      setRows([...kept, ...added])
+      setImportFileName(file.name)
+      setIsImportModalOpen(false)
+      toast.success(`Đã đưa ${added.length} dòng vào phiếu nháp. Kiểm tra danh sách trước khi xác nhận nhập kho.`)
+    } catch (error) {
+      setImportError(error instanceof Error ? error.message : 'Không đọc được file Excel.')
+    } finally {
+      setIsImporting(false)
+    }
+  }
+
+  const handleDownloadTemplate = async () => {
+    setIsDownloading(true)
+    try {
+      await downloadPurchaseTemplate()
+    } catch {
+      toast.error('Không tải được file mẫu. Vui lòng thử lại.')
+    } finally {
+      setIsDownloading(false)
+    }
+  }
 
   // Map ingredients by ID for quick lookup
   const ingredientMap = useMemo(() => {
@@ -66,18 +127,15 @@ export function CreatePurchasePage() {
 
   // Calculate row subtotal and grand total
   const totals = useMemo(() => {
-    let grandTotal = 0
     const rowSubtotals = rows.map((row) => {
-      const q = parseFloat(row.quantity)
-      const p = parseFloat(row.unitPrice)
-      if (!isNaN(q) && q > 0 && !isNaN(p) && p >= 0) {
-        const sub = q * p
-        grandTotal += sub
-        return sub
+      const q = Number(row.quantity)
+      const p = Number(row.unitPrice)
+      if (Number.isFinite(q) && q > 0 && Number.isFinite(p) && p >= 0) {
+        return q * p
       }
       return 0
     })
-    return { rowSubtotals, grandTotal }
+    return { rowSubtotals, grandTotal: rowSubtotals.reduce((total, subtotal) => total + subtotal, 0) }
   }, [rows])
 
   // Add row
@@ -105,13 +163,14 @@ export function CreatePurchasePage() {
   // Update row field
   const handleUpdateRow = (
     tempId: string,
-    field: keyof Omit<FormItemRow, 'tempId'>,
+    field: 'ingredientId' | 'quantity' | 'unitPrice',
     value: string | number
   ) => {
     setRows((prev) =>
       prev.map((r) => {
         if (r.tempId === tempId) {
-          return { ...r, [field]: value }
+          const issue = field === 'ingredientId' ? 'ingredientIssue' : `${field}Issue` as const
+          return { ...r, [field]: value, [issue]: undefined }
         }
         return r
       })
@@ -125,12 +184,12 @@ export function CreatePurchasePage() {
       toast.success('Tạo phiếu nhập hàng thành công! Đã tự động cập nhật kho.')
       queryClient.invalidateQueries({ queryKey: ['purchases'] })
       queryClient.invalidateQueries({ queryKey: ['ingredients'] })
-      queryClient.invalidateQueries({ queryKey: ['stockMovements'] })
+      queryClient.invalidateQueries({ queryKey: ['stock-movements'] })
       queryClient.invalidateQueries({ queryKey: ['recipes'] })
       navigate(`/inventory/purchases/${res.id}`)
     },
     onError: (err: AxiosError<ApiResponse<unknown>>) => {
-      const msg = err.response?.data?.message || 'Không thể tạo phiếu nhập hàng'
+      const msg = getApiErrorMessage(err)
       toast.error(msg)
     },
   })
@@ -138,6 +197,7 @@ export function CreatePurchasePage() {
   // Submit Handler
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    if (createMutation.isPending || isImporting || isLoadingIngredients || ingredientLoadError) return
 
     if (!purchaseDate) {
       toast.error('Vui lòng chọn ngày nhập hàng')
@@ -155,18 +215,22 @@ export function CreatePurchasePage() {
 
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i]
+      if (rowIssues[i].length) {
+        toast.error(`Dòng ${i + 1}: ${rowIssues[i].join(' ')}`)
+        return
+      }
       if (row.ingredientId === '') {
         toast.error(`Dòng ${i + 1}: Vui lòng chọn nguyên liệu`)
         return
       }
 
-      const q = parseFloat(row.quantity)
+      const q = Number(row.quantity)
       if (isNaN(q) || q <= 0) {
         toast.error(`Dòng ${i + 1}: Số lượng nhập phải lớn hơn 0`)
         return
       }
 
-      const p = parseFloat(row.unitPrice)
+      const p = Number(row.unitPrice)
       if (isNaN(p) || p < 0) {
         toast.error(`Dòng ${i + 1}: Đơn giá không được âm`)
         return
@@ -205,7 +269,7 @@ export function CreatePurchasePage() {
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Quay lại danh sách phiếu nhập</span>
         </Link>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-text flex items-center gap-2">
               <Receipt className="w-6 h-6 text-accent" />
@@ -215,10 +279,27 @@ export function CreatePurchasePage() {
               Ghi nhận nguyên vật liệu mua vào thực tế để tăng số lượng tồn kho tương ứng.
             </p>
           </div>
+          <Button type="button" variant="outline" disabled={isImporting || createMutation.isPending}
+            onClick={() => { setImportError(''); setIsImportModalOpen(true) }}>
+            <FileSpreadsheet className="w-4 h-4 mr-1.5" />Nhập Excel
+          </Button>
         </div>
+        {ingredientLoadError && <div role="alert" className="mt-3 flex items-center gap-3 text-sm text-status-cancelled">
+          Không tải được danh mục nguyên liệu.
+          <Button type="button" variant="outline" size="sm" onClick={() => refetchIngredients()}>Thử lại</Button>
+        </div>}
       </div>
 
+      {isImportModalOpen && (
+        <ImportPurchaseModal
+          isImporting={isImporting} isDownloading={isDownloading} error={importError}
+          onFileChange={handleImportFile} onDownload={handleDownloadTemplate}
+          onClose={() => setIsImportModalOpen(false)}
+        />
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-6">
+        <fieldset disabled={isImporting || createMutation.isPending} className="space-y-6 min-w-0">
         {/* Card 1: General Info */}
         <div className="bg-card border border-border rounded-xl p-5 shadow-sm space-y-4">
           <h2 className="text-sm font-semibold text-text uppercase tracking-wider flex items-center gap-2">
@@ -278,12 +359,18 @@ export function CreatePurchasePage() {
               variant="outline"
               size="sm"
               onClick={handleAddRow}
+              disabled={rows.length >= MAX_PURCHASE_IMPORT_ROWS}
               className="text-xs flex items-center gap-1 border-accent/30 text-accent hover:bg-accent/10"
             >
               <Plus className="w-3.5 h-3.5" />
               Thêm dòng
             </Button>
           </div>
+
+          {importFileName && <p role="status" className="rounded-lg bg-surface/40 p-3 text-xs text-text">
+            File gần nhất: <strong>{importFileName}</strong>. Các dòng có sẵn được giữ lại; dòng trống ban đầu được thay bằng dữ liệu Excel.
+            {invalidRowCount > 0 ? ` Có ${invalidRowCount} dòng chưa hợp lệ. Hãy sửa, chọn lại nguyên liệu hoặc xóa dòng.` : ' Tất cả dòng đã đủ thông tin để nhập kho.'}
+          </p>}
 
           {/* Table */}
           <div className="border border-border rounded-lg overflow-x-auto bg-surface/10">
@@ -307,7 +394,7 @@ export function CreatePurchasePage() {
                   const rowSubtotal = totals.rowSubtotals[idx] || 0
 
                   return (
-                    <tr key={row.tempId} className="hover:bg-surface/30 transition-colors">
+                    <tr key={row.tempId} className={`hover:bg-surface/30 transition-colors ${row.imported && rowIssues[idx].length ? 'bg-status-cancelled/5' : ''}`}>
                       {/* STT */}
                       <td className="px-3 py-2.5 text-center text-muted-foreground font-mono">
                         {idx + 1}
@@ -316,6 +403,7 @@ export function CreatePurchasePage() {
                       {/* Ingredient Selector */}
                       <td className="px-3 py-2.5">
                         <select
+                          aria-label={`Nguyên liệu dòng ${idx + 1}`}
                           value={row.ingredientId}
                           onChange={(e) => {
                             const val = e.target.value === '' ? '' : Number(e.target.value)
@@ -331,6 +419,14 @@ export function CreatePurchasePage() {
                             </option>
                           ))}
                         </select>
+                        {row.imported && <p className="mt-1 break-words text-[11px] text-muted">Excel dòng {row.imported.rowNumber}: {row.imported.name || '(trống tên)'}{row.imported.unit ? ` (${row.imported.unit})` : ''}</p>}
+                        {!isLoadingIngredients && (row.imported || row.ingredientId !== '') && (
+                          <div className="mt-1 text-[11px]" aria-live="polite">
+                            {rowIssues[idx].length > 0 ? <ul className="space-y-0.5 text-status-cancelled">
+                              {rowIssues[idx].map((issue) => <li key={issue}>{issue}</li>)}
+                            </ul> : <span className="inline-flex items-center gap-1 text-status-ready"><CheckCircle2 className="h-3 w-3" />Hợp lệ</span>}
+                          </div>
+                        )}
                       </td>
 
                       {/* Unit */}
@@ -356,6 +452,7 @@ export function CreatePurchasePage() {
                       {/* Quantity */}
                       <td className="px-3 py-2.5 text-right">
                         <Input
+                          aria-label={`Số lượng nhập dòng ${idx + 1}`}
                           type="number"
                           step="0.001"
                           min="0.001"
@@ -372,8 +469,9 @@ export function CreatePurchasePage() {
                       {/* Unit Price */}
                       <td className="px-3 py-2.5 text-right">
                         <Input
+                          aria-label={`Đơn giá dòng ${idx + 1}`}
                           type="number"
-                          step="1000"
+                          step="0.01"
                           min="0"
                           placeholder="0"
                           value={row.unitPrice}
@@ -403,6 +501,7 @@ export function CreatePurchasePage() {
                           disabled={rows.length === 1}
                           className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                           title="Xóa dòng"
+                          aria-label={`Xóa dòng ${idx + 1}`}
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </Button>
@@ -443,7 +542,7 @@ export function CreatePurchasePage() {
             type="button"
             variant="outline"
             onClick={() => navigate('/inventory/purchases')}
-            disabled={createMutation.isPending}
+            disabled={createMutation.isPending || isImporting}
             className="text-xs"
           >
             Hủy bỏ
@@ -451,8 +550,9 @@ export function CreatePurchasePage() {
 
           <Button
             type="submit"
-            disabled={createMutation.isPending}
-            className="text-xs bg-accent hover:bg-accent-hover text-white flex items-center gap-1.5 px-5 shadow-sm"
+            variant="primary"
+            size="md"
+            disabled={createMutation.isPending || isImporting || isLoadingIngredients || ingredientLoadError || invalidRowCount > 0}
           >
             {createMutation.isPending ? (
               <>
@@ -467,6 +567,7 @@ export function CreatePurchasePage() {
             )}
           </Button>
         </div>
+        </fieldset>
       </form>
     </div>
   )
