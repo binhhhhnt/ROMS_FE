@@ -1,6 +1,9 @@
+import { useEffect } from 'react'
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import { useAuthStore } from '@/app/store/authStore'
 import { authApi } from '@/features/auth/api/authApi'
+import { subscribeToTopic } from '@/shared/lib/stomp'
 import { Button } from '@/shared/components/ui/button'
 import { ChefHat, LogOut, Clock, Flame, CheckCircle2, UtensilsCrossed, BookOpen } from 'lucide-react'
 import { toast } from 'sonner'
@@ -10,6 +13,18 @@ export function KitchenLayout() {
   const { user, clearAuth } = useAuthStore()
   const navigate = useNavigate()
   const location = useLocation()
+  const queryClient = useQueryClient()
+
+  // Realtime STOMP Subscription at layout level to keep kitchen queries in sync across tabs
+  useEffect(() => {
+    const unsub = subscribeToTopic('/topic/kitchen/orders', () => {
+      queryClient.invalidateQueries({ queryKey: ['kitchen', 'orders'] })
+    })
+
+    return () => {
+      unsub()
+    }
+  }, [queryClient])
 
   const handleLogout = async () => {
     try {

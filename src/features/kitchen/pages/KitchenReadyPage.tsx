@@ -1,12 +1,13 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { kitchenApi } from '@/features/kitchen/api/kitchenApi'
 import { subscribeToTopic } from '@/shared/lib/stomp'
 import { KitchenReadyTableCard } from '@/features/kitchen/components/KitchenReadyTableCard'
 import { Button } from '@/shared/components/ui/button'
 
 export function KitchenReadyPage() {
+  const queryClient = useQueryClient()
   const [currentTime, setCurrentTime] = useState<string>(
     new Date().toLocaleTimeString('vi-VN')
   )
@@ -23,22 +24,23 @@ export function KitchenReadyPage() {
   const {
     data: allOrders = [],
     isLoading,
-    refetch,
   } = useQuery({
     queryKey: ['kitchen', 'orders', 'ready'],
     queryFn: () => kitchenApi.getKitchenOrders(),
+    staleTime: 0,
+    refetchOnMount: 'always',
   })
 
   // Realtime STOMP Subscription
   useEffect(() => {
     const unsubKitchen = subscribeToTopic('/topic/kitchen/orders', () => {
-      refetch()
+      queryClient.invalidateQueries({ queryKey: ['kitchen', 'orders'] })
     })
 
     return () => {
       unsubKitchen()
     }
-  }, [refetch])
+  }, [queryClient])
 
   // Extract orders that have READY items
   const ordersWithReadyItems = useMemo(() => {
