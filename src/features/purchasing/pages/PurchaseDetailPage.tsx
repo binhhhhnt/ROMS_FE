@@ -14,7 +14,7 @@ import {
   Clock,
   FileText,
   Boxes,
-  DollarSign,
+  Banknote,
   Edit3,
   RefreshCw,
   History,
@@ -136,7 +136,7 @@ export function PurchaseDetailPage() {
         {/* Total Amount */}
         <div className="bg-card border border-border p-4 rounded-xl shadow-sm">
           <div className="text-xs text-muted-foreground font-medium flex items-center gap-1">
-            <DollarSign className="w-3.5 h-3.5 text-emerald-600" />
+            <Banknote className="w-3.5 h-3.5 text-emerald-600" />
             Tổng giá trị đơn nhập
           </div>
           <div className="text-xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">

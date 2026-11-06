@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { X, Receipt, DollarSign, Calendar, FileText } from 'lucide-react'
+import { X, Receipt, Calendar, FileText } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 import {
@@ -109,7 +109,6 @@ export function ExpenseFormModal({
             <Input
               id="expense-name"
               placeholder="Ví dụ: Mua đá lạnh, Mua gas, Nước rửa chén, Tiền điện..."
-              leftIcon={<Receipt className="w-4 h-4 text-muted" />}
               error={Boolean(errors.name)}
               disabled={isLoading}
               {...register('name')}
@@ -133,7 +132,6 @@ export function ExpenseFormModal({
                 step="1000"
                 min="0"
                 placeholder="0"
-                leftIcon={<DollarSign className="w-4 h-4 text-muted" />}
                 error={Boolean(errors.amount)}
                 disabled={isLoading}
                 {...register('amount', { valueAsNumber: true })}

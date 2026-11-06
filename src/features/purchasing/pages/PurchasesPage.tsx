@@ -11,7 +11,7 @@ import {
   Calendar,
   RefreshCw,
   Receipt,
-  DollarSign,
+  Banknote,
   ArrowRight,
   User,
   Clock,
@@ -140,7 +140,7 @@ export function PurchasesPage() {
 
         <div className="bg-card border border-border p-4 rounded-xl flex items-center gap-3 shadow-sm">
           <div className="w-10 h-10 rounded-lg bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-            <DollarSign className="w-5 h-5" />
+            <Banknote className="w-5 h-5" />
           </div>
           <div>
             <div className="text-xs text-muted-foreground font-medium">Tổng tiền trang hiện tại</div>
