@@ -159,7 +159,7 @@ export function StaffOrdersPage() {
   ]
 
   return (
-    <div className="max-w-7xl mx-auto flex flex-col gap-6">
+    <div className="w-full flex flex-col gap-6">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -348,8 +348,8 @@ export function StaffOrdersPage() {
 
       {/* Orders Grid */}
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
+          {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
             <div
               key={i}
               className="bg-card border border-border rounded-xl p-5 h-64 animate-pulse flex flex-col justify-between"
@@ -397,7 +397,7 @@ export function StaffOrdersPage() {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
           {filteredOrders.map((order) => (
             <StaffOrderCard key={order.id} order={order} />
           ))}

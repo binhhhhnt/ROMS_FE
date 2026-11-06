@@ -116,11 +116,12 @@ export function PurchasesPage() {
           </Button>
 
           <Button
-            size="sm"
+            variant="primary"
+            size="md"
             onClick={() => navigate('/inventory/purchases/new')}
-            className="text-xs bg-accent hover:bg-accent-hover text-white flex items-center gap-1.5 shadow-sm"
+            className="shadow-sm font-semibold text-xs md:text-sm"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4 mr-1.5" />
             Tạo phiếu nhập mới
           </Button>
         </div>
@@ -290,9 +291,10 @@ export function PurchasesPage() {
                         Tạo phiếu nhập mới để cập nhật nguyên liệu thực tế vào kho.
                       </span>
                       <Button
+                        variant="primary"
                         size="sm"
                         onClick={() => navigate('/inventory/purchases/new')}
-                        className="mt-2 text-xs bg-accent hover:bg-accent-hover text-white"
+                        className="mt-2 text-xs"
                       >
                         <Plus className="w-3.5 h-3.5 mr-1" />
                         Tạo phiếu nhập ngay

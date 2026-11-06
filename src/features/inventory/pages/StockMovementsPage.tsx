@@ -14,7 +14,7 @@ import type { StockMovementType } from '@/features/inventory/types/stockMovement
 import { MovementTypeBadge } from '@/features/inventory/components/MovementTypeBadge'
 import { Button } from '@/shared/components/ui/button'
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = 10
 
 export function StockMovementsPage() {
   // Filter state

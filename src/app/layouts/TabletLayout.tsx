@@ -1,9 +1,8 @@
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { useAuthStore } from '@/app/store/authStore'
 import { authApi } from '@/features/auth/api/authApi'
-import { tableApi } from '@/features/tables/api/tableApi'
 import { useAiChatStore } from '@/features/tables/store/aiChatStore'
 import { useCartStore } from '@/features/ordering/store/cartStore'
 import { subscribeToTopic } from '@/shared/lib/stomp'
@@ -16,61 +15,59 @@ export function TabletLayout() {
   const navigate = useNavigate()
   const location = useLocation()
   const queryClient = useQueryClient()
-  const tableId = user?.tableId
-  const prevSessionIdRef = useRef<number | null | undefined>(undefined)
 
-  // Query current table information and session status
-  const { data: table } = useQuery({
-    queryKey: ['tabletTableInfo', tableId],
-    queryFn: () => tableApi.getTableById(tableId!),
-    enabled: !!tableId,
-    refetchInterval: 5000,
-  })
-
-  const activeSessionId = table?.activeSessionId
-
-  const resetTabletData = () => {
-    useCartStore.getState().clearCart()
-    useAiChatStore.getState().clearAll()
-    queryClient.removeQueries({ queryKey: ['orders'] })
-    queryClient.invalidateQueries({ queryKey: ['tabletTableInfo', tableId] })
-  }
-
-  // 1. Realtime STOMP Subscription for session closed event
+  // Realtime subscription to table updates (auto reset & redirect on session close)
   useEffect(() => {
-    if (!activeSessionId) return
+    if (!user?.tableId) return
 
-    const unsub = subscribeToTopic(
-      `/topic/session/${activeSessionId}/orders`,
-      (event: any) => {
-        if (event?.status === 'CLOSED') {
-          resetTabletData()
-          toast.info('Phiên phục vụ của bàn đã kết thúc. Cảm ơn quý khách!')
-          navigate('/tablet/welcome', { replace: true })
-        }
-      }
-    )
+    const unsubscribe = subscribeToTopic<{
+      tableId?: number
+      tableName?: string
+      sessionId?: number
+      status?: string
+    }>('/topic/tables', (event) => {
+      if (!event || event.tableId !== user.tableId) return
 
-    return () => {
-      unsub()
-    }
-  }, [activeSessionId, tableId, navigate])
+      if (event.status === 'CLOSED') {
+        // 1. Reset Cart for the finished session
+        useCartStore.getState().clearCart()
 
-  // 2. Detection of session closing: fires ONLY when an active session transitions to closed/null
-  useEffect(() => {
-    if (prevSessionIdRef.current !== undefined) {
-      if (prevSessionIdRef.current && !activeSessionId) {
-        resetTabletData()
-        toast.info('Phiên phục vụ của bàn đã kết thúc. Cảm ơn quý khách!')
+        // 2. Reset AI Assistant Chat history
+        useAiChatStore.getState().clearAll()
+
+        // 3. Immediately clear session state in React Query
+        queryClient.setQueryData(['tabletTableInfo', user.tableId], (old: any) => {
+          if (!old) return old
+          return { ...old, activeSessionId: null, realtimeStatus: 'EMPTY' }
+        })
+        queryClient.invalidateQueries({ queryKey: ['tabletTableInfo'] })
+        queryClient.invalidateQueries({ queryKey: ['tableDetail'] })
+        queryClient.invalidateQueries({ queryKey: ['sessionOrders'] })
+        queryClient.invalidateQueries({ queryKey: ['orders'] })
+
+        // 4. Show friendly notification to guests / staff
+        toast.info(
+          'Phiên phục vụ của bàn đã kết thúc. Cảm ơn quý khách! Bàn đã sẵn sàng đón lượt khách mới.',
+          { duration: 5000 }
+        )
+
+        // 5. Auto redirect to customer welcome/home screen
         if (location.pathname !== '/tablet/welcome') {
           navigate('/tablet/welcome', { replace: true })
         }
+      } else if (event.status === 'ACTIVE') {
+        queryClient.setQueryData(['tabletTableInfo', user.tableId], (old: any) => {
+          if (!old) return old
+          return { ...old, activeSessionId: event.sessionId, realtimeStatus: 'OCCUPIED' }
+        })
+        queryClient.invalidateQueries({ queryKey: ['tabletTableInfo'] })
       }
+    })
+
+    return () => {
+      unsubscribe()
     }
-    if (table !== undefined) {
-      prevSessionIdRef.current = activeSessionId ?? null
-    }
-  }, [activeSessionId, table, location.pathname, navigate])
+  }, [user?.tableId, location.pathname, navigate, queryClient])
 
   const handleLogout = async () => {
     try {
@@ -162,3 +159,4 @@ export function TabletLayout() {
     </div>
   )
 }
+export default TabletLayout

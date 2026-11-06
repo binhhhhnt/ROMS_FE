@@ -103,19 +103,23 @@ export function AppRoutes() {
             {/* Service Staff & Owner Routes */}
             <Route element={<RoleGuard allowedRoles={['SERVICE_STAFF', 'OWNER']} />}>
               <Route path="/tables" element={<TablesOverviewPage />} />
+              <Route path="/staff/tables" element={<TablesOverviewPage />} />
+              <Route path="/staff/active-tables" element={<TablesOverviewPage initialActiveOnly={true} />} />
               <Route path="/tables/:tableId" element={<TableDetailPage />} />
-              <Route path="/sessions/history" element={<SessionHistoryPage />} />
+              <Route path="/staff/tables/:tableId" element={<TableDetailPage />} />
               <Route path="/sessions/:sessionId" element={<SessionDetailPage />} />
-              <Route path="/sessions/:sessionId/history" element={<SessionHistoryPage />} />
               <Route path="/staff/sessions/:sessionId" element={<SessionDetailPage />} />
+              <Route path="/sessions/history" element={<SessionHistoryPage />} />
+              <Route path="/staff/sessions/history" element={<SessionHistoryPage />} />
+              <Route path="/sessions/:sessionId/history" element={<SessionHistoryPage />} />
+              <Route path="/staff/orders" element={<StaffOrdersPage />} />
+              <Route path="/staff/orders/:orderId" element={<StaffOrderDetailPage />} />
               <Route path="/orders" element={<StaffOrdersPage />} />
               <Route path="/orders/:orderId" element={<StaffOrderDetailPage />} />
               <Route path="/ai-assistant" element={<AiAssistantPage />} />
             </Route>
 
             {/* Common Authenticated Routes */}
-            <Route path="/staff/orders" element={<StaffOrdersPage />} />
-            <Route path="/staff/orders/:orderId" element={<StaffOrderDetailPage />} />
             <Route path="/profile" element={<ProfilePage defaultTab="profile" />} />
             <Route path="/profile/change-password" element={<ProfilePage defaultTab="password" />} />
             <Route path="/settings/change-password" element={<ProfilePage defaultTab="password" />} />

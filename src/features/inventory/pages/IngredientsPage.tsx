@@ -22,15 +22,15 @@ import { toast } from 'sonner'
 import { ingredientApi } from '@/features/inventory/api/ingredientApi'
 import type { IngredientResponse, StockStatus } from '@/features/inventory/types/ingredient.types'
 import { IngredientFormModal } from '@/features/inventory/components/IngredientFormModal'
+import { ImportIngredientsModal } from '@/features/inventory/components/ImportIngredientsModal'
 import { DeactivateIngredientModal } from '@/features/inventory/components/DeactivateIngredientModal'
-import { IngredientExcelImportModal } from '@/features/inventory/components/IngredientExcelImportModal'
 import { useAuthStore } from '@/app/store/authStore'
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 import { Badge } from '@/shared/components/ui/badge'
 import { getApiErrorMessage } from '@/shared/lib/axios'
 
-const PAGE_SIZE = 15
+const PAGE_SIZE = 12
 
 export function IngredientsPage() {
   const queryClient = useQueryClient()
@@ -88,7 +88,7 @@ export function IngredientsPage() {
 
       return matchSearch && matchStockStatus
     })
-  }, [pageData?.content, searchQuery, stockStatusFilter])
+  }, [pageData, searchQuery, stockStatusFilter])
 
   // Aggregate stats across current page content
   const stats = useMemo(() => {
@@ -190,6 +190,17 @@ export function IngredientsPage() {
           <Button
             variant="outline"
             size="sm"
+            onClick={() => refetch()}
+            disabled={isFetching}
+            className="text-text hover:bg-surface/50"
+            title="Làm mới dữ liệu"
+          >
+            <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
             disabled={isDownloadingTemplate}
             onClick={handleDownloadTemplate}
             className="gap-1.5 text-xs font-semibold"
@@ -220,17 +231,6 @@ export function IngredientsPage() {
               Nhập Excel
             </Button>
           )}
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => refetch()}
-            disabled={isFetching}
-            className="text-text hover:bg-surface/50"
-            title="Làm mới dữ liệu"
-          >
-            <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
-          </Button>
 
           {canModify && (
             <Button
@@ -339,7 +339,7 @@ export function IngredientsPage() {
           <table className="w-full text-left text-sm">
             <thead className="bg-surface/60 border-b border-border text-xs uppercase text-primary font-semibold tracking-wider">
               <tr>
-                <th className="py-3 px-4 w-16">Mã</th>
+                <th className="py-3 px-4 w-16">STT</th>
                 <th className="py-3 px-4">Tên nguyên liệu</th>
                 <th className="py-3 px-4 w-28">Đơn vị</th>
                 <th className="py-3 px-4 w-36 text-right">Tồn hiện tại</th>
@@ -369,15 +369,15 @@ export function IngredientsPage() {
                   </td>
                 </tr>
               ) : (
-                displayedItems.map((item) => {
+                displayedItems.map((item, index) => {
                   return (
                     <tr
                       key={item.id}
                       className="hover:bg-surface/20 transition-colors"
                     >
-                      {/* ID */}
+                      {/* Row number across pages */}
                       <td className="py-3.5 px-4 font-mono text-xs text-muted">
-                        #{item.id}
+                        {page * PAGE_SIZE + index + 1}
                       </td>
 
                       {/* Name */}
@@ -519,6 +519,13 @@ export function IngredientsPage() {
       </div>
 
       {/* Modals */}
+      {canModify && isImportModalOpen && (
+        <ImportIngredientsModal
+          onClose={() => setIsImportModalOpen(false)}
+          onSuccess={handleMutationSuccess}
+        />
+      )}
+
       <IngredientFormModal
         isOpen={isFormModalOpen}
         onClose={() => setIsFormModalOpen(false)}
@@ -530,12 +537,6 @@ export function IngredientsPage() {
         isOpen={Boolean(deactivatingIngredient)}
         onClose={() => setDeactivatingIngredient(null)}
         ingredient={deactivatingIngredient}
-        onSuccess={handleMutationSuccess}
-      />
-
-      <IngredientExcelImportModal
-        isOpen={isImportModalOpen}
-        onClose={() => setIsImportModalOpen(false)}
         onSuccess={handleMutationSuccess}
       />
     </div>
