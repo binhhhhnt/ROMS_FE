@@ -20,6 +20,8 @@ import {
   Layers,
   Sparkles,
   Sliders,
+  Tag,
+  ReceiptText,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/shared/utils/cn'
@@ -127,6 +129,20 @@ export function StaffLayout() {
               >
                 <Receipt className="w-4 h-4 text-accent" />
                 Quản lý Chi phí
+              </NavLink>
+              <NavLink
+                to="/owner/bills"
+                className={getNavLinkClassName}
+              >
+                <ReceiptText className="w-4 h-4 text-accent" />
+                Lịch sử hóa đơn
+              </NavLink>
+              <NavLink
+                to="/owner/promotions"
+                className={getNavLinkClassName}
+              >
+                <Tag className="w-4 h-4 text-accent" />
+                Khuyến mãi
               </NavLink>
               <NavLink
                 to="/owner/reports/revenue"

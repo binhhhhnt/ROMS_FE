@@ -28,6 +28,8 @@ import { KitchenSummaryPage } from '@/features/kitchen/pages/KitchenSummaryPage'
 import { KitchenReadyPage } from '@/features/kitchen/pages/KitchenReadyPage'
 import { KitchenMenuAvailabilityPage } from '@/features/kitchen/pages/KitchenMenuAvailabilityPage'
 import { ExpensesPage } from '@/features/expenses/pages/ExpensesPage'
+import { PromotionsPage } from '@/features/promotions/pages/PromotionsPage'
+import { BillsPage } from '@/features/billing/pages/BillsPage'
 import { OwnerDashboardPage } from '@/features/dashboard/pages/OwnerDashboardPage'
 import { RevenueReportPage } from '@/features/reports/pages/RevenueReportPage'
 import { PopularItemsReportPage } from '@/features/reports/pages/PopularItemsReportPage'
@@ -85,6 +87,8 @@ export function AppRoutes() {
               <Route path="/owner/menu-items/new" element={<MenuItemCreatePage />} />
               <Route path="/owner/menu-items/:itemId" element={<MenuItemDetailPage />} />
               <Route path="/owner/expenses" element={<ExpensesPage />} />
+              <Route path="/owner/promotions" element={<PromotionsPage />} />
+              <Route path="/owner/bills" element={<BillsPage />} />
               <Route path="/owner/reports/revenue" element={<RevenueReportPage />} />
               <Route path="/owner/reports/popular-items" element={<PopularItemsReportPage />} />
               <Route path="/owner/reports/profit" element={<ProfitReportPage />} />
