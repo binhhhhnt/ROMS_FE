@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { X, Receipt, Printer, CreditCard, Tag, AlertCircle, RefreshCw } from 'lucide-react'
 import { toast } from 'sonner'
+import { useAuthStore } from '@/app/store/authStore'
 import { billApi } from '@/features/billing/api/billApi'
 import { settingsApi } from '@/features/settings/api/settingsApi'
 import { PaymentMethodModal } from '@/features/billing/components/PaymentMethodModal'
@@ -30,6 +31,7 @@ export function TableCheckoutModal({
   onCheckoutSuccess,
 }: TableCheckoutModalProps) {
   const queryClient = useQueryClient()
+  const currentUser = useAuthStore((state) => state.user)
 
   const [selectedPromoCode, setSelectedPromoCode] = useState<string>('')
   const [customPromoCode, setCustomPromoCode] = useState<string>('')
@@ -120,7 +122,7 @@ export function TableCheckoutModal({
           address: settings?.address,
           phone: settings?.phone,
           receiptFooter: settings?.receiptFooter,
-          cashierName: savedBill.createdByName,
+          cashierName: savedBill.createdByName || currentUser?.username || 'Thu ngân',
           tableCode: savedBill.tableCode,
           openedAt: preview?.openedAt ? new Date(preview.openedAt).toLocaleString('vi-VN') : undefined,
           closedAt: new Date().toLocaleString('vi-VN'),
@@ -185,7 +187,7 @@ export function TableCheckoutModal({
       address: settings?.address,
       phone: settings?.phone,
       receiptFooter: settings?.receiptFooter,
-      cashierName: 'Thu ngân',
+      cashierName: currentUser?.username || currentUser?.fullName || 'Thu ngân',
       tableCode: preview.tableCode,
       openedAt: preview.openedAt ? new Date(preview.openedAt).toLocaleString('vi-VN') : undefined,
       closedAt: new Date().toLocaleString('vi-VN'),
