@@ -5,7 +5,7 @@ import {
   MicOff,
   Send,
   Users,
-  DollarSign,
+  Banknote,
   AlertOctagon,
   Bot,
   User,
@@ -316,7 +316,7 @@ export function AiAssistantPage() {
 
           <div>
             <label className="font-semibold text-text flex items-center gap-1.5 mb-1">
-              <DollarSign className="w-3.5 h-3.5 text-green-500" />
+              <Banknote className="w-3.5 h-3.5 text-green-500" />
               Ngân sách dự kiến
             </label>
             <Input
@@ -338,17 +338,15 @@ export function AiAssistantPage() {
         {messages.map((msg) => (
           <div
             key={msg.id}
-            className={`flex gap-3 max-w-4xl ${
-              msg.sender === 'user' ? 'ml-auto flex-row-reverse' : 'mr-auto'
-            }`}
+            className={`flex gap-3 max-w-4xl ${msg.sender === 'user' ? 'ml-auto flex-row-reverse' : 'mr-auto'
+              }`}
           >
             {/* Avatar */}
             <div
-              className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 shadow-xs ${
-                msg.sender === 'user'
+              className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 shadow-xs ${msg.sender === 'user'
                   ? 'bg-primary text-white'
                   : 'bg-primary/10 text-primary border border-primary/20'
-              }`}
+                }`}
             >
               {msg.sender === 'user' ? (
                 <User className="w-4 h-4" />
@@ -360,17 +358,15 @@ export function AiAssistantPage() {
             {/* Bubble Content */}
             <div className={`space-y-3 max-w-[85%] sm:max-w-[78%]`}>
               <div
-                className={`p-4 rounded-2xl shadow-xs text-sm leading-relaxed ${
-                  msg.sender === 'user'
+                className={`p-4 rounded-2xl shadow-xs text-sm leading-relaxed ${msg.sender === 'user'
                     ? 'bg-primary text-white rounded-tr-xs'
                     : 'bg-card border border-border text-text rounded-tl-xs'
-                }`}
+                  }`}
               >
                 <div className="whitespace-pre-line">{msg.text}</div>
                 <div
-                  className={`text-[10px] mt-1.5 text-right ${
-                    msg.sender === 'user' ? 'text-white/70' : 'text-muted'
-                  }`}
+                  className={`text-[10px] mt-1.5 text-right ${msg.sender === 'user' ? 'text-white/70' : 'text-muted'
+                    }`}
                 >
                   {new Date(msg.timestamp).toLocaleTimeString('vi-VN', {
                     hour: '2-digit',
@@ -509,9 +505,8 @@ export function AiAssistantPage() {
             variant={isListening ? 'destructive' : 'outline'}
             size="icon"
             onClick={toggleListening}
-            className={`rounded-full shrink-0 transition-all ${
-              isListening ? 'animate-pulse ring-2 ring-red-400' : ''
-            }`}
+            className={`rounded-full shrink-0 transition-all ${isListening ? 'animate-pulse ring-2 ring-red-400' : ''
+              }`}
             title={isListening ? 'Đang lắng nghe... bấm để dừng' : 'Nói tiếng Việt'}
           >
             {isListening ? (

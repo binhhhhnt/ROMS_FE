@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { Trophy, ShoppingBag, DollarSign, Award } from 'lucide-react'
+import { Trophy, ShoppingBag, Banknote, Award } from 'lucide-react'
 import { reportApi } from '@/features/reports/api/reportApi'
 import { getApiErrorMessage } from '@/shared/lib/axios'
 import { ReportNavTabs } from '@/features/reports/components/ReportNavTabs'
@@ -183,7 +183,7 @@ export function PopularItemsReportPage() {
               </div>
             </div>
             <div className="w-10 h-10 rounded-xl bg-accent/15 text-accent flex items-center justify-center shrink-0">
-              <DollarSign className="w-5 h-5" />
+              <Banknote className="w-5 h-5" />
             </div>
           </div>
           <div className="mt-3 pt-2 border-t border-border/60 text-[11px] text-muted">

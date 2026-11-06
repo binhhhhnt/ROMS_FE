@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { DollarSign, CheckCircle2, XCircle, TrendingDown } from 'lucide-react'
+import { Banknote, CheckCircle2, XCircle, TrendingDown } from 'lucide-react'
 import { expenseApi } from '@/features/expenses/api/expenseApi'
 import { getApiErrorMessage } from '@/shared/lib/axios'
 import { ExpenseFilterBar } from '@/features/expenses/components/ExpenseFilterBar'
@@ -182,7 +182,7 @@ export function ExpensesPage() {
             </div>
           </div>
           <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-            <DollarSign className="w-5 h-5" />
+            <Banknote className="w-5 h-5" />
           </div>
         </div>
 

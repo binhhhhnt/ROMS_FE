@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom'
 import {
   TrendingUp,
   TrendingDown,
-  DollarSign,
+  Banknote,
   ShoppingCart,
   Receipt,
   ClipboardList,
@@ -145,7 +145,7 @@ export function OwnerDashboardPage() {
         <MetricCard
           title="TỔNG DOANH THU ĐƠN HÀNG"
           value={isLoadingOverview ? '...' : formatVND(overview?.totalRevenue || 0)}
-          icon={<DollarSign className="w-5 h-5" />}
+          icon={<Banknote className="w-5 h-5" />}
           variant="accent"
           subtext="Doanh thu ghi nhận từ các đơn hoàn thành"
           badgeText="Doanh thu"

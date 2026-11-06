@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuthStore } from '@/app/store/authStore'
@@ -17,6 +17,7 @@ export function TabletLayout() {
   const location = useLocation()
   const queryClient = useQueryClient()
   const tableId = user?.tableId
+  const prevSessionIdRef = useRef<number | null | undefined>(undefined)
 
   // Query current table information and session status
   const { data: table } = useQuery({
@@ -55,14 +56,21 @@ export function TabletLayout() {
     }
   }, [activeSessionId, tableId, navigate])
 
-  // 2. Fallback check: if table has no active session and user is not on welcome page
+  // 2. Detection of session closing: fires ONLY when an active session transitions to closed/null
   useEffect(() => {
-    if (table && !table.activeSessionId && location.pathname !== '/tablet/welcome') {
-      resetTabletData()
-      toast.info('Phiên phục vụ của bàn đã kết thúc. Cảm ơn quý khách!')
-      navigate('/tablet/welcome', { replace: true })
+    if (prevSessionIdRef.current !== undefined) {
+      if (prevSessionIdRef.current && !activeSessionId) {
+        resetTabletData()
+        toast.info('Phiên phục vụ của bàn đã kết thúc. Cảm ơn quý khách!')
+        if (location.pathname !== '/tablet/welcome') {
+          navigate('/tablet/welcome', { replace: true })
+        }
+      }
     }
-  }, [table?.activeSessionId, location.pathname, navigate])
+    if (table !== undefined) {
+      prevSessionIdRef.current = activeSessionId ?? null
+    }
+  }, [activeSessionId, table, location.pathname, navigate])
 
   const handleLogout = async () => {
     try {

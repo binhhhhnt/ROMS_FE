@@ -25,7 +25,14 @@ export function TabletWelcomePage() {
   // Open session mutation from tablet
   const openSessionMutation = useMutation({
     mutationFn: () => tableApi.openSession(tableId!),
-    onSuccess: () => {
+    onSuccess: (newSession) => {
+      queryClient.setQueryData(['tabletTableInfo', tableId], (old: any) => {
+        if (!old) return old
+        return {
+          ...old,
+          activeSessionId: newSession.id,
+        }
+      })
       queryClient.invalidateQueries({ queryKey: ['tabletTableInfo', tableId] })
       toast.success('Bắt đầu phiên phục vụ thành công! Chúc quý khách ngon miệng.')
       navigate('/tablet/menu')
@@ -78,7 +85,7 @@ export function TabletWelcomePage() {
           className="w-full h-14 text-sm font-bold uppercase tracking-wider shadow-lg shadow-primary/20"
         >
           <ShoppingCart className="w-5 h-5 mr-2" />
-          {hasActiveSession ? 'Xem thực đơn & Đặt món' : 'Bắt đầu gọi món'}
+          Xem thực đơn & Đặt món
           <ArrowRight className="w-4 h-4 ml-2" />
         </Button>
 

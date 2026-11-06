@@ -104,10 +104,13 @@ export function AppRoutes() {
             <Route element={<RoleGuard allowedRoles={['SERVICE_STAFF', 'OWNER']} />}>
               <Route path="/tables" element={<TablesOverviewPage />} />
               <Route path="/tables/:tableId" element={<TableDetailPage />} />
+              <Route path="/sessions/history" element={<SessionHistoryPage />} />
               <Route path="/sessions/:sessionId" element={<SessionDetailPage />} />
               <Route path="/sessions/:sessionId/history" element={<SessionHistoryPage />} />
+              <Route path="/staff/sessions/:sessionId" element={<SessionDetailPage />} />
               <Route path="/orders" element={<StaffOrdersPage />} />
               <Route path="/orders/:orderId" element={<StaffOrderDetailPage />} />
+              <Route path="/ai-assistant" element={<AiAssistantPage />} />
             </Route>
 
             {/* Common Authenticated Routes */}

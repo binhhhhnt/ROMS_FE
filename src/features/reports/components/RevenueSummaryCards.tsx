@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { DollarSign, TrendingUp, Calendar, CheckCircle2 } from 'lucide-react'
+import { Banknote, TrendingUp, Calendar, CheckCircle2 } from 'lucide-react'
 import { Card } from '@/shared/components/ui/card'
 import type { DailyRevenueExpenseResponse, DashboardOverviewResponse } from '@/features/dashboard/types/dashboard.types'
 
@@ -67,7 +67,7 @@ export function RevenueSummaryCards({ trends, overview, isLoading = false }: Rev
             </div>
           </div>
           <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-            <DollarSign className="w-5 h-5" />
+            <Banknote className="w-5 h-5" />
           </div>
         </div>
         <div className="mt-3 pt-2 border-t border-border/60 text-[11px] text-muted">
