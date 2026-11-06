@@ -23,7 +23,7 @@ export function CartItemList({ items }: CartItemListProps) {
           variant="ghost"
           size="sm"
           onClick={clearCart}
-          className="text-xs text-muted hover:text-status-cancelled hover:bg-status-cancelled/10 h-8"
+          className="min-h-11 text-xs text-muted hover:bg-status-cancelled/10 hover:text-status-cancelled"
         >
           <Trash2 className="w-3.5 h-3.5 mr-1" />
           Xóa giỏ hàng

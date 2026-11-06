@@ -11,6 +11,7 @@ import { ResetPasswordPage } from '@/features/auth/pages/ResetPasswordPage'
 import { ProfilePage } from '@/features/auth/pages/ProfilePage'
 import { AccessDeniedPage } from '@/features/auth/pages/AccessDeniedPage'
 import { CategoryManagementPage } from '@/features/menu/pages/CategoryManagementPage'
+import { MenuExcelImportPage } from '@/features/menu/pages/MenuExcelImportPage'
 import { MenuItemListPage } from '@/features/menu/pages/MenuItemListPage'
 import { MenuItemCreatePage } from '@/features/menu/pages/MenuItemCreatePage'
 import { MenuItemDetailPage } from '@/features/menu/pages/MenuItemDetailPage'
@@ -79,6 +80,7 @@ export function AppRoutes() {
               <Route path="/owner/users" element={<UserManagementPage />} />
               <Route path="/owner/users/:userId" element={<UserManagementPage />} />
               <Route path="/owner/categories" element={<CategoryManagementPage />} />
+              <Route path="/owner/categories/import" element={<MenuExcelImportPage />} />
               <Route path="/owner/menu-items" element={<MenuItemListPage />} />
               <Route path="/owner/menu-items/new" element={<MenuItemCreatePage />} />
               <Route path="/owner/menu-items/:itemId" element={<MenuItemDetailPage />} />

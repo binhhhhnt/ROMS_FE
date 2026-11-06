@@ -11,14 +11,17 @@ import { useMenuCategoryOptions } from '../hooks/useMenu'
 import { getMenuErrorMessage, menuControlClass } from '../utils/menu'
 import { settingsApi } from '@/features/settings/api/settingsApi'
 import type { MenuItemReadResponse, MenuItemWriteRequest } from '../types/menu.types'
+import { CatalogDeleteButton } from './CatalogDeleteButton'
 
-export function MenuItemForm({ item, onSave }: {
+export function MenuItemForm({ item, onSave, onDeleted }: {
   item?: MenuItemReadResponse
   onSave: (values: MenuItemWriteRequest) => Promise<void>
+  onDeleted?: () => void
 }) {
   const categories = useMenuCategoryOptions()
   const saving = useRef(false)
   const [pending, setPending] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
   // Query available tax categories
@@ -93,9 +96,12 @@ export function MenuItemForm({ item, onSave }: {
   }
 
   return (
-    <form onSubmit={(event) => { void handleSubmit(submit)(event) }} noValidate className="rounded-xl border border-border bg-card p-5 shadow-sm sm:p-6" aria-busy={isSubmitting || pending}>
+    <form onSubmit={(event) => {
+      if (deleting) { event.preventDefault(); return }
+      void handleSubmit(submit)(event)
+    }} noValidate className="rounded-xl border border-border bg-card p-5 shadow-sm sm:p-6" aria-busy={isSubmitting || pending || deleting}>
       <h2 className="text-lg font-bold text-primary">Thông tin món ăn</h2>
-      <fieldset disabled={isSubmitting || pending} className="mt-5 grid min-w-0 gap-5 md:grid-cols-2">
+      <fieldset disabled={isSubmitting || pending || deleting} className="mt-5 grid min-w-0 gap-5 md:grid-cols-2">
         {/* Name */}
         <div className="md:col-span-2">
           <label htmlFor="menu-item-name" className="mb-2 block text-sm font-semibold">Tên món <span className="text-status-cancelled">*</span></label>
@@ -109,7 +115,7 @@ export function MenuItemForm({ item, onSave }: {
           <select id="menu-item-category" className={menuControlClass} disabled={categories.isPending || categories.isError}
             aria-required="true" aria-invalid={!!errors.categoryId} aria-describedby="menu-item-category-error" {...register('categoryId', { valueAsNumber: true })}>
             <option value="">Chọn danh mục</option>
-            {categories.data?.map((category) => <option key={category.id} value={category.id}>{category.name}{category.isActive ? '' : ' (ngừng hoạt động)'}</option>)}
+            {categories.data?.map((category) => <option key={category.id} value={category.id}>{category.name}{category.isActive ? '' : ' (tạm ngưng phục vụ)'}</option>)}
           </select>
           <p id="menu-item-category-error" className="mt-1 text-sm text-status-cancelled">{errors.categoryId?.message}</p>
           {categories.isPending && <p role="status" className="mt-2 text-sm text-muted">Đang tải danh mục...</p>}
@@ -179,8 +185,9 @@ export function MenuItemForm({ item, onSave }: {
         </div>
       </fieldset>
       {submitError && <p role="alert" className="mt-5 rounded-lg bg-status-cancelled/5 p-3 text-sm text-status-cancelled">{submitError}</p>}
-      <div className="mt-6 flex justify-end border-t border-border pt-5">
-        <Button type="submit" isLoading={isSubmitting || pending} disabled={!categories.isSuccess || categories.data.length === 0}>{item ? 'Lưu thông tin' : 'Tạo món và tiếp tục'}</Button>
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5">
+        {item && <CatalogDeleteButton kind="dish" id={item.id} name={item.name} label="Xóa món ăn" disabled={isSubmitting || pending || deleting} onBusyChange={setDeleting} onDeleted={onDeleted} />}
+        <Button className="ml-auto" type="submit" isLoading={isSubmitting || pending} disabled={deleting || !categories.isSuccess || categories.data.length === 0}>{item ? 'Lưu thông tin' : 'Tạo món và tiếp tục'}</Button>
       </div>
     </form>
   )

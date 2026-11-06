@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
-import { FolderOpen, Pencil, Plus, RefreshCw } from 'lucide-react'
+import { Link, useLocation, useSearchParams } from 'react-router-dom'
+import { FolderOpen, Pencil, Plus, RefreshCw, Upload } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/app/store/authStore'
 import { Button } from '@/shared/components/ui/button'
 import { Badge } from '@/shared/components/ui/badge'
 import { CategoryFormModal } from '../components/CategoryFormModal'
+import { CatalogDeleteButton } from '../components/CatalogDeleteButton'
 import { useCategories, useSaveCategory } from '../hooks/useCategories'
 import { getCategoryErrorMessage } from '../api/categoryApi'
 import type { CategoryFormValues } from '../schemas/categorySchema'
@@ -14,6 +15,7 @@ import type { CategoryResponse } from '../types/category.types'
 const PAGE_SIZE = 20
 
 export function CategoryManagementPage() {
+  const location = useLocation()
   const userId = useAuthStore((state) => state.user?.id)
   const [searchParams, setSearchParams] = useSearchParams()
   const rawPage = Number(searchParams.get('page') ?? 0)
@@ -38,6 +40,10 @@ export function CategoryManagementPage() {
   }
 
   const data = query.data
+  const handleDeleted = () => {
+    setEditor(null)
+    if (data?.content.length === 1 && page > 0) changePage(page - 1)
+  }
 
   return (
     <section className="mx-auto flex w-full max-w-6xl flex-col gap-6" aria-labelledby="categories-title">
@@ -52,6 +58,7 @@ export function CategoryManagementPage() {
             <RefreshCw aria-hidden="true" className={`h-4 w-4 ${query.isFetching ? 'animate-spin' : ''}`} />Làm mới
           </Button>
           <Button onClick={() => setEditor('create')}><Plus aria-hidden="true" className="h-4 w-4" />Thêm danh mục</Button>
+          <Link to="/owner/categories/import" state={{ returnTo: location.pathname + location.search }} className="inline-flex min-h-10 items-center gap-2 rounded-md border border-border bg-card px-4 py-2 text-sm font-medium text-text hover:bg-muted-bg focus-visible:outline-accent"><Upload aria-hidden="true" className="h-4 w-4" />Chọn file Excel</Link>
         </div>
       </header>
 
@@ -77,7 +84,7 @@ export function CategoryManagementPage() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <caption className="sr-only">Danh mục món, mô tả, thứ tự hiển thị và trạng thái hoạt động</caption>
+              <caption className="sr-only">Danh mục món, mô tả, thứ tự hiển thị và trạng thái phục vụ</caption>
               <thead className="border-b border-border bg-background text-xs text-muted">
                 <tr><th scope="col" className="px-5 py-3">Tên danh mục</th><th scope="col" className="px-5 py-3">Mô tả</th><th scope="col" className="whitespace-nowrap px-5 py-3">Thứ tự</th><th scope="col" className="px-5 py-3">Trạng thái</th><th scope="col" className="px-5 py-3 text-right">Thao tác</th></tr>
               </thead>
@@ -87,8 +94,8 @@ export function CategoryManagementPage() {
                     <th scope="row" className="min-w-40 max-w-xs break-words px-5 py-4 font-semibold text-primary">{category.name}</th>
                     <td className="min-w-48 max-w-sm whitespace-pre-wrap break-words px-5 py-4 text-muted">{category.description || '—'}</td>
                     <td className="px-5 py-4 tabular-nums">{category.displayOrder}</td>
-                    <td className="whitespace-nowrap px-5 py-4"><Badge variant={category.isActive ? 'secondary' : 'outline'}>{category.isActive ? 'Đang hoạt động' : 'Ngừng hoạt động'}</Badge></td>
-                    <td className="px-5 py-4 text-right"><Button variant="ghost" size="sm" aria-label={`Chỉnh sửa danh mục ${category.name}`} onClick={() => setEditor(category)}><Pencil aria-hidden="true" className="h-4 w-4" />Chỉnh sửa</Button></td>
+                    <td className="whitespace-nowrap px-5 py-4"><Badge variant={category.isActive ? 'secondary' : 'outline'}>{category.isActive ? 'Đang phục vụ' : 'Tạm ngưng phục vụ'}</Badge></td>
+                    <td className="px-5 py-4"><div className="flex items-center justify-end gap-2 whitespace-nowrap"><Button variant="ghost" size="sm" aria-label={`Chỉnh sửa danh mục ${category.name}`} onClick={() => setEditor(category)}><Pencil aria-hidden="true" className="h-4 w-4" />Chỉnh sửa</Button><CatalogDeleteButton kind="category" id={category.id} name={category.name} onDeleted={handleDeleted} /></div></td>
                   </tr>
                 ))}
               </tbody>
@@ -105,7 +112,7 @@ export function CategoryManagementPage() {
           </nav>
         )}
       </div>
-      {editor !== null && <CategoryFormModal category={editor === 'create' ? null : editor} onClose={() => setEditor(null)} onSave={handleSave} />}
+      {editor !== null && <CategoryFormModal category={editor === 'create' ? null : editor} onClose={() => setEditor(null)} onSave={handleSave} onDeleted={handleDeleted} />}
     </section>
   )
 }
