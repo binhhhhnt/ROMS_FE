@@ -4,6 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "test:purchase-import": "node --test tests/purchaseImport.test.mjs",
+    "test:ingredient-import": "node --test tests/ingredientImport.test.mjs",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
@@ -15,6 +17,7 @@
     "@tanstack/react-query": "^5.104.3",
     "axios": "^1.20.0",
     "clsx": "^2.1.1",
+    "exceljs": "^4.4.0",
     "lucide-react": "^1.57.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",

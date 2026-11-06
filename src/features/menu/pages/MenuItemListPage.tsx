@@ -13,6 +13,7 @@ import { MenuStatusBadge } from '../components/MenuStatusBadge'
 import { MenuImage } from '../components/MenuImage'
 import { MenuExcelImportModal } from '../components/MenuExcelImportModal'
 import { menuApi } from '../api/menuApi'
+import { CatalogDeleteButton } from '../components/CatalogDeleteButton'
 import { formatMenuPrice, getMenuErrorMessage, orderedMenuImages } from '../utils/menu'
 import { getApiErrorMessage } from '@/shared/lib/axios'
 
@@ -184,6 +185,7 @@ export function MenuItemListPage() {
                     <th scope="col" className="px-5 py-4">Giá</th>
                     <th scope="col" className="px-5 py-4">Trạng thái</th>
                     <th scope="col" className="px-5 py-4">Khả dụng hiện tại</th>
+                    <th scope="col" className="px-5 py-4 text-right">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -227,6 +229,28 @@ export function MenuItemListPage() {
                         {item.availability.sellable
                           ? 'Có thể đặt món'
                           : 'Hiện chưa thể đặt món'}
+                      </td>
+                      <td className="px-5 py-4">
+                        <div className="flex items-center justify-end gap-2 whitespace-nowrap">
+                          <Link
+                            to={`/owner/menu-items/${item.id}`}
+                            className="inline-flex min-h-10 items-center rounded-md px-3 text-sm font-medium text-primary hover:bg-surface/40"
+                          >
+                            Chỉnh sửa
+                          </Link>
+                          <CatalogDeleteButton
+                            kind="dish"
+                            id={item.id}
+                            name={item.name}
+                            onDeleted={() => {
+                              if (data.content.length === 1 && filters.params.page > 0) {
+                                filters.change('page', String(filters.params.page - 1))
+                              } else {
+                                void query.refetch()
+                              }
+                            }}
+                          />
+                        </div>
                       </td>
                     </tr>
                   ))}

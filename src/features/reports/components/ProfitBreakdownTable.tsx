@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { ArrowUpDown, DollarSign } from 'lucide-react'
+import { ArrowUpDown, Banknote } from 'lucide-react'
 import { Badge } from '@/shared/components/ui/badge'
 import { Card, CardHeader, CardTitle, CardContent } from '@/shared/components/ui/card'
 import type { DailyRevenueExpenseResponse } from '@/features/dashboard/types/dashboard.types'
@@ -105,7 +105,7 @@ export function ProfitBreakdownTable({ trends, isLoading = false }: ProfitBreakd
 
         {!isLoading && processedData.length === 0 && (
           <div className="p-8 text-center flex flex-col items-center justify-center">
-            <DollarSign className="w-8 h-8 text-muted mb-2" />
+            <Banknote className="w-8 h-8 text-muted mb-2" />
             <span className="text-xs font-semibold text-text">Chưa có bản ghi tài chính</span>
             <p className="text-[11px] text-muted mt-0.5">Không tìm thấy dữ liệu phát sinh trong kỳ lọc này.</p>
           </div>

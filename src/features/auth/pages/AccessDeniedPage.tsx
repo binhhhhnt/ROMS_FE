@@ -23,6 +23,8 @@ export function AccessDeniedPage() {
       navigate('/owner/dashboard', { replace: true })
     } else if (user.role === 'SERVICE_STAFF') {
       navigate('/tables', { replace: true })
+    } else if (user.role === 'INVENTORY_STAFF') {
+      navigate('/inventory/ingredients', { replace: true })
     } else {
       navigate('/staff/orders', { replace: true })
     }

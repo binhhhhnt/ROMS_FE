@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { DollarSign, Flame, PieChart, Activity } from 'lucide-react'
+import { Banknote, Flame, PieChart, Activity } from 'lucide-react'
 import { cn } from '@/shared/utils/cn'
 
 interface TabItem {
@@ -12,7 +12,7 @@ const TABS: TabItem[] = [
   {
     name: 'Báo cáo Doanh thu',
     to: '/owner/reports/revenue',
-    icon: DollarSign,
+    icon: Banknote,
   },
   {
     name: 'Món bán chạy',

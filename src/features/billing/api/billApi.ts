@@ -32,9 +32,17 @@ export const billApi = {
     return res.data.data
   },
 
-  async getBills(page = 0, size = 20): Promise<PageResponse<BillResponse>> {
+  async getBills(
+    page: number = 0,
+    size: number = 20,
+    search?: string
+  ): Promise<PageResponse<BillResponse>> {
+    const params: Record<string, string | number> = { page, size }
+    if (search && search.trim()) {
+      params.search = search.trim()
+    }
     const res = await apiClient.get<ApiResponse<PageResponse<BillResponse>>>('/api/bills', {
-      params: { page, size },
+      params,
     })
     return res.data.data
   },

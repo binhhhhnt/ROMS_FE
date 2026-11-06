@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { DollarSign, TrendingUp, TrendingDown, Receipt, ShoppingCart, Percent } from 'lucide-react'
+import { Banknote, TrendingUp, TrendingDown, Receipt, ShoppingCart, Percent } from 'lucide-react'
 import { Card } from '@/shared/components/ui/card'
 import type { DashboardOverviewResponse } from '@/features/dashboard/types/dashboard.types'
 
@@ -48,7 +48,7 @@ export function ProfitSummaryCards({ overview, isLoading = false }: ProfitSummar
             </div>
           </div>
           <div className="w-10 h-10 rounded-xl bg-accent/15 text-accent flex items-center justify-center shrink-0">
-            <DollarSign className="w-5 h-5" />
+            <Banknote className="w-5 h-5" />
           </div>
         </div>
         <div className="mt-3 pt-2 border-t border-border/60 text-[11px] text-muted">
@@ -89,18 +89,16 @@ export function ProfitSummaryCards({ overview, isLoading = false }: ProfitSummar
             </div>
           </div>
           <div
-            className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-              isProfitable ? 'bg-status-ready/15 text-status-ready' : 'bg-status-cancelled/15 text-status-cancelled'
-            }`}
+            className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isProfitable ? 'bg-status-ready/15 text-status-ready' : 'bg-status-cancelled/15 text-status-cancelled'
+              }`}
           >
             {isProfitable ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
           </div>
         </div>
         <div className="mt-3 pt-2 border-t border-border/60 text-[11px] text-muted flex items-center justify-between">
           <span>{isProfitable ? 'Kinh doanh có lãi' : 'Đang trong tình trạng lỗ'}</span>
-          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-            isProfitable ? 'bg-status-ready/20 text-status-ready' : 'bg-status-cancelled/20 text-status-cancelled'
-          }`}>
+          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${isProfitable ? 'bg-status-ready/20 text-status-ready' : 'bg-status-cancelled/20 text-status-cancelled'
+            }`}>
             {isProfitable ? 'Dương' : 'Âm'}
           </span>
         </div>

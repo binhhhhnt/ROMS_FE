@@ -26,7 +26,7 @@ export function CartItemCard({ item }: CartItemCardProps) {
   }
 
   return (
-    <div className="bg-card border border-border rounded-xl p-4 sm:p-5 shadow-sm transition-all hover:border-accent/40 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+    <div className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-border bg-card p-4 sm:flex-row sm:items-center sm:p-5">
       {/* Dish Image & Info */}
       <div className="flex items-center gap-4 flex-1 min-w-0">
         <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg bg-surface flex items-center justify-center overflow-hidden shrink-0 border border-border">
@@ -42,7 +42,7 @@ export function CartItemCard({ item }: CartItemCardProps) {
         </div>
 
         <div className="flex-1 min-w-0">
-          <h4 className="font-semibold text-base text-text truncate">
+          <h4 className="break-words text-base font-semibold text-primary">
             {item.name}
           </h4>
           <div className="text-sm text-accent font-medium mt-0.5">
@@ -63,8 +63,8 @@ export function CartItemCard({ item }: CartItemCardProps) {
               <button
                 type="button"
                 onClick={handleSaveNote}
-                className="p-1.5 rounded bg-primary text-white hover:bg-primary-hover"
-                title="Lưu ghi chú"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary text-white hover:bg-primary-hover"
+                aria-label="Lưu ghi chú"
               >
                 <Check className="w-3.5 h-3.5" />
               </button>
@@ -79,7 +79,7 @@ export function CartItemCard({ item }: CartItemCardProps) {
               <button
                 type="button"
                 onClick={() => setIsEditingNote(true)}
-                className="text-[11px] text-accent hover:underline flex items-center gap-1 font-medium"
+                className="flex min-h-11 items-center gap-1 text-xs font-medium text-accent hover:underline"
               >
                 <Edit3 className="w-3 h-3" />
                 {item.note ? 'Sửa' : '+ Ghi chú'}
@@ -96,8 +96,8 @@ export function CartItemCard({ item }: CartItemCardProps) {
           <button
             type="button"
             onClick={() => updateQuantity(item.menuItemId, item.quantity - 1)}
-            className="w-9 h-9 flex items-center justify-center text-text hover:bg-surface transition-colors active:scale-95 cursor-pointer"
-            aria-label="Giảm số lượng"
+            className="flex h-11 w-11 cursor-pointer items-center justify-center text-text transition-colors hover:bg-surface active:scale-95"
+            aria-label={`Giảm số lượng ${item.name}`}
           >
             <Minus className="w-4 h-4" />
           </button>
@@ -107,8 +107,8 @@ export function CartItemCard({ item }: CartItemCardProps) {
           <button
             type="button"
             onClick={() => updateQuantity(item.menuItemId, item.quantity + 1)}
-            className="w-9 h-9 flex items-center justify-center text-text hover:bg-surface transition-colors active:scale-95 cursor-pointer"
-            aria-label="Tăng số lượng"
+            className="flex h-11 w-11 cursor-pointer items-center justify-center text-text transition-colors hover:bg-surface active:scale-95"
+            aria-label={`Tăng số lượng ${item.name}`}
           >
             <Plus className="w-4 h-4" />
           </button>
@@ -127,8 +127,8 @@ export function CartItemCard({ item }: CartItemCardProps) {
           variant="ghost"
           size="icon"
           onClick={() => removeItem(item.menuItemId)}
-          className="text-muted hover:text-status-cancelled hover:bg-status-cancelled/10 w-9 h-9"
-          title="Xóa món"
+          className="h-11 w-11 text-muted hover:bg-status-cancelled/10 hover:text-status-cancelled"
+          aria-label={`Xóa ${item.name}`}
         >
           <Trash2 className="w-4 h-4" />
         </Button>

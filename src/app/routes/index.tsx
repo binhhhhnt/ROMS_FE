@@ -11,6 +11,7 @@ import { ResetPasswordPage } from '@/features/auth/pages/ResetPasswordPage'
 import { ProfilePage } from '@/features/auth/pages/ProfilePage'
 import { AccessDeniedPage } from '@/features/auth/pages/AccessDeniedPage'
 import { CategoryManagementPage } from '@/features/menu/pages/CategoryManagementPage'
+import { MenuExcelImportPage } from '@/features/menu/pages/MenuExcelImportPage'
 import { MenuItemListPage } from '@/features/menu/pages/MenuItemListPage'
 import { MenuItemCreatePage } from '@/features/menu/pages/MenuItemCreatePage'
 import { MenuItemDetailPage } from '@/features/menu/pages/MenuItemDetailPage'
@@ -27,6 +28,8 @@ import { KitchenSummaryPage } from '@/features/kitchen/pages/KitchenSummaryPage'
 import { KitchenReadyPage } from '@/features/kitchen/pages/KitchenReadyPage'
 import { KitchenMenuAvailabilityPage } from '@/features/kitchen/pages/KitchenMenuAvailabilityPage'
 import { ExpensesPage } from '@/features/expenses/pages/ExpensesPage'
+import { PromotionsPage } from '@/features/promotions/pages/PromotionsPage'
+import { BillsPage } from '@/features/billing/pages/BillsPage'
 import { OwnerDashboardPage } from '@/features/dashboard/pages/OwnerDashboardPage'
 import { RevenueReportPage } from '@/features/reports/pages/RevenueReportPage'
 import { PopularItemsReportPage } from '@/features/reports/pages/PopularItemsReportPage'
@@ -79,10 +82,13 @@ export function AppRoutes() {
               <Route path="/owner/users" element={<UserManagementPage />} />
               <Route path="/owner/users/:userId" element={<UserManagementPage />} />
               <Route path="/owner/categories" element={<CategoryManagementPage />} />
+              <Route path="/owner/categories/import" element={<MenuExcelImportPage />} />
               <Route path="/owner/menu-items" element={<MenuItemListPage />} />
               <Route path="/owner/menu-items/new" element={<MenuItemCreatePage />} />
               <Route path="/owner/menu-items/:itemId" element={<MenuItemDetailPage />} />
               <Route path="/owner/expenses" element={<ExpensesPage />} />
+              <Route path="/owner/promotions" element={<PromotionsPage />} />
+              <Route path="/owner/bills" element={<BillsPage />} />
               <Route path="/owner/reports/revenue" element={<RevenueReportPage />} />
               <Route path="/owner/reports/popular-items" element={<PopularItemsReportPage />} />
               <Route path="/owner/reports/profit" element={<ProfitReportPage />} />
@@ -103,16 +109,23 @@ export function AppRoutes() {
             {/* Service Staff & Owner Routes */}
             <Route element={<RoleGuard allowedRoles={['SERVICE_STAFF', 'OWNER']} />}>
               <Route path="/tables" element={<TablesOverviewPage />} />
+              <Route path="/staff/tables" element={<TablesOverviewPage />} />
+              <Route path="/staff/active-tables" element={<TablesOverviewPage initialActiveOnly={true} />} />
               <Route path="/tables/:tableId" element={<TableDetailPage />} />
+              <Route path="/staff/tables/:tableId" element={<TableDetailPage />} />
               <Route path="/sessions/:sessionId" element={<SessionDetailPage />} />
+              <Route path="/staff/sessions/:sessionId" element={<SessionDetailPage />} />
+              <Route path="/sessions/history" element={<SessionHistoryPage />} />
+              <Route path="/staff/sessions/history" element={<SessionHistoryPage />} />
               <Route path="/sessions/:sessionId/history" element={<SessionHistoryPage />} />
+              <Route path="/staff/orders" element={<StaffOrdersPage />} />
+              <Route path="/staff/orders/:orderId" element={<StaffOrderDetailPage />} />
               <Route path="/orders" element={<StaffOrdersPage />} />
               <Route path="/orders/:orderId" element={<StaffOrderDetailPage />} />
+              <Route path="/ai-assistant" element={<AiAssistantPage />} />
             </Route>
 
             {/* Common Authenticated Routes */}
-            <Route path="/staff/orders" element={<StaffOrdersPage />} />
-            <Route path="/staff/orders/:orderId" element={<StaffOrderDetailPage />} />
             <Route path="/profile" element={<ProfilePage defaultTab="profile" />} />
             <Route path="/profile/change-password" element={<ProfilePage defaultTab="password" />} />
             <Route path="/settings/change-password" element={<ProfilePage defaultTab="password" />} />

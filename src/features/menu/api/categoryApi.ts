@@ -8,7 +8,9 @@ import type {
 } from '../types/category.types'
 
 export const categoryApi = {
-  // Feature Thuy API methods
+  async remove(id: number) {
+    await apiClient.delete(`/api/categories/${id}`)
+  },
   async list(page: number, size: number, signal?: AbortSignal) {
     const response = await apiClient.get<ApiResponse<PageResponse<CategoryResponse>>>(
       '/api/categories',

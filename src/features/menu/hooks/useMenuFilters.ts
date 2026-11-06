@@ -2,7 +2,7 @@ import { useSearchParams } from 'react-router-dom'
 import { isMenuStatus, positiveMenuId } from '../utils/menu'
 import type { MenuListParams } from '../types/menu.types'
 
-const sorts = ['name,asc', 'name,desc', 'price,asc', 'price,desc']
+const sorts = ['id,asc', 'name,asc', 'name,desc', 'price,asc', 'price,desc']
 
 export function useMenuFilters(tablet = false) {
   const [search, setSearch] = useSearchParams()
@@ -11,7 +11,7 @@ export function useMenuFilters(tablet = false) {
   const categoryValue = search.get('categoryId') ?? ''
   const categoryId = positiveMenuId(categoryValue)
   const statusValue = search.get('status') ?? ''
-  const sort = search.get('sort') ?? 'name,asc'
+  const sort = search.get('sort') ?? 'id,asc'
   const invalid = !/^\d+$/.test(pageValue) || !Number.isSafeInteger(page) || page >= 2147483647
     || (!!categoryValue && categoryId === null) || !sorts.includes(sort)
     || (!!statusValue && (!isMenuStatus(statusValue) || (tablet && statusValue !== 'AVAILABLE')))

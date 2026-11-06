@@ -51,6 +51,9 @@ export function PublicOnlyGuard() {
     if (user.role === 'SERVICE_STAFF') {
       return <Navigate to="/tables" replace />
     }
+    if (user.role === 'INVENTORY_STAFF') {
+      return <Navigate to="/inventory/ingredients" replace />
+    }
     return <Navigate to="/staff/orders" replace />
   }
 

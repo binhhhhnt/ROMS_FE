@@ -58,6 +58,8 @@ export function LoginForm() {
         navigate('/owner/dashboard', { replace: true })
       } else if (userProfile.role === 'SERVICE_STAFF') {
         navigate('/tables', { replace: true })
+      } else if (userProfile.role === 'INVENTORY_STAFF') {
+        navigate('/inventory/ingredients', { replace: true })
       } else {
         navigate('/staff/orders', { replace: true })
       }

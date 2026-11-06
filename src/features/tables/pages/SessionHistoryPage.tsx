@@ -127,7 +127,7 @@ export function SessionHistoryPage() {
                   <td className="py-3 px-4 text-text font-medium">{s.closedByName || '-'}</td>
                   <td className="py-3 px-4 text-right">
                     <Link
-                      to={`/staff/sessions/${s.id}`}
+                      to={`/sessions/${s.id}`}
                       className="inline-flex items-center text-xs font-semibold text-primary hover:underline"
                     >
                       Chi tiết &rarr;

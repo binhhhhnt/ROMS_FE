@@ -50,8 +50,8 @@ export function printReceiptViaBrowser(data: ReceiptPrintData) {
   const pageSizeCss = isA5
     ? '@page { size: A5 portrait; margin: 10mm; }'
     : isK58
-    ? '@page { size: 58mm auto; margin: 2mm; }'
-    : '@page { size: 80mm auto; margin: 3mm; }'
+      ? '@page { size: 58mm auto; margin: 2mm; }'
+      : '@page { size: 80mm auto; margin: 3mm; }'
 
   const formatVnd = (num: number) => num.toLocaleString('vi-VN') + ' đ'
 
@@ -166,16 +166,34 @@ export function printReceiptViaBrowser(data: ReceiptPrintData) {
   <table class="meta-table">
     <tr>
       <td class="font-bold">Bàn: ${data.tableCode}</td>
-      <td class="text-right">${data.billCode ? `Mã HĐ: ${data.billCode}` : ''}</td>
     </tr>
+    ${data.billCode
+      ? `
+    <tr>
+      <td>Mã HĐ: ${data.billCode}</td>
+    </tr>
+    `
+      : ''
+    }
     <tr>
       <td>Thu ngân: ${data.cashierName || 'Thu ngân'}</td>
-      <td class="text-right">${data.openedAt ? `Vào: ${data.openedAt}` : ''}</td>
     </tr>
+    ${data.openedAt
+      ? `
     <tr>
-      <td>${data.closedAt ? `Thời gian: ${data.closedAt}` : ''}</td>
-      <td class="text-right"></td>
+      <td>Thời gian vào: ${data.openedAt}</td>
     </tr>
+    `
+      : ''
+    }
+    ${data.closedAt
+      ? `
+    <tr>
+      <td>Thời gian ra: ${data.closedAt}</td>
+    </tr>
+    `
+      : ''
+    }
   </table>
 
   <div class="divider"></div>
@@ -193,8 +211,8 @@ export function printReceiptViaBrowser(data: ReceiptPrintData) {
     </thead>
     <tbody>
       ${data.items
-        .map(
-          (item) => `
+      .map(
+        (item) => `
         <tr>
           <td>${item.index}</td>
           <td>${item.itemName}</td>
@@ -203,8 +221,8 @@ export function printReceiptViaBrowser(data: ReceiptPrintData) {
           <td class="text-right font-bold">${(item.subtotal / 1000).toFixed(0)}k</td>
         </tr>
       `
-        )
-        .join('')}
+      )
+      .join('')}
     </tbody>
   </table>
 
@@ -216,29 +234,27 @@ export function printReceiptViaBrowser(data: ReceiptPrintData) {
       <td>Tổng tiền món:</td>
       <td class="text-right font-bold">${formatVnd(data.amountBeforeDiscount)}</td>
     </tr>
-    ${
-      data.discountAmount && data.discountAmount > 0
-        ? `
+    ${data.discountAmount && data.discountAmount > 0
+      ? `
       <tr>
         <td>Khuyến mãi ${data.promotionCode ? `(${data.promotionCode})` : ''}:</td>
         <td class="text-right font-bold text-red-600">-${formatVnd(data.discountAmount)}</td>
       </tr>
     `
-        : ''
+      : ''
     }
-    ${
-      data.taxRows && data.taxRows.length > 0
-        ? data.taxRows
-            .map(
-              (tax) => `
+    ${data.taxRows && data.taxRows.length > 0
+      ? data.taxRows
+        .map(
+          (tax) => `
           <tr>
             <td>Thuế VAT (${tax.rate}%):</td>
             <td class="text-right font-bold">${formatVnd(tax.amount)}</td>
           </tr>
         `
-            )
-            .join('')
-        : ''
+        )
+        .join('')
+      : ''
     }
   </table>
 
@@ -250,19 +266,18 @@ export function printReceiptViaBrowser(data: ReceiptPrintData) {
       <td>TỔNG THANH TOÁN:</td>
       <td class="text-right">${formatVnd(data.totalAmount)}</td>
     </tr>
-    ${
-      data.payments && data.payments.length > 0
-        ? data.payments
-            .map(
-              (p) => `
+    ${data.payments && data.payments.length > 0
+      ? data.payments
+        .map(
+          (p) => `
           <tr style="font-size: ${isK58 ? '8.5px' : '10px'}; font-weight: normal;">
             <td>- ${p.method === 'CASH' ? 'Tiền mặt' : 'Chuyển khoản'}:</td>
             <td class="text-right">${formatVnd(p.amount)}</td>
           </tr>
         `
-            )
-            .join('')
-        : ''
+        )
+        .join('')
+      : ''
     }
   </table>
 

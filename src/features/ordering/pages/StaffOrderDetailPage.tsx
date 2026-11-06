@@ -9,7 +9,6 @@ import {
   BellRing,
   AlertCircle,
   FileText,
-  DollarSign,
   User,
   Info,
   CheckCircle2,
@@ -403,13 +402,12 @@ export function StaffOrderDetailPage() {
           {order.items.map((item, idx) => (
             <div
               key={item.id}
-              className={`p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors ${
-                item.status === 'READY'
-                  ? 'bg-emerald-500/5'
-                  : item.status === 'CANCELLED'
+              className={`p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors ${item.status === 'READY'
+                ? 'bg-emerald-500/5'
+                : item.status === 'CANCELLED'
                   ? 'bg-surface/30 opacity-75'
                   : 'hover:bg-surface/20'
-              }`}
+                }`}
             >
               <div className="flex items-start gap-3">
                 <span className="text-xs font-bold text-muted w-5 pt-0.5">
@@ -513,9 +511,6 @@ export function StaffOrderDetailPage() {
         <div className="bg-surface/30 p-5 border-t border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-xs text-muted">
             <Info className="w-4 h-4 text-accent shrink-0" />
-            <span>
-              Quy tắc vận hành: Nhân viên phục vụ có toàn quyền hủy đơn hàng hoặc từng món ăn khi ở trạng thái Chờ tiếp nhận (PENDING). Khi hủy, nguyên liệu sẽ được tự động hoàn lại vào kho.
-            </span>
           </div>
 
           <div className="flex items-center justify-between sm:justify-end gap-4">
@@ -523,7 +518,6 @@ export function StaffOrderDetailPage() {
               Tổng tiền đơn hàng:
             </span>
             <span className="text-xl font-extrabold text-primary flex items-center">
-              <DollarSign className="w-5 h-5 text-accent mr-0.5" />
               {formatPrice(order.totalAmount)}
             </span>
           </div>

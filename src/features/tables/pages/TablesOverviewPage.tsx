@@ -16,6 +16,7 @@ import {
 import { toast } from 'sonner'
 
 import { tableApi } from '@/features/tables/api/tableApi'
+import { orderApi } from '@/features/ordering/api/orderApi'
 import { kitchenApi } from '@/features/kitchen/api/kitchenApi'
 import { subscribeToTopic } from '@/shared/lib/stomp'
 import type { TableItem } from '@/features/tables/types/table.types'
@@ -162,9 +163,45 @@ export function TablesOverviewPage({ initialActiveOnly = false }: TablesOverview
     openSessionMutation.mutate(table.id)
   }
 
-  const handleCloseSession = (table: TableItem) => {
+  const handleCloseSession = async (table: TableItem) => {
     if (!table.activeSessionId) return
-    setCloseSessionTarget(table)
+
+    try {
+      const orders = await orderApi.getOrders(table.activeSessionId)
+
+      const hasUnfinished = orders.some(
+        (o) =>
+          o.status === 'PENDING' ||
+          o.status === 'COOKING' ||
+          o.items?.some(
+            (i) => i.status === 'PENDING' || i.status === 'COOKING' || i.status === 'READY'
+          )
+      )
+
+      if (hasUnfinished) {
+        toast.error(
+          `Bàn ${table.tableCode} vẫn còn món chưa hoàn thành (đang chờ, đang nấu hoặc chưa bưng ra bàn). Vui lòng hoàn tất hoặc hủy trước khi đóng phiên!`,
+          { duration: 6000 }
+        )
+        return
+      }
+
+      const hasCompleted = orders.some(
+        (o) =>
+          o.status === 'COMPLETED' ||
+          o.items?.some((i) => i.status === 'COMPLETED')
+      )
+
+      if (hasCompleted) {
+        navigate(`/tables/${table.id}/checkout`)
+        return
+      }
+
+      // Không có món nào hoàn tất -> mở dialog đóng trực tiếp
+      setCloseSessionTarget(table)
+    } catch (err) {
+      toast.error(getApiErrorMessage(err))
+    }
   }
 
   const handleConfirmCloseSession = () => {
@@ -478,7 +515,7 @@ export function TablesOverviewPage({ initialActiveOnly = false }: TablesOverview
         title={`Xác nhận đóng phiên Bàn ${closeSessionTarget?.tableCode}`}
         description={
           <span>
-            Bạn có chắc chắn muốn đóng phiên phục vụ cho{' '}
+            Bàn này hiện không có đơn gọi món nào (hoặc đã hủy hết). Bạn có chắc chắn muốn đóng trực tiếp phiên phục vụ cho{' '}
             <strong className="text-text">Bàn {closeSessionTarget?.tableCode}</strong>?
             <span className="block mt-1 text-[11px] text-muted">
               Lưu ý: Không thể đóng bàn nếu còn món ăn đang chế biến hoặc chưa hoàn tất thanh toán.

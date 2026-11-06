@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import axios from 'axios'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { X } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
@@ -9,17 +9,20 @@ import type { ApiErrorResponse } from '@/shared/types/api.types'
 import { getCategoryErrorMessage } from '../api/categoryApi'
 import { categorySchema, type CategoryFormValues } from '../schemas/categorySchema'
 import type { CategoryResponse } from '../types/category.types'
+import { CatalogDeleteButton } from './CatalogDeleteButton'
 
 interface CategoryFormModalProps {
   category: CategoryResponse | null
   onClose: () => void
   onSave: (values: CategoryFormValues) => Promise<void>
+  onDeleted?: () => void
 }
 
-export function CategoryFormModal({ category, onClose, onSave }: CategoryFormModalProps) {
+export function CategoryFormModal({ category, onClose, onSave, onDeleted }: CategoryFormModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const [submitError, setSubmitError] = useState<string | null>(null)
-  const { register, handleSubmit, setError, formState: { errors, isSubmitting } } = useForm<CategoryFormValues>({
+  const [deleting, setDeleting] = useState(false)
+  const { register, handleSubmit, setError, control, setValue, formState: { errors, isSubmitting } } = useForm<CategoryFormValues>({
     resolver: zodResolver(categorySchema),
     defaultValues: {
       name: category?.name ?? '',
@@ -28,6 +31,8 @@ export function CategoryFormModal({ category, onClose, onSave }: CategoryFormMod
       isActive: category?.isActive ?? true,
     },
   })
+  const busy = isSubmitting || deleting
+  const isActive = useWatch({ control, name: 'isActive' })
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -68,8 +73,8 @@ export function CategoryFormModal({ category, onClose, onSave }: CategoryFormMod
       aria-labelledby="category-dialog-title"
       aria-describedby="category-dialog-description"
       aria-modal="true"
-      onCancel={(event) => { event.preventDefault(); if (!isSubmitting) onClose() }}
-      className="fixed inset-0 m-auto max-h-[90dvh] w-[calc(100%_-_2rem)] max-w-lg overflow-y-auto rounded-2xl border border-border bg-card p-0 text-text shadow-xl backdrop:bg-primary/40"
+      onCancel={(event) => { event.preventDefault(); if (!busy) onClose() }}
+      className="fixed inset-0 m-auto max-h-[90dvh] w-[calc(100%_-_2rem)] min-w-0 max-w-lg overflow-y-auto rounded-2xl border border-border bg-card p-0 text-left whitespace-normal text-text shadow-xl [overflow-wrap:anywhere] backdrop:bg-primary/40"
     >
       <div className="flex items-start justify-between gap-4 border-b border-border p-6">
         <div>
@@ -78,12 +83,12 @@ export function CategoryFormModal({ category, onClose, onSave }: CategoryFormMod
           </h2>
           <p id="category-dialog-description" className="mt-1 text-sm text-muted">Sắp xếp và quản lý nhóm món trong thực đơn.</p>
         </div>
-        <Button type="button" variant="ghost" size="icon" aria-label="Đóng biểu mẫu" onClick={onClose} disabled={isSubmitting}>
+        <Button type="button" variant="ghost" size="icon" aria-label="Đóng biểu mẫu" onClick={onClose} disabled={busy}>
           <X className="h-5 w-5" />
         </Button>
       </div>
-      <form onSubmit={submit} noValidate aria-busy={isSubmitting}>
-        <fieldset disabled={isSubmitting} className="flex min-w-0 flex-col gap-5 p-6">
+      <form onSubmit={submit} noValidate aria-busy={busy}>
+        <fieldset disabled={busy} className="flex min-w-0 flex-col gap-5 p-6">
           <div>
             <label htmlFor="category-name" className="mb-2 block text-sm font-semibold">Tên danh mục <span className="text-status-cancelled">*</span></label>
             <Input id="category-name" autoFocus maxLength={100} autoComplete="off" aria-required="true" aria-invalid={!!errors.name} aria-describedby={errors.name ? 'category-name-error' : undefined} error={!!errors.name} {...register('name')} />
@@ -102,18 +107,23 @@ export function CategoryFormModal({ category, onClose, onSave }: CategoryFormMod
             {errors.displayOrder && <p id="category-order-error" className="mt-1 text-sm text-status-cancelled">{errors.displayOrder.message}</p>}
           </div>
           <div>
-            <label className="flex cursor-pointer items-center gap-3 text-sm font-semibold">
-              <input type="checkbox" className="h-4 w-4 accent-primary focus-visible:outline-accent" {...register('isActive')} />
-              Đang hoạt động
-            </label>
-            <p className="mt-2 text-xs leading-relaxed text-muted">Danh mục ngừng hoạt động và các món thuộc danh mục sẽ không hiển thị trên thực đơn của tài khoản bàn.</p>
+            <label htmlFor="category-serving-status" className="mb-2 block text-sm font-semibold">Trạng thái phục vụ</label>
+            <select id="category-serving-status" value={isActive ? 'serving' : 'paused'}
+              onChange={(event) => setValue('isActive', event.target.value === 'serving', { shouldDirty: true, shouldValidate: true })}
+              className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+              <option value="serving">Đang phục vụ</option><option value="paused">Tạm ngưng phục vụ</option>
+            </select>
+            <p className="mt-2 text-xs leading-relaxed text-muted">Danh mục tạm ngưng phục vụ và các món thuộc danh mục sẽ không hiển thị trên thực đơn của khách.</p>
             {errors.isActive && <p className="mt-1 text-sm text-status-cancelled">{errors.isActive.message}</p>}
           </div>
           {submitError && <p role="alert" className="rounded-lg border border-status-cancelled/30 bg-status-cancelled/5 p-3 text-sm text-status-cancelled">{submitError}</p>}
         </fieldset>
-        <div className="flex justify-end gap-3 border-t border-border bg-background px-6 py-4">
-          <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>Hủy</Button>
-          <Button type="submit" isLoading={isSubmitting}>{category ? 'Lưu thay đổi' : 'Tạo danh mục'}</Button>
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border bg-background px-6 py-4">
+          {category && <CatalogDeleteButton kind="category" id={category.id} name={category.name} label="Xóa danh mục" disabled={busy} onBusyChange={setDeleting} onDeleted={onDeleted} />}
+          <div className="ml-auto flex gap-3">
+            <Button type="button" variant="outline" onClick={onClose} disabled={busy}>Hủy</Button>
+            <Button type="submit" isLoading={isSubmitting} disabled={deleting}>{category ? 'Lưu thay đổi' : 'Tạo danh mục'}</Button>
+          </div>
         </div>
       </form>
     </dialog>

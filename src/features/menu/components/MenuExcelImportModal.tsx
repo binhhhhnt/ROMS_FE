@@ -1,66 +1,137 @@
-import { useState, useRef } from 'react'
-import {
-  X,
-  Upload,
-  FileSpreadsheet,
-  Download,
-  CheckCircle2,
-  AlertTriangle,
-  AlertCircle,
-  FileCheck,
-  RefreshCw,
-} from 'lucide-react'
-import { Button } from '@/shared/components/ui/button'
+import { useEffect, useRef, useState, type ChangeEvent, type KeyboardEvent } from 'react'
+import { Download, FileSpreadsheet, X, AlertCircle, CheckCircle2, AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
 import { menuApi } from '../api/menuApi'
-import type { ExcelImportResult } from '../types/menu.types'
+import { useMenuCategoryOptions } from '../hooks/useMenu'
+import {
+  readMenuExcel,
+  validateMenuImportRow,
+  MAX_IMPORT_BYTES,
+  type MenuImportRow,
+} from '../utils/menuImport'
 import { getApiErrorMessage } from '@/shared/lib/axios'
+import { Button } from '@/shared/components/ui/button'
+import { Badge } from '@/shared/components/ui/badge'
 
-interface MenuExcelImportModalProps {
+interface Props {
   isOpen: boolean
   onClose: () => void
   onSuccess: () => void
 }
 
-export function MenuExcelImportModal({
-  isOpen,
-  onClose,
-  onSuccess,
-}: MenuExcelImportModalProps) {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [isUploading, setIsUploading] = useState(false)
-  const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false)
-  const [importResult, setImportResult] = useState<ExcelImportResult | null>(null)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+export function MenuExcelImportModal({ isOpen, onClose, onSuccess }: Props) {
+  const [file, setFile] = useState<File | null>(null)
+  const [rows, setRows] = useState<MenuImportRow[]>([])
+  const [selected, setSelected] = useState<Set<number>>(new Set())
+  const [fileName, setFileName] = useState('')
+  const [error, setError] = useState('')
+  const [isReading, setIsReading] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isDownloading, setIsDownloading] = useState(false)
+  const dialogRef = useRef<HTMLDivElement>(null)
+  const submitLock = useRef(false)
+
+  // Query existing categories to validate that categories exist in the system
+  const { data: categories = [] } = useMenuCategoryOptions()
+  const validCategories = categories.map((c) => c.name)
+
+  const busy = isReading || isSubmitting
+  const selectedRows = rows.filter((row) => selected.has(row.rowNumber))
+  const invalidCount = selectedRows.filter(
+    (row) => validateMenuImportRow(row, selectedRows, validCategories).length > 0
+  ).length
+
+  useEffect(() => {
+    if (!isOpen) return
+    const previousFocus = document.activeElement as HTMLElement | null
+    dialogRef.current?.focus()
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = previousOverflow
+      previousFocus?.focus()
+    }
+  }, [isOpen])
 
   if (!isOpen) return null
 
-  const handleClose = () => {
-    setSelectedFile(null)
-    setImportResult(null)
-    setErrorMessage(null)
-    onClose()
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Escape') {
+      event.stopPropagation()
+      if (!busy) onClose()
+    }
+    if (event.key !== 'Tab') return
+    const elements = dialogRef.current?.querySelectorAll<HTMLElement>(
+      'button:not(:disabled), input:not(:disabled), [tabindex="0"]'
+    )
+    if (!elements?.length) return
+    const first = elements[0]
+    const last = elements[elements.length - 1]
+    if (event.shiftKey && (document.activeElement === first || document.activeElement === dialogRef.current)) {
+      event.preventDefault()
+      last.focus()
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault()
+      first.focus()
+    }
   }
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+  const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = event.target.files?.[0]
+    event.target.value = ''
+    if (!selectedFile) return
 
-    if (!file.name.endsWith('.xlsx')) {
-      setErrorMessage('Chỉ hỗ trợ file Excel định dạng .xlsx')
-      setSelectedFile(null)
+    setError('')
+    setRows([])
+    setSelected(new Set())
+    setFileName('')
+    setFile(null)
+
+    if (!/\.xlsx$/i.test(selectedFile.name)) {
+      setError('Vui lòng chọn file Excel .xlsx. Với file .xls, hãy lưu lại dưới dạng .xlsx.')
+      return
+    }
+    if (selectedFile.size > MAX_IMPORT_BYTES) {
+      setError('File quá lớn. Dung lượng tối đa là 10 MB.')
       return
     }
 
-    setErrorMessage(null)
-    setSelectedFile(file)
-    setImportResult(null)
+    setIsReading(true)
+    try {
+      const buffer = await selectedFile.arrayBuffer()
+      const imported = await readMenuExcel(buffer)
+      setRows(imported)
+      setSelected(new Set(imported.map((row) => row.rowNumber)))
+      setFileName(selectedFile.name)
+      setFile(selectedFile)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Không đọc được file. Vui lòng dùng file mẫu và thử lại.')
+    } finally {
+      setIsReading(false)
+    }
+  }
+
+  const toggleRow = (rowNumber: number) => {
+    setError('')
+    setSelected((current) => {
+      const next = new Set(current)
+      if (next.has(rowNumber)) next.delete(rowNumber)
+      else next.add(rowNumber)
+      return next
+    })
+  }
+
+  const toggleAll = () => {
+    if (selected.size === rows.length) {
+      setSelected(new Set())
+    } else {
+      setSelected(new Set(rows.map((r) => r.rowNumber)))
+    }
   }
 
   const handleDownloadTemplate = async () => {
     try {
-      setIsDownloadingTemplate(true)
+      setIsDownloading(true)
       const blob = await menuApi.downloadTemplate()
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
@@ -74,288 +145,289 @@ export function MenuExcelImportModal({
     } catch (err) {
       toast.error('Lỗi khi tải file mẫu: ' + getApiErrorMessage(err))
     } finally {
-      setIsDownloadingTemplate(false)
+      setIsDownloading(false)
     }
   }
 
-  const handleUpload = async () => {
-    if (!selectedFile) {
-      setErrorMessage('Vui lòng chọn file Excel để nhập')
-      return
-    }
-
+  const confirmImport = async () => {
+    if (submitLock.current || busy || !selectedRows.length || invalidCount || !file) return
+    submitLock.current = true
+    setIsSubmitting(true)
+    setError('')
     try {
-      setIsUploading(true)
-      setErrorMessage(null)
-      const result = await menuApi.importExcel(selectedFile)
-      setImportResult(result)
-      onSuccess()
-
+      const result = await menuApi.importExcel(file)
       if (result.errorCount === 0) {
-        toast.success(
-          `Nhập thành công ${result.insertedCount + result.updatedCount} món ăn!`
-        )
+        toast.success(`Đã nhập thành công ${result.insertedCount + result.updatedCount} món ăn!`)
       } else {
         toast.warning(
-          `Nhập hoàn tất với ${result.insertedCount + result.updatedCount} món thành công, ${result.errorCount} lỗi.`
+          `Hoàn tất nhập: ${result.insertedCount + result.updatedCount} món thành công, ${result.errorCount} lỗi.`
         )
       }
+      onSuccess()
+      onClose()
     } catch (err) {
-      const msg = getApiErrorMessage(err)
-      setErrorMessage(msg)
-      toast.error('Lỗi khi tải file lên: ' + msg)
+      setError(`${getApiErrorMessage(err)} Vui lòng kiểm tra lại danh sách trước khi xác nhận.`)
     } finally {
-      setIsUploading(false)
+      submitLock.current = false
+      setIsSubmitting(false)
     }
   }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
       <div
-        className="w-full max-w-xl rounded-2xl border border-border bg-card shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-150"
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
-        aria-labelledby="import-excel-title"
+        aria-labelledby="import-menu-title"
+        tabIndex={-1}
+        onKeyDown={handleKeyDown}
+        className="flex max-h-[90vh] w-full max-w-5xl flex-col rounded-2xl border border-border bg-card text-left shadow-2xl outline-none"
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-border p-5 bg-surface/40">
+        <div className="flex items-center justify-between border-b border-border p-5 bg-surface/30">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-white">
               <FileSpreadsheet className="h-5 w-5" />
             </div>
             <div>
-              <h2
-                id="import-excel-title"
-                className="text-lg font-bold text-text"
-              >
+              <h2 id="import-menu-title" className="text-lg font-bold text-primary">
                 Nhập thực đơn từ Excel
               </h2>
               <p className="text-xs text-muted">
-                Hỗ trợ định dạng .xlsx chuẩn. Trùng tên món sẽ cập nhật thông tin.
+                Chọn file → Kiểm tra danh sách món → Xác nhận thêm vào thực đơn
               </p>
             </div>
           </div>
           <button
             type="button"
-            onClick={handleClose}
-            className="rounded-lg p-1.5 text-muted hover:bg-surface hover:text-text cursor-pointer transition-colors"
+            aria-label="Đóng"
+            disabled={busy}
+            onClick={onClose}
+            className="rounded-lg p-2 text-muted hover:bg-surface disabled:opacity-50"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        {/* Body */}
-        <div className="p-6 space-y-5 overflow-y-auto">
-          {/* Download Template Banner */}
-          <div className="flex items-center justify-between rounded-xl bg-accent/5 border border-accent/20 p-4">
-            <div className="flex items-center gap-3">
-              <FileCheck className="h-5 w-5 text-accent shrink-0" />
-              <div>
-                <p className="text-xs font-semibold text-text">
-                  Chưa có biểu mẫu chuẩn?
-                </p>
-                <p className="text-[11px] text-muted">
-                  Tải file mẫu để điền đúng các cột: Tên món, Danh mục, Giá, Thuế suất, Món nổi bật, Hàng bán trực tiếp...
-                </p>
-              </div>
+        {/* Content Body */}
+        <div className="flex flex-col gap-4 overflow-y-auto p-5" aria-busy={busy}>
+          {/* File Picker & Template Download */}
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-surface/20 p-4">
+            <div className="flex flex-col gap-1">
+              <span className="text-sm font-semibold text-text">Chọn file Excel dữ liệu thực đơn</span>
+              <span className="text-xs text-muted">
+                Hỗ trợ định dạng .xlsx. Cột danh mục phải khớp với danh mục đã tạo trong hệ thống.
+              </span>
             </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={isDownloadingTemplate}
-              onClick={handleDownloadTemplate}
-              className="shrink-0 gap-1.5 border-accent/40 text-accent hover:bg-accent/10"
-            >
-              <Download className="h-3.5 w-3.5" />
-              {isDownloadingTemplate ? 'Đang tải...' : 'Tải file mẫu'}
-            </Button>
-          </div>
-
-          {/* File Selector / Drag Zone */}
-          {!importResult && (
-            <div className="space-y-3">
-              <div
-                onClick={() => fileInputRef.current?.click()}
-                className={`flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-8 cursor-pointer transition-colors ${
-                  selectedFile
-                    ? 'border-primary/60 bg-primary/5'
-                    : 'border-border hover:border-primary/40 hover:bg-surface/50'
-                }`}
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleDownloadTemplate}
+                disabled={isDownloading || busy}
+                className="gap-1.5 text-xs font-semibold"
               >
+                <Download className="h-3.5 w-3.5 text-accent" />
+                {isDownloading ? 'Đang tải...' : 'Tải file mẫu'}
+              </Button>
+
+              <label className="inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-lg bg-primary px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-primary-hover">
+                <FileSpreadsheet className="h-3.5 w-3.5" />
+                {fileName ? 'Đổi file khác' : 'Chọn file Excel'}
                 <input
-                  ref={fileInputRef}
                   type="file"
                   accept=".xlsx"
-                  className="hidden"
-                  onChange={handleFileSelect}
+                  className="sr-only"
+                  onChange={handleFileChange}
+                  disabled={busy}
                 />
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-surface text-primary mb-3 shadow-xs">
-                  <Upload className="h-6 w-6" />
-                </div>
-                {selectedFile ? (
-                  <div className="text-center">
-                    <p className="text-sm font-bold text-text">
-                      {selectedFile.name}
-                    </p>
-                    <p className="text-xs text-muted mt-1">
-                      Kích thước: {(selectedFile.size / 1024).toFixed(1)} KB
-                    </p>
-                    <span className="inline-block mt-3 text-xs font-semibold text-primary hover:underline">
-                      Chọn file khác
-                    </span>
-                  </div>
-                ) : (
-                  <div className="text-center">
-                    <p className="text-sm font-semibold text-text">
-                      Nhấn vào đây để chọn file Excel
-                    </p>
-                    <p className="text-xs text-muted mt-1">
-                      Chỉ chấp nhận file .xlsx (tối đa 10MB)
-                    </p>
-                  </div>
-                )}
-              </div>
+              </label>
+            </div>
+          </div>
 
-              {errorMessage && (
-                <div className="flex items-center gap-2 rounded-lg bg-red-50 p-3 text-xs text-red-700 border border-red-200">
-                  <AlertCircle className="h-4 w-4 shrink-0 text-red-600" />
-                  <span>{errorMessage}</span>
-                </div>
-              )}
+          {/* Status Message / Error Banner */}
+          {error && (
+            <div className="flex items-center gap-2 rounded-xl bg-status-cancelled/10 border border-status-cancelled/30 p-3.5 text-sm text-status-cancelled">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <span>{error}</span>
             </div>
           )}
 
-          {/* Import Result Stats */}
-          {importResult && (
-            <div className="space-y-4">
-              <div
-                className={`rounded-xl p-4 border flex items-center gap-3 ${
-                  importResult.errorCount === 0
-                    ? 'bg-status-ready/10 border-status-ready/30 text-status-ready'
-                    : 'bg-amber-50 border-amber-200 text-amber-900'
-                }`}
-              >
-                {importResult.errorCount === 0 ? (
-                  <CheckCircle2 className="h-6 w-6 shrink-0 text-status-ready" />
-                ) : (
-                  <AlertTriangle className="h-6 w-6 shrink-0 text-amber-600" />
-                )}
-                <div>
-                  <h4 className="text-sm font-bold">
-                    {importResult.errorCount === 0
-                      ? 'Nhập dữ liệu thành công hoàn toàn!'
-                      : 'Đã hoàn tất nhập với một số lưu ý'}
-                  </h4>
-                  <p className="text-xs opacity-90 mt-0.5">
-                    Đã xử lý {importResult.totalRows} dòng dữ liệu từ file Excel.
-                  </p>
-                </div>
+          {/* Loading Indicator */}
+          {isReading && (
+            <div className="flex items-center justify-center py-12 text-sm text-muted">
+              Đang phân tích file Excel thực đơn...
+            </div>
+          )}
+
+          {/* Empty State */}
+          {!isReading && rows.length === 0 && !error && (
+            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-12 text-center text-muted">
+              <FileSpreadsheet className="h-10 w-10 text-muted/50 mb-2" />
+              <p className="text-sm font-medium">Chưa có file nào được chọn</p>
+              <p className="text-xs text-muted mt-1 max-w-sm">
+                Vui lòng tải file mẫu về, điền danh sách món ăn theo các danh mục có sẵn và tải lên tại đây.
+              </p>
+            </div>
+          )}
+
+          {/* Preview Table */}
+          {!isReading && rows.length > 0 && (
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between text-xs text-muted">
+                <span>
+                  Đã tải <strong>{rows.length}</strong> dòng từ file <strong>{fileName}</strong>
+                </span>
+                <span className="font-medium">
+                  {selectedRows.length} món được chọn ·{' '}
+                  <span className={invalidCount > 0 ? 'text-status-cancelled font-bold' : 'text-status-ready'}>
+                    {invalidCount > 0 ? `${invalidCount} dòng có lỗi cần sửa` : 'Tất cả hợp lệ'}
+                  </span>
+                </span>
               </div>
 
-              {/* Stat Counters */}
-              <div className="grid grid-cols-3 gap-3">
-                <div className="rounded-xl border border-border bg-surface/50 p-3 text-center">
-                  <div className="text-xs text-muted font-medium">Thêm mới</div>
-                  <div className="text-xl font-bold text-status-ready mt-1">
-                    {importResult.insertedCount}
-                  </div>
-                </div>
-                <div className="rounded-xl border border-border bg-surface/50 p-3 text-center">
-                  <div className="text-xs text-muted font-medium">Cập nhật</div>
-                  <div className="text-xl font-bold text-primary mt-1">
-                    {importResult.updatedCount}
-                  </div>
-                </div>
-                <div className="rounded-xl border border-border bg-surface/50 p-3 text-center">
-                  <div className="text-xs text-muted font-medium">Lỗi</div>
-                  <div className="text-xl font-bold text-red-600 mt-1">
-                    {importResult.errorCount}
-                  </div>
-                </div>
-              </div>
+              <div className="overflow-x-auto rounded-xl border border-border bg-card">
+                <table className="w-full text-left text-xs">
+                  <thead className="border-b border-border bg-surface/50 font-semibold text-text">
+                    <tr>
+                      <th className="w-10 px-3 py-3 text-center">
+                        <input
+                          type="checkbox"
+                          checked={selected.size === rows.length && rows.length > 0}
+                          onChange={toggleAll}
+                          className="h-4 w-4 rounded accent-primary cursor-pointer"
+                          aria-label="Chọn tất cả các dòng"
+                        />
+                      </th>
+                      <th className="w-12 px-3 py-3 text-muted">Dòng</th>
+                      <th className="px-3 py-3">Tên món (*)</th>
+                      <th className="px-3 py-3">Danh mục (*)</th>
+                      <th className="px-3 py-3">Giá niêm yết</th>
+                      <th className="px-3 py-3">VAT</th>
+                      <th className="px-3 py-3">Bán trực tiếp</th>
+                      <th className="px-3 py-3">Kiểm tra hợp lệ</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {rows.map((row) => {
+                      const rowErrors = validateMenuImportRow(row, selectedRows, validCategories)
+                      const isRowSelected = selected.has(row.rowNumber)
+                      const hasError = rowErrors.length > 0
 
-              {/* Errors List */}
-              {importResult.errors && importResult.errors.length > 0 && (
-                <div className="space-y-2">
-                  <h5 className="text-xs font-bold text-red-700 uppercase tracking-wider flex items-center gap-1.5">
-                    <AlertCircle className="h-3.5 w-3.5" />
-                    Chi tiết các dòng bị lỗi ({importResult.errors.length})
-                  </h5>
-                  <div className="max-h-40 overflow-y-auto rounded-xl border border-red-200 bg-red-50/50 p-3 text-xs text-red-800 space-y-1.5 font-mono">
-                    {importResult.errors.map((err, idx) => (
-                      <div key={idx} className="flex items-start gap-1.5">
-                        <span className="select-none text-red-400">•</span>
-                        <span>{err}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+                      return (
+                        <tr
+                          key={row.rowNumber}
+                          className={`transition-colors ${
+                            !isRowSelected
+                              ? 'opacity-40 bg-surface/10'
+                              : hasError
+                              ? 'bg-status-cancelled/5'
+                              : 'hover:bg-surface/20'
+                          }`}
+                        >
+                          <td className="px-3 py-2.5 text-center">
+                            <input
+                              type="checkbox"
+                              checked={isRowSelected}
+                              onChange={() => toggleRow(row.rowNumber)}
+                              className="h-4 w-4 rounded accent-primary cursor-pointer"
+                              aria-label={`Chọn dòng ${row.rowNumber}`}
+                            />
+                          </td>
+                          <td className="px-3 py-2.5 font-mono text-muted">{row.rowNumber}</td>
+                          <td className="px-3 py-2.5 font-semibold text-primary">
+                            {row.name || <span className="text-status-cancelled italic">Trống</span>}
+                            {row.isFeatured && (
+                              <Badge variant="secondary" className="ml-1.5 text-[10px]">
+                                Nổi bật
+                              </Badge>
+                            )}
+                          </td>
+                          <td className="px-3 py-2.5">
+                            <span
+                              className={`rounded px-1.5 py-0.5 ${
+                                !row.category
+                                  ? 'bg-status-cancelled/10 text-status-cancelled'
+                                  : validCategories.some(
+                                      (c) => c.toLowerCase() === row.category.toLowerCase()
+                                    )
+                                  ? 'bg-surface text-text'
+                                  : 'bg-status-cancelled/10 text-status-cancelled font-medium'
+                              }`}
+                            >
+                              {row.category || 'Trống'}
+                            </span>
+                          </td>
+                          <td className="px-3 py-2.5 font-mono">
+                            {row.price ? `${Number(row.price).toLocaleString('vi-VN')} đ` : '0 đ'}
+                          </td>
+                          <td className="px-3 py-2.5 text-muted">{row.vatRate}%</td>
+                          <td className="px-3 py-2.5">
+                            {row.isDirectSale ? (
+                              <Badge variant="outline" className="border-sky-500 text-sky-600 bg-sky-50 text-[10px]">
+                                Có
+                              </Badge>
+                            ) : (
+                              <span className="text-muted">Không</span>
+                            )}
+                          </td>
+                          <td className="px-3 py-2.5">
+                            {hasError ? (
+                              <div className="flex items-center gap-1 text-status-cancelled font-medium">
+                                <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                                <span>{rowErrors[0]}</span>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-1 text-status-ready">
+                                <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                                <span>Hợp lệ</span>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </div>
 
-        {/* Footer */}
-        <div className="flex items-center justify-end gap-3 border-t border-border p-4 bg-surface/30">
-          {importResult ? (
-            <>
-              <Button
-                type="button"
-                variant="outline"
-                size="md"
-                onClick={() => {
-                  setImportResult(null)
-                  setSelectedFile(null)
-                }}
-              >
-                Nhập file khác
-              </Button>
-              <Button
-                type="button"
-                variant="primary"
-                size="md"
-                onClick={handleClose}
-              >
-                Hoàn tất & Đóng
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button
-                type="button"
-                variant="outline"
-                size="md"
-                disabled={isUploading}
-                onClick={handleClose}
-              >
-                Hủy bỏ
-              </Button>
-              <Button
-                type="button"
-                variant="primary"
-                size="md"
-                disabled={!selectedFile || isUploading}
-                onClick={handleUpload}
-                className="gap-2"
-              >
-                {isUploading ? (
-                  <>
-                    <RefreshCw className="h-4 w-4 animate-spin" />
-                    Đang xử lý...
-                  </>
-                ) : (
-                  <>
-                    <Upload className="h-4 w-4" />
-                    Bắt đầu tải lên
-                  </>
+        {/* Modal Footer */}
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border p-4 bg-surface/20">
+          <div className="text-xs text-muted">
+            {rows.length > 0 && (
+              <span>
+                Đã chọn <strong>{selectedRows.length}</strong> / {rows.length} món
+                {invalidCount > 0 && (
+                  <span className="text-status-cancelled ml-1">({invalidCount} món chưa hợp lệ)</span>
                 )}
-              </Button>
-            </>
-          )}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <Button type="button" variant="outline" size="sm" onClick={onClose} disabled={busy}>
+              Hủy
+            </Button>
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              onClick={confirmImport}
+              isLoading={isSubmitting}
+              disabled={busy || selectedRows.length === 0 || invalidCount > 0}
+              className="font-semibold shadow-xs"
+            >
+              Xác nhận nhập thực đơn
+            </Button>
+          </div>
         </div>
       </div>
     </div>
   )
 }
 
+export default MenuExcelImportModal

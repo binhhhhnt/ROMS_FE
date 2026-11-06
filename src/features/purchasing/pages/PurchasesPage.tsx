@@ -11,7 +11,7 @@ import {
   Calendar,
   RefreshCw,
   Receipt,
-  DollarSign,
+  Banknote,
   ArrowRight,
   User,
   Clock,
@@ -116,11 +116,12 @@ export function PurchasesPage() {
           </Button>
 
           <Button
-            size="sm"
+            variant="primary"
+            size="md"
             onClick={() => navigate('/inventory/purchases/new')}
-            className="text-xs bg-accent hover:bg-accent-hover text-white flex items-center gap-1.5 shadow-sm"
+            className="shadow-sm font-semibold text-xs md:text-sm"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4 mr-1.5" />
             Tạo phiếu nhập mới
           </Button>
         </div>
@@ -140,7 +141,7 @@ export function PurchasesPage() {
 
         <div className="bg-card border border-border p-4 rounded-xl flex items-center gap-3 shadow-sm">
           <div className="w-10 h-10 rounded-lg bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-            <DollarSign className="w-5 h-5" />
+            <Banknote className="w-5 h-5" />
           </div>
           <div>
             <div className="text-xs text-muted-foreground font-medium">Tổng tiền trang hiện tại</div>
@@ -290,9 +291,10 @@ export function PurchasesPage() {
                         Tạo phiếu nhập mới để cập nhật nguyên liệu thực tế vào kho.
                       </span>
                       <Button
+                        variant="primary"
                         size="sm"
                         onClick={() => navigate('/inventory/purchases/new')}
-                        className="mt-2 text-xs bg-accent hover:bg-accent-hover text-white"
+                        className="mt-2 text-xs"
                       >
                         <Plus className="w-3.5 h-3.5 mr-1" />
                         Tạo phiếu nhập ngay
