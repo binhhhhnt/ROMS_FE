@@ -3,7 +3,7 @@ import { useAuthStore } from '@/app/store/authStore'
 import type { ApiResponse } from '@/shared/types/api.types'
 import type { LoginResponseData } from '@/features/auth/types/auth.types'
 
-const baseURL = import.meta.env.VITE_API_BASE_URL || ''
+const baseURL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '')
 
 export const apiClient = axios.create({
   baseURL,

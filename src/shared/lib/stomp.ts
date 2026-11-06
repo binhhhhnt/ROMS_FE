@@ -31,7 +31,7 @@ export function getStompClient(): Client {
     return stompClient
   }
 
-  const baseURL = import.meta.env.VITE_API_BASE_URL || ''
+  const baseURL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '')
 
   stompClient = new Client({
     webSocketFactory: () => new SockJS(`${baseURL}/ws`),
