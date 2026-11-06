@@ -1,4 +1,4 @@
-import { Users, MapPin, Play, ArrowRightLeft, CheckCircle, Settings2, Power, Eye, BellRing } from 'lucide-react'
+import { Users, MapPin, Play, ArrowRightLeft, CheckCircle, Settings2, Power, Eye, BellRing, Receipt } from 'lucide-react'
 import type { TableItem } from '@/features/tables/types/table.types'
 import { Badge } from '@/shared/components/ui/badge'
 import { Button } from '@/shared/components/ui/button'
@@ -13,6 +13,7 @@ interface TableCardProps {
   onEditTable?: (table: TableItem) => void
   onToggleStatus?: (table: TableItem) => void
   onViewDetail: (table: TableItem) => void
+  onCheckout?: (table: TableItem) => void
 }
 
 export function TableCard({
@@ -25,6 +26,7 @@ export function TableCard({
   onEditTable,
   onToggleStatus,
   onViewDetail,
+  onCheckout,
 }: TableCardProps) {
   const isOccupied = table.realtimeStatus === 'OCCUPIED'
   const isEmpty = table.realtimeStatus === 'EMPTY'
@@ -105,6 +107,18 @@ export function TableCard({
 
         {isOccupied && (
           <div className="flex flex-col gap-1.5">
+            {isOwner && onCheckout && (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => onCheckout(table)}
+                className="w-full text-xs font-semibold bg-primary hover:bg-primary-hover text-white shadow-xs"
+              >
+                <Receipt className="w-3.5 h-3.5 mr-1.5" />
+                Tính tiền
+              </Button>
+            )}
+
             <div className="grid grid-cols-2 gap-1.5">
               <Button
                 variant="outline"

@@ -39,6 +39,7 @@ export function MenuItemForm({ item, onSave }: {
       description: item?.description ?? '',
       price: item ? String(item.price) : '',
       isFeatured: item?.isFeatured ?? false,
+      isDirectSale: item?.isDirectSale ?? item?.is_direct_sale ?? false,
     },
   })
 
@@ -158,6 +159,16 @@ export function MenuItemForm({ item, onSave }: {
           </label>
           <p className="mt-1 text-xs text-muted">Đánh dấu món để giới thiệu trên thực đơn tablet.</p>
           {errors.isFeatured && <p className="text-sm text-status-cancelled">{errors.isFeatured.message}</p>}
+        </div>
+
+        {/* Direct Sale */}
+        <div className="flex flex-col justify-center">
+          <label className="flex items-center gap-3 text-sm font-semibold mt-2 cursor-pointer">
+            <input type="checkbox" className="h-4 w-4 accent-primary" {...register('isDirectSale')} />
+            Hàng bán trực tiếp
+          </label>
+          <p className="mt-1 text-xs text-muted">Hàng hóa lon/chai (bia, rượu, nước ngọt) cho phép kiểm đồ trả kho khi dùng thừa.</p>
+          {errors.isDirectSale && <p className="text-sm text-status-cancelled">{errors.isDirectSale.message}</p>}
         </div>
 
         {/* Description */}

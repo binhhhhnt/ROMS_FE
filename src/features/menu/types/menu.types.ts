@@ -28,6 +28,8 @@ export interface MenuItemReadResponse {
   description: string | null
   price: number
   isFeatured: boolean
+  isDirectSale?: boolean
+  is_direct_sale?: boolean
   status: MenuStatus
   images: MenuItemImage[]
   availability: MenuAvailability
@@ -40,12 +42,16 @@ export interface MenuItemWriteRequest {
   description: string
   price: number
   isFeatured: boolean
+  isDirectSale?: boolean
+  is_direct_sale?: boolean
 }
 
 export interface MenuItemWriteResponse extends Omit<MenuItemWriteRequest, 'description'> {
   id: number
   taxCategoryId?: number
   taxRate?: number
+  isDirectSale?: boolean
+  is_direct_sale?: boolean
   description: string | null
   status: MenuStatus
 }

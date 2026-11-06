@@ -6,9 +6,6 @@ import {
   RefreshCw,
   ChevronLeft,
   ChevronRight,
-  Receipt,
-  FileSpreadsheet,
-  UtensilsCrossed,
 } from 'lucide-react'
 
 import { stockMovementApi } from '@/features/inventory/api/stockMovementApi'
@@ -183,22 +180,21 @@ export function StockMovementsPage() {
                 <th className="py-3 px-4 w-40">Loại giao dịch</th>
                 <th className="py-3 px-4 w-36 text-right">Biến động</th>
                 <th className="py-3 px-4 w-36 text-right">Tồn sau GD</th>
-                <th className="py-3 px-4 w-44">Chứng từ liên quan</th>
-                <th className="py-3 px-4">Ghi chú</th>
+                <th className="py-3 px-4">Diễn giải</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {isLoading ? (
                 Array.from({ length: 8 }).map((_, idx) => (
                   <tr key={idx} className="animate-pulse">
-                    <td colSpan={8} className="py-4 px-4">
+                    <td colSpan={7} className="py-4 px-4">
                       <div className="h-4 bg-surface/70 rounded w-full" />
                     </td>
                   </tr>
                 ))
               ) : !pageData?.content || pageData.content.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-muted">
+                  <td colSpan={7} className="py-12 text-center text-muted">
                     <History className="w-10 h-10 mx-auto text-muted/60 mb-2" />
                     <p className="font-medium">Chưa có bản ghi biến động kho nào</p>
                     <p className="text-xs text-muted/80 mt-1">
@@ -229,9 +225,6 @@ export function StockMovementsPage() {
                           <span className="font-semibold text-text">
                             {item.ingredientName}
                           </span>
-                          <span className="text-[11px] font-mono text-muted">
-                            Mã NL: #{item.ingredientId}
-                          </span>
                         </div>
                       </td>
 
@@ -247,8 +240,8 @@ export function StockMovementsPage() {
                             isPositive
                               ? 'text-status-ready'
                               : isNegative
-                              ? 'text-status-cancelled'
-                              : 'text-muted'
+                                ? 'text-status-cancelled'
+                                : 'text-muted'
                           }
                         >
                           {isPositive && '+'}
@@ -267,34 +260,11 @@ export function StockMovementsPage() {
                         </span>
                       </td>
 
-                      {/* Linked Reference */}
-                      <td className="py-3.5 px-4 text-xs">
-                        {item.purchaseItemId && (
-                          <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-status-ready/10 text-status-ready font-medium border border-status-ready/20">
-                            <Receipt className="w-3 h-3" />
-                            <span>Dòng phiếu mua #{item.purchaseItemId}</span>
-                          </div>
-                        )}
-                        {item.orderItemId && (
-                          <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-status-cooking/10 text-status-cooking font-medium border border-status-cooking/20">
-                            <UtensilsCrossed className="w-3 h-3" />
-                            <span>Món đơn #{item.orderItemId}</span>
-                          </div>
-                        )}
-                        {item.inventoryCheckItemId && (
-                          <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-status-pending/10 text-status-pending font-medium border border-status-pending/20">
-                            <FileSpreadsheet className="w-3 h-3" />
-                            <span>Dòng kiểm kê #{item.inventoryCheckItemId}</span>
-                          </div>
-                        )}
-                        {!item.purchaseItemId && !item.orderItemId && !item.inventoryCheckItemId && (
-                          <span className="text-muted">—</span>
-                        )}
-                      </td>
-
-                      {/* Note */}
-                      <td className="py-3.5 px-4 text-xs text-muted max-w-xs truncate" title={item.note || ''}>
-                        {item.note || '—'}
+                      {/* Diễn giải (Note snapshot) */}
+                      <td className="py-3.5 px-4 text-xs text-text max-w-md">
+                        <span className="font-medium text-text leading-relaxed" title={item.note || ''}>
+                          {item.note || '—'}
+                        </span>
                       </td>
                     </tr>
                   )

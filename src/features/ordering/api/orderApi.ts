@@ -5,6 +5,8 @@ import type {
   OrderResponse,
   OrderItemResponse,
   OrderStatus,
+  DirectSaleItemDto,
+  ReturnOrderItemsRequest,
 } from '@/features/ordering/types/ordering.types'
 
 export const orderApi = {
@@ -51,11 +53,16 @@ export const orderApi = {
   async cancelOrderItem(
     orderId: number,
     itemId: number,
-    cancelReason?: string
+    cancelReason?: string,
+    quantity?: number
   ): Promise<OrderItemResponse> {
+    const payload: { reason?: string; quantity?: number } = {}
+    if (cancelReason) payload.reason = cancelReason
+    if (quantity !== undefined) payload.quantity = quantity
+
     const res = await apiClient.post<ApiResponse<OrderItemResponse>>(
       `/api/orders/${orderId}/items/${itemId}/cancel`,
-      cancelReason ? { reason: cancelReason } : {}
+      payload
     )
     return res.data.data
   },
@@ -66,6 +73,24 @@ export const orderApi = {
   ): Promise<OrderItemResponse> {
     const res = await apiClient.patch<ApiResponse<OrderItemResponse>>(
       `/api/orders/${orderId}/items/${itemId}/complete`
+    )
+    return res.data.data
+  },
+
+  async getSessionDirectSaleItems(sessionId: number): Promise<DirectSaleItemDto[]> {
+    const res = await apiClient.get<ApiResponse<DirectSaleItemDto[]>>(
+      `/api/sessions/${sessionId}/direct-sale-items`
+    )
+    return res.data.data
+  },
+
+  async returnSessionDirectSaleItems(
+    sessionId: number,
+    request: ReturnOrderItemsRequest
+  ): Promise<DirectSaleItemDto[]> {
+    const res = await apiClient.post<ApiResponse<DirectSaleItemDto[]>>(
+      `/api/sessions/${sessionId}/return-items`,
+      request
     )
     return res.data.data
   },

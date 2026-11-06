@@ -1,13 +1,14 @@
-import { useState } from 'react'
-import { AlertTriangle } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { AlertTriangle, Minus, Plus } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
 
 interface CancelItemModalProps {
   isOpen: boolean
   onClose: () => void
-  onConfirm: (reason: string) => Promise<void>
+  onConfirm: (reason: string, quantity?: number) => Promise<void>
   title: string
   itemName?: string
+  maxQuantity?: number
   isLoading?: boolean
 }
 
@@ -24,19 +25,35 @@ export function CancelItemModal({
   onConfirm,
   title,
   itemName,
+  maxQuantity,
   isLoading = false,
 }: CancelItemModalProps) {
   const [selectedReason, setSelectedReason] = useState(COMMON_REASONS[0])
   const [customReason, setCustomReason] = useState('')
+  const [cancelQuantity, setCancelQuantity] = useState<number>(1)
+
+  useEffect(() => {
+    if (isOpen) {
+      setCancelQuantity(maxQuantity && maxQuantity > 0 ? 1 : 1)
+    }
+  }, [isOpen, maxQuantity])
 
   if (!isOpen) return null
+
+  const canSelectQuantity = typeof maxQuantity === 'number' && maxQuantity > 1
 
   const handleConfirm = async () => {
     const finalReason =
       selectedReason === 'Lý do khác' && customReason.trim()
         ? customReason.trim()
         : selectedReason
-    await onConfirm(finalReason)
+    const qtyToPass =
+      typeof maxQuantity === 'number' && maxQuantity >= 1
+        ? canSelectQuantity
+          ? cancelQuantity
+          : maxQuantity
+        : undefined
+    await onConfirm(finalReason, qtyToPass)
     onClose()
   }
 
@@ -53,13 +70,82 @@ export function CancelItemModal({
             {itemName && (
               <p className="text-sm font-semibold text-accent mt-0.5">
                 {itemName}
+                {typeof maxQuantity === 'number' && maxQuantity >= 1 && (
+                  <span className="text-xs font-bold text-muted ml-1.5">
+                    (Đã đặt: &times;{maxQuantity})
+                  </span>
+                )}
               </p>
             )}
             <p className="text-xs text-muted mt-1 leading-relaxed">
-              Lưu ý: Bạn chỉ có thể hủy khi món ăn hoặc đơn hàng đang ở trạng thái <strong className="text-status-pending">Chờ tiếp nhận (PENDING)</strong>.
+              Lưu ý: Bạn chỉ có thể hủy khi món ăn hoặc đơn hàng đang ở trạng thái{' '}
+              <strong className="text-status-pending">Chờ tiếp nhận (PENDING)</strong>.
             </p>
           </div>
         </div>
+
+        {/* Quantity Selector (Progressive Disclosure: only shown when maxQuantity > 1) */}
+        {canSelectQuantity && (
+          <div className="flex flex-col gap-2 p-3 rounded-xl bg-surface/40 border border-border">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-semibold text-text">
+                Số lượng muốn hủy:
+              </label>
+              <button
+                type="button"
+                onClick={() => setCancelQuantity(maxQuantity)}
+                className={`text-[11px] font-bold px-2 py-0.5 rounded-md transition-colors cursor-pointer ${
+                  cancelQuantity === maxQuantity
+                    ? 'bg-status-cancelled text-white'
+                    : 'bg-status-cancelled/10 text-status-cancelled hover:bg-status-cancelled/20'
+                }`}
+              >
+                Hủy tất cả ({maxQuantity})
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between gap-3 pt-1">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setCancelQuantity((q) => Math.max(1, q - 1))}
+                  disabled={cancelQuantity <= 1 || isLoading}
+                  className="w-8 h-8 rounded-lg border border-border bg-card flex items-center justify-center text-text hover:border-accent disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  <Minus className="w-3.5 h-3.5" />
+                </button>
+                <span className="w-10 text-center font-extrabold text-base text-text">
+                  {cancelQuantity}
+                </span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCancelQuantity((q) => Math.min(maxQuantity, q + 1))
+                  }
+                  disabled={cancelQuantity >= maxQuantity || isLoading}
+                  className="w-8 h-8 rounded-lg border border-border bg-card flex items-center justify-center text-text hover:border-accent disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <span className="text-xs text-muted">
+                {cancelQuantity < maxQuantity ? (
+                  <>
+                    Giữ lại nấu:{' '}
+                    <strong className="text-status-pending">
+                      {maxQuantity - cancelQuantity} phần
+                    </strong>
+                  </>
+                ) : (
+                  <strong className="text-status-cancelled">
+                    Hủy toàn bộ món này
+                  </strong>
+                )}
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Reason Selection */}
         <div className="flex flex-col gap-2">
@@ -114,7 +200,9 @@ export function CancelItemModal({
             onClick={handleConfirm}
             className="font-bold shadow-sm"
           >
-            Xác nhận hủy
+            {canSelectQuantity
+              ? `Xác nhận hủy (${cancelQuantity}/${maxQuantity})`
+              : 'Xác nhận hủy'}
           </Button>
         </div>
       </div>

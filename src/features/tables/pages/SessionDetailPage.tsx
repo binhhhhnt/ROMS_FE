@@ -13,6 +13,8 @@ import {
   Utensils,
   ClipboardList,
   Plus,
+  PackageOpen,
+  Receipt,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -20,6 +22,8 @@ import { tableApi } from '@/features/tables/api/tableApi'
 import type { TableTransferHistoryItem } from '@/features/tables/types/table.types'
 import { TransferTableModal } from '@/features/tables/components/TransferTableModal'
 import { StaffOrderModal } from '@/features/ordering/components/StaffOrderModal'
+import { TableItemReturnModal } from '@/features/ordering/components/TableItemReturnModal'
+import { TableCheckoutModal } from '@/features/billing/components/TableCheckoutModal'
 import { orderApi } from '@/features/ordering/api/orderApi'
 import { getApiErrorMessage } from '@/shared/lib/axios'
 import { Button } from '@/shared/components/ui/button'
@@ -33,6 +37,8 @@ export function SessionDetailPage() {
 
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false)
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false)
+  const [isReturnModalOpen, setIsReturnModalOpen] = useState(false)
+  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false)
 
   // Fetch orders belonging to this session
   const { data: sessionOrders = [], refetch: refetchOrders } = useQuery({
@@ -160,6 +166,21 @@ export function SessionDetailPage() {
               >
                 <Utensils className="h-4 w-4 mr-2" />
                 + Đặt món cho bàn
+              </Button>
+              <Button
+                onClick={() => setIsCheckoutModalOpen(true)}
+                className="bg-accent hover:bg-accent-hover text-white font-bold"
+              >
+                <Receipt className="h-4 w-4 mr-2" />
+                Tính tiền
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setIsReturnModalOpen(true)}
+                className="font-semibold text-primary border-primary/30 hover:bg-primary/5"
+              >
+                <PackageOpen className="h-4 w-4 mr-2 text-primary" />
+                Kiểm đồ bàn
               </Button>
               <Button
                 variant="outline"
@@ -313,7 +334,12 @@ export function SessionDetailPage() {
                     </Badge>
                   </div>
                   <p className="text-xs text-muted">
-                    {order.items.map((i) => `${i.menuItemName} x${i.quantity}`).join(', ')}
+                    {order.items.map((i) => {
+                      const ret = i.returnedQuantity ?? i.returned_quantity ?? 0
+                      return ret > 0
+                        ? `${i.menuItemName} x${i.quantity} (dùng ${i.quantity - ret}, trả ${ret})`
+                        : `${i.menuItemName} x${i.quantity}`
+                    }).join(', ')}
                   </p>
                   <span className="text-[11px] text-muted block">
                     Đặt lúc: {new Date(order.createdAt).toLocaleTimeString('vi-VN')}
@@ -397,6 +423,32 @@ export function SessionDetailPage() {
           refetchOrders()
           queryClient.invalidateQueries({ queryKey: ['sessionOrders', sId] })
           queryClient.invalidateQueries({ queryKey: ['orders'] })
+        }}
+      />
+
+      {/* Table Direct-Sale Item Return Modal */}
+      <TableItemReturnModal
+        isOpen={isReturnModalOpen}
+        onClose={() => setIsReturnModalOpen(false)}
+        sessionId={sId}
+        tableCode={session.tableCode}
+        onSuccess={() => {
+          refetchOrders()
+          queryClient.invalidateQueries({ queryKey: ['sessionOrders', sId] })
+          queryClient.invalidateQueries({ queryKey: ['sessionDetail', sId] })
+          queryClient.invalidateQueries({ queryKey: ['orders'] })
+        }}
+      />
+
+      {/* Table Checkout & Payment Modal */}
+      <TableCheckoutModal
+        isOpen={isCheckoutModalOpen}
+        onClose={() => setIsCheckoutModalOpen(false)}
+        sessionId={sId}
+        tableCode={session.tableCode}
+        onCheckoutSuccess={() => {
+          setIsCheckoutModalOpen(false)
+          navigate('/tables')
         }}
       />
     </div>

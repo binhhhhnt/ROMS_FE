@@ -26,6 +26,10 @@ export interface OrderItemResponse {
   menuItemId: number
   menuItemName: string
   quantity: number
+  returned_quantity?: number
+  returnedQuantity?: number
+  is_direct_sale?: boolean
+  isDirectSale?: boolean
   unitPrice: number
   subtotal: number
   status: OrderItemStatus
@@ -33,7 +37,33 @@ export interface OrderItemResponse {
   terminationReason?: string | null
   terminatedById?: number | null
   terminatedAt?: string | null
+  returnedById?: number | null
+  returned_by_id?: number | null
+  returnedByName?: string | null
+  returned_by_name?: string | null
   createdAt: string
+}
+
+export interface DirectSaleItemDto {
+  orderItemId: number
+  orderId: number
+  menuItemId: number
+  menuItemName: string
+  orderedQuantity: number
+  returnedQuantity: number
+  usedQuantity: number
+  unitPrice: number
+  subtotal: number
+  status: OrderItemStatus
+  orderCreatedAt?: string
+}
+
+export interface ReturnOrderItemsRequest {
+  items: {
+    orderItemId: number
+    returnQuantity: number
+  }[]
+  note?: string
 }
 
 export interface OrderResponse {

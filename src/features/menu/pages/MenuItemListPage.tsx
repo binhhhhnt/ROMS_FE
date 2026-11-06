@@ -203,11 +203,16 @@ export function MenuItemListPage() {
                             >
                               {item.name}
                             </Link>
-                            {item.isFeatured && (
-                              <div className="mt-1">
+                            <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                              {item.isFeatured && (
                                 <Badge variant="secondary">Nổi bật</Badge>
-                              </div>
-                            )}
+                              )}
+                              {(item.isDirectSale || item.is_direct_sale) && (
+                                <Badge variant="outline" className="border-sky-500 text-sky-600 bg-sky-50 dark:bg-sky-950/40 text-[10px]">
+                                  Bán trực tiếp
+                                </Badge>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </th>

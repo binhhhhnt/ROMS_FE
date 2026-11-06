@@ -155,7 +155,7 @@ export function MenuExcelImportModal({
                   Chưa có biểu mẫu chuẩn?
                 </p>
                 <p className="text-[11px] text-muted">
-                  Tải file mẫu để điền đúng các cột: Tên món, Danh mục, Giá, Thuế suất...
+                  Tải file mẫu để điền đúng các cột: Tên món, Danh mục, Giá, Thuế suất, Món nổi bật, Hàng bán trực tiếp...
                 </p>
               </div>
             </div>

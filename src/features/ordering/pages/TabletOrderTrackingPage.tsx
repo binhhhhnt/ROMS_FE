@@ -92,16 +92,21 @@ export function TabletOrderTrackingPage() {
   }
 
   // Execute cancel request
-  const handleConfirmCancel = async (reason: string) => {
+  const handleConfirmCancel = async (reason: string, quantity?: number) => {
     setIsCancelling(true)
     try {
       if (modalState.type === 'item' && modalState.item) {
         await orderApi.cancelOrderItem(
           modalState.orderId,
           modalState.item.id,
-          reason
+          reason,
+          quantity
         )
-        toast.success(`Đã hủy món "${modalState.item.menuItemName}" thành công!`)
+        toast.success(
+          quantity && quantity < modalState.item.quantity
+            ? `Đã hủy ${quantity} phần "${modalState.item.menuItemName}" thành công!`
+            : `Đã hủy món "${modalState.item.menuItemName}" thành công!`
+        )
       } else if (modalState.type === 'order') {
         await orderApi.cancelOrder(modalState.orderId, reason)
         toast.success(`Đã hủy đơn hàng #${modalState.orderId} thành công!`)
@@ -268,7 +273,12 @@ export function TabletOrderTrackingPage() {
             ? 'Xác nhận hủy món ăn'
             : `Xác nhận hủy toàn bộ đơn #${modalState.orderId}`
         }
-        itemName={modalState.item?.menuItemName}
+        itemName={
+          modalState.type === 'item' ? modalState.item?.menuItemName : undefined
+        }
+        maxQuantity={
+          modalState.type === 'item' ? modalState.item?.quantity : undefined
+        }
         isLoading={isCancelling}
       />
     </div>

@@ -13,6 +13,7 @@ import {
   User,
   Info,
   CheckCircle2,
+  PackageOpen,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -26,6 +27,7 @@ import { subscribeToTopic } from '@/shared/lib/stomp'
 import { Badge } from '@/shared/components/ui/badge'
 import { Button } from '@/shared/components/ui/button'
 import { CancelItemModal } from '@/features/ordering/components/CancelItemModal'
+import { TableItemReturnModal } from '@/features/ordering/components/TableItemReturnModal'
 
 export function StaffOrderDetailPage() {
   const { orderId } = useParams<{ orderId: string }>()
@@ -59,11 +61,14 @@ export function StaffOrderDetailPage() {
   const [isServingAll, setIsServingAll] = useState(false)
 
   const [cancelTarget, setCancelTarget] = useState<
-    { type: 'ORDER' } | { type: 'ITEM'; itemId: number; itemName: string } | null
+    | { type: 'ORDER' }
+    | { type: 'ITEM'; itemId: number; itemName: string; maxQuantity: number }
+    | null
   >(null)
   const [isCancelling, setIsCancelling] = useState(false)
+  const [isReturnModalOpen, setIsReturnModalOpen] = useState(false)
 
-  const handleCancelConfirm = async (reason: string) => {
+  const handleCancelConfirm = async (reason: string, quantity?: number) => {
     if (!cancelTarget || !order) return
     setIsCancelling(true)
     try {
@@ -71,8 +76,12 @@ export function StaffOrderDetailPage() {
         await orderApi.cancelOrder(order.id, reason)
         toast.success('Đã hủy đơn hàng thành công, nguyên liệu đã được hoàn lại vào kho!')
       } else {
-        await orderApi.cancelOrderItem(order.id, cancelTarget.itemId, reason)
-        toast.success(`Đã hủy món "${cancelTarget.itemName}" thành công, nguyên liệu đã được hoàn lại!`)
+        await orderApi.cancelOrderItem(order.id, cancelTarget.itemId, reason, quantity)
+        toast.success(
+          quantity && quantity < cancelTarget.maxQuantity
+            ? `Đã hủy ${quantity} phần "${cancelTarget.itemName}" thành công, nguyên liệu đã được hoàn lại!`
+            : `Đã hủy món "${cancelTarget.itemName}" thành công, nguyên liệu đã được hoàn lại!`
+        )
       }
       await refetch()
     } catch (err) {
@@ -326,6 +335,18 @@ export function StaffOrderDetailPage() {
 
           <div className="flex items-center gap-3">
             {getOrderStatusBadge(order.status)}
+            {order.sessionId && order.status !== 'CANCELLED' && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setIsReturnModalOpen(true)}
+                className="text-xs h-8 text-primary border-primary/30 hover:bg-primary/5 font-semibold"
+              >
+                <PackageOpen className="w-3.5 h-3.5 mr-1 text-primary" />
+                Kiểm đồ bàn
+              </Button>
+            )}
             {order.status === 'PENDING' && (
               <Button
                 type="button"
@@ -395,13 +416,23 @@ export function StaffOrderDetailPage() {
                   {idx + 1}.
                 </span>
                 <div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <span className="font-bold text-sm text-text">
                       {item.menuItemName}
                     </span>
+                    {(item.isDirectSale || item.is_direct_sale) && (
+                      <Badge variant="outline" className="border-sky-500 text-sky-600 bg-sky-50 dark:bg-sky-950/40 text-[10px] py-0">
+                        Bán trực tiếp
+                      </Badge>
+                    )}
                     <span className="text-xs font-extrabold text-accent">
                       &times; {item.quantity}
                     </span>
+                    {((item.returnedQuantity ?? item.returned_quantity ?? 0) > 0) && (
+                      <span className="text-xs text-amber-600 font-semibold bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-md">
+                        Đã dùng: {item.quantity - (item.returnedQuantity ?? item.returned_quantity ?? 0)} (Đã trả: {item.returnedQuantity ?? item.returned_quantity})
+                      </span>
+                    )}
                   </div>
 
                   {item.note && (
@@ -457,7 +488,14 @@ export function StaffOrderDetailPage() {
                           type="button"
                           variant="ghost"
                           size="sm"
-                          onClick={() => setCancelTarget({ type: 'ITEM', itemId: item.id, itemName: item.menuItemName })}
+                          onClick={() =>
+                            setCancelTarget({
+                              type: 'ITEM',
+                              itemId: item.id,
+                              itemName: item.menuItemName,
+                              maxQuantity: item.quantity,
+                            })
+                          }
                           className="text-xs h-7 text-status-cancelled hover:bg-status-cancelled/10 px-2"
                         >
                           Hủy món
@@ -499,8 +537,20 @@ export function StaffOrderDetailPage() {
         onConfirm={handleCancelConfirm}
         title={cancelTarget?.type === 'ORDER' ? 'Xác nhận hủy toàn bộ đơn hàng' : 'Xác nhận hủy món ăn'}
         itemName={cancelTarget?.type === 'ITEM' ? cancelTarget.itemName : undefined}
+        maxQuantity={cancelTarget?.type === 'ITEM' ? cancelTarget.maxQuantity : undefined}
         isLoading={isCancelling}
       />
+
+      {/* Table Item Return Modal */}
+      {order.sessionId && (
+        <TableItemReturnModal
+          isOpen={isReturnModalOpen}
+          onClose={() => setIsReturnModalOpen(false)}
+          sessionId={order.sessionId}
+          tableCode={order.tableCode}
+          onSuccess={() => refetch()}
+        />
+      )}
     </div>
   )
 }
