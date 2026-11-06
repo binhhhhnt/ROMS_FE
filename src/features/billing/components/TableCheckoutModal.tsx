@@ -11,7 +11,6 @@ import {
   type ReceiptTaxRow,
 } from '@/features/billing/utils/receiptPrinter'
 import { Button } from '@/shared/components/ui/button'
-import { Badge } from '@/shared/components/ui/badge'
 import { getApiErrorMessage } from '@/shared/lib/axios'
 import type { PaymentItemDto, BillResponse } from '@/features/billing/types/bill.types'
 
