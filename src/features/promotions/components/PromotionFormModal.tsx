@@ -18,6 +18,14 @@ interface PromotionFormModalProps {
   isLoading?: boolean
 }
 
+function getTodayDateString(): string {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 export function PromotionFormModal({
   isOpen,
   onClose,
@@ -43,7 +51,7 @@ export function PromotionFormModal({
       discountType: 'PERCENT',
       discountValue: 10,
       maxUses: null,
-      startDate: null,
+      startDate: getTodayDateString(),
       endDate: null,
       isActive: true,
     },
@@ -54,13 +62,16 @@ export function PromotionFormModal({
   useEffect(() => {
     if (isOpen) {
       if (promotion) {
+        const fallbackStart = promotion.createdAt
+          ? promotion.createdAt.slice(0, 10)
+          : getTodayDateString()
         reset({
           name: promotion.name,
           code: promotion.code,
           discountType: promotion.discountType,
           discountValue: promotion.discountValue,
           maxUses: promotion.maxUses,
-          startDate: promotion.startDate || null,
+          startDate: promotion.startDate || fallbackStart,
           endDate: promotion.endDate || null,
           isActive: promotion.isActive,
         })
@@ -71,7 +82,7 @@ export function PromotionFormModal({
           discountType: 'PERCENT',
           discountValue: 10,
           maxUses: null,
-          startDate: null,
+          startDate: getTodayDateString(),
           endDate: null,
           isActive: true,
         })
@@ -85,7 +96,7 @@ export function PromotionFormModal({
     await onSubmit({
       ...data,
       code: data.code.trim().toUpperCase(),
-      startDate: data.startDate || null,
+      startDate: data.startDate || getTodayDateString(),
       endDate: data.endDate || null,
       maxUses: data.maxUses ? Number(data.maxUses) : null,
     })
@@ -281,7 +292,7 @@ export function PromotionFormModal({
                   setValueAs: (v) => (v ? v : null),
                 })}
               />
-              <p className="mt-1 text-[11px] text-text-secondary">Để trống = Áp dụng ngay</p>
+              <p className="mt-1 text-[11px] text-text-secondary">Mặc định hôm nay nếu để trống</p>
             </div>
 
             <div>

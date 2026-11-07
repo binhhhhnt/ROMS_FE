@@ -418,11 +418,6 @@ export function StaffOrderDetailPage() {
                     <span className="font-bold text-sm text-text">
                       {item.menuItemName}
                     </span>
-                    {(item.isDirectSale || item.is_direct_sale) && (
-                      <Badge variant="outline" className="border-sky-500 text-sky-600 bg-sky-50 dark:bg-sky-950/40 text-[10px] py-0">
-                        Bán trực tiếp
-                      </Badge>
-                    )}
                     <span className="text-xs font-extrabold text-accent">
                       &times; {item.quantity}
                     </span>

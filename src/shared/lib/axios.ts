@@ -25,21 +25,29 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 )
 
-let isRefreshing = false
-let failedQueue: Array<{
-  resolve: (token: string) => void
-  reject: (error: unknown) => void
-}> = []
+let refreshPromise: Promise<LoginResponseData> | null = null
 
-const processQueue = (error: unknown, token: string | null = null) => {
-  failedQueue.forEach((promise) => {
-    if (error) {
-      promise.reject(error)
-    } else if (token) {
-      promise.resolve(token)
-    }
-  })
-  failedQueue = []
+export async function performTokenRefresh(): Promise<LoginResponseData> {
+  if (refreshPromise) {
+    return refreshPromise
+  }
+
+  refreshPromise = axios
+    .post<ApiResponse<LoginResponseData>>(
+      `${baseURL}/api/auth/refresh`,
+      {},
+      { withCredentials: true }
+    )
+    .then((res) => {
+      const tokenData = res.data.data
+      useAuthStore.getState().setAccessToken(tokenData.accessToken)
+      return tokenData
+    })
+    .finally(() => {
+      refreshPromise = null
+    })
+
+  return refreshPromise
 }
 
 // 401 Interceptor with single-flight refresh token rotation
@@ -54,47 +62,21 @@ apiClient.interceptors.response.use(
 
     const isAuthRoute =
       originalRequest.url?.includes('/api/auth/login') ||
-      originalRequest.url?.includes('/api/auth/refresh')
+      originalRequest.url?.includes('/api/auth/refresh') ||
+      originalRequest.url?.includes('/api/auth/logout')
 
     if (error.response?.status === 401 && !originalRequest._retry && !isAuthRoute) {
-      if (isRefreshing) {
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject })
-        })
-          .then((token) => {
-            if (originalRequest.headers) {
-              originalRequest.headers.Authorization = `Bearer ${token}`
-            }
-            return apiClient(originalRequest)
-          })
-          .catch((err) => Promise.reject(err))
-      }
-
       originalRequest._retry = true
-      isRefreshing = true
 
       try {
-        const refreshResponse = await axios.post<ApiResponse<LoginResponseData>>(
-          `${baseURL}/api/auth/refresh`,
-          {},
-          { withCredentials: true }
-        )
-
-        const newAccessToken = refreshResponse.data.data.accessToken
-        useAuthStore.getState().setAccessToken(newAccessToken)
-        processQueue(null, newAccessToken)
-
+        const tokenData = await performTokenRefresh()
         if (originalRequest.headers) {
-          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
+          originalRequest.headers.Authorization = `Bearer ${tokenData.accessToken}`
         }
-
         return apiClient(originalRequest)
       } catch (refreshError) {
-        processQueue(refreshError, null)
         useAuthStore.getState().clearAuth()
         return Promise.reject(refreshError)
-      } finally {
-        isRefreshing = false
       }
     }
 
@@ -117,6 +99,14 @@ const ERROR_TRANSLATIONS: Record<string, string> = {
   USER_NOT_FOUND: 'Không tìm thấy tài khoản người dùng.',
   TABLE_NOT_FOUND: 'Không tìm thấy thông tin bàn ăn yêu cầu.',
   PASSWORD_MISMATCH: 'Mật khẩu cũ không chính xác.',
+  PROMOTION_CODE_ALREADY_EXISTS: 'Mã khuyến mãi này đã tồn tại trong hệ thống.',
+  INVALID_DISCOUNT_PERCENT: 'Phần trăm giảm giá không được vượt quá 100%.',
+  INVALID_DATE_RANGE: 'Ngày kết thúc không được trước ngày bắt đầu.',
+  INVALID_PROMOTION_CODE: 'Mã khuyến mãi không tồn tại hoặc không hợp lệ.',
+  PROMOTION_INACTIVE: 'Mã khuyến mãi đã bị tạm ngưng.',
+  PROMOTION_NOT_STARTED: 'Mã khuyến mãi chưa đến ngày bắt đầu áp dụng.',
+  PROMOTION_EXPIRED: 'Mã khuyến mãi đã hết hạn sử dụng.',
+  PROMOTION_MAX_USES_REACHED: 'Mã khuyến mãi đã hết lượt sử dụng.',
   INTERNAL_SERVER_ERROR: 'Hệ thống máy chủ gặp lỗi tạm thời. Vui lòng thử lại sau.',
 }
 
@@ -184,9 +174,19 @@ function translateErrorMessage(message: string, code?: string): string {
 
 export function getApiErrorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {
-    const responseData = error.response?.data as { message?: string; error?: { code?: string } } | undefined
+    const responseData = error.response?.data as
+      | { message?: string; error?: { code?: string; details?: Record<string, string> | null } }
+      | undefined
     const errorCode = responseData?.error?.code
+    const errorDetails = responseData?.error?.details
     const rawMessage = responseData?.message
+
+    if (errorCode === 'VALIDATION_ERROR' && errorDetails && typeof errorDetails === 'object') {
+      const firstDetail = Object.values(errorDetails).find((val) => typeof val === 'string' && val.trim().length > 0)
+      if (firstDetail) {
+        return translateErrorMessage(firstDetail)
+      }
+    }
 
     if (rawMessage) {
       return translateErrorMessage(rawMessage, errorCode)

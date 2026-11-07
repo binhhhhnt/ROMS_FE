@@ -1,4 +1,4 @@
-import { apiClient } from '@/shared/lib/axios'
+import { apiClient, performTokenRefresh } from '@/shared/lib/axios'
 import type { ApiResponse } from '@/shared/types/api.types'
 import type {
   LoginRequest,
@@ -22,11 +22,7 @@ export const authApi = {
   },
 
   async refresh(): Promise<LoginResponseData> {
-    const res = await apiClient.post<ApiResponse<LoginResponseData>>(
-      '/api/auth/refresh',
-      {}
-    )
-    return res.data.data
+    return performTokenRefresh()
   },
 
   async getMe(): Promise<UserProfile> {
