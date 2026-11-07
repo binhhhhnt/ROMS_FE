@@ -7,7 +7,7 @@ import { authApi } from '@/features/auth/api/authApi'
 import { queryClient } from '@/shared/lib/queryClient'
 
 function AuthRehydration({ children }: { children: ReactNode }) {
-  const { setAuth, clearAuth, setInitializing } = useAuthStore()
+  const { isAuthenticated, setAuth, clearAuth, setInitializing } = useAuthStore()
   const [isDone, setIsDone] = useState(false)
 
   useEffect(() => {
@@ -15,7 +15,7 @@ function AuthRehydration({ children }: { children: ReactNode }) {
 
     async function rehydrate() {
       try {
-        // Attempt single refresh rotation with HttpOnly cookie
+        // Attempt single-flight refresh rotation with HttpOnly cookie
         const tokenData = await authApi.refresh()
         if (!isMounted) return
 
@@ -26,7 +26,10 @@ function AuthRehydration({ children }: { children: ReactNode }) {
         setAuth(tokenData.accessToken, userProfile)
       } catch {
         if (!isMounted) return
-        clearAuth()
+        // Only clear auth if another concurrent refresh/login hasn't already populated a valid token
+        if (!useAuthStore.getState().accessToken) {
+          clearAuth()
+        }
       } finally {
         if (isMounted) {
           setInitializing(false)
@@ -41,6 +44,27 @@ function AuthRehydration({ children }: { children: ReactNode }) {
       isMounted = false
     }
   }, [setAuth, clearAuth, setInitializing])
+
+  // Proactive silent refresh before the 15-minute access token expires (every 12 minutes)
+  useEffect(() => {
+    if (!isAuthenticated) return
+
+    const SILENT_REFRESH_INTERVAL_MS = 12 * 60 * 1000 // 12 minutes
+    const intervalId = window.setInterval(async () => {
+      try {
+        await authApi.refresh()
+      } catch {
+        // If refresh fails due to revoked/expired session, clear auth
+        if (!useAuthStore.getState().accessToken) {
+          clearAuth()
+        }
+      }
+    }, SILENT_REFRESH_INTERVAL_MS)
+
+    return () => {
+      window.clearInterval(intervalId)
+    }
+  }, [isAuthenticated, clearAuth])
 
   if (!isDone) {
     return (

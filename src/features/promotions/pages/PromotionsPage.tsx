@@ -396,17 +396,16 @@ export function PromotionsPage() {
 
                       {/* Thời hạn */}
                       <td className="py-3.5 px-4 text-xs text-text-secondary">
-                        {promo.startDate || promo.endDate ? (
-                          <div className="flex items-center gap-1">
-                            <Calendar className="w-3.5 h-3.5 text-accent/80 shrink-0" />
-                            <span>
-                              {formatDate(promo.startDate) || 'Hiện tại'} -{' '}
-                              {formatDate(promo.endDate) || 'Vô hạn'}
-                            </span>
-                          </div>
-                        ) : (
-                          <span className="text-text-secondary italic">Vô thời hạn</span>
-                        )}
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-3.5 h-3.5 text-accent/80 shrink-0" />
+                          <span>
+                            {formatDate(
+                              promo.startDate ||
+                                (promo.createdAt ? promo.createdAt.slice(0, 10) : null)
+                            )}{' '}
+                            - {formatDate(promo.endDate) || 'Vô thời hạn'}
+                          </span>
+                        </div>
                       </td>
 
                       {/* Trạng thái */}
