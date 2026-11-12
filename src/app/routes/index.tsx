@@ -156,6 +156,7 @@ export function AppRoutes() {
           element={<RoleGuard allowedRoles={['TABLE_ACCOUNT', 'OWNER']} />}
         >
           <Route element={<TabletLayout />}>
+            <Route path="/tablet" element={<Navigate to="/tablet/welcome" replace />} />
             <Route path="/tablet/welcome" element={<TabletWelcomePage />} />
             <Route path="/tablet/cart" element={<TabletCartPage />} />
             <Route path="/tablet/checkout" element={<TabletCheckoutPage />} />

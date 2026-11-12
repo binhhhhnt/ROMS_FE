@@ -9,7 +9,7 @@ import { useCartStore } from '@/features/ordering/store/cartStore'
 import { subscribeToTopic } from '@/shared/lib/stomp'
 import { Button } from '@/shared/components/ui/button'
 import { CartItemCountBadge } from '@/features/ordering/components/CartItemCountBadge'
-import { Utensils, ShoppingCart, Clock, LogOut, Sparkles } from 'lucide-react'
+import { Home, Utensils, ShoppingCart, Clock, LogOut, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 
 export function TabletLayout() {
@@ -114,6 +114,10 @@ export function TabletLayout() {
 
           {/* Navigation Links */}
           <nav className="flex flex-wrap items-center gap-1 sm:gap-2" aria-label="Điều hướng gọi món">
+            <NavLink to="/tablet/welcome" className={navClass}>
+              <Home className="h-4 w-4" aria-hidden="true" />
+              <span>Trang chủ</span>
+            </NavLink>
             <NavLink to="/tablet/menu" className={navClass}>
               <Utensils className="h-4 w-4" aria-hidden="true" />
               <span>Thực đơn</span>

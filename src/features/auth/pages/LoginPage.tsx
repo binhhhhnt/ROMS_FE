@@ -22,12 +22,6 @@ export function LoginPage() {
             Hệ thống Quản lý vận hành nhà hàng
           </h1>
 
-          <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 bg-surface/60 border border-surface rounded-full">
-            <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-            <span className="text-xs font-medium text-text/80 tracking-wide uppercase">
-              Quản trị viên &bull; Nhân viên &bull; Tablet bàn
-            </span>
-          </div>
         </div>
 
         {/* Divider line */}

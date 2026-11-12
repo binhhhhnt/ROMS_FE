@@ -25,6 +25,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/shared/utils/cn'
+import { StaffCallPanel } from '@/features/tables/components/StaffCallPanel'
 
 const getNavLinkClassName = ({ isActive }: { isActive: boolean }) =>
   cn(
@@ -68,6 +69,9 @@ export function StaffLayout() {
         </div>
 
         <div className="flex items-center gap-4">
+          {(user?.role === 'SERVICE_STAFF' || user?.role === 'OWNER') && (
+            <StaffCallPanel />
+          )}
           <Link
             to="/profile"
             className="text-right text-xs hover:opacity-80 transition-opacity p-1 rounded"

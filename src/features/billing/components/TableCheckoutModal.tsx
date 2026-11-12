@@ -187,7 +187,7 @@ export function TableCheckoutModal({
       address: settings?.address,
       phone: settings?.phone,
       receiptFooter: settings?.receiptFooter,
-      cashierName: currentUser?.username || currentUser?.fullName || 'Thu ngân',
+      cashierName: currentUser?.fullName || currentUser?.username || 'Thu ngân',
       tableCode: preview.tableCode,
       openedAt: preview.openedAt ? new Date(preview.openedAt).toLocaleString('vi-VN') : undefined,
       closedAt: new Date().toLocaleString('vi-VN'),

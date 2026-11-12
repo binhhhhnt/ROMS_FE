@@ -19,6 +19,7 @@ function isDestinationPermitted(destination: string): boolean {
   if (role === 'OWNER') return true
   if (destination.startsWith('/topic/kitchen')) return role === 'KITCHEN_STAFF'
   if (destination.startsWith('/topic/tables')) return role === 'SERVICE_STAFF' || role === 'TABLE_ACCOUNT'
+  if (destination.startsWith('/topic/service/')) return role === 'SERVICE_STAFF'
   if (/^\/topic\/session\/\d+\/orders$/.test(destination)) {
     return role === 'SERVICE_STAFF' || role === 'TABLE_ACCOUNT'
   }
