@@ -8,10 +8,12 @@ import { MenuFilters } from '../components/MenuFilters'
 import { MenuFeedback } from '../components/MenuFeedback'
 import { MenuPagination } from '../components/MenuPagination'
 import { TabletMenuCard } from '../components/TabletMenuCard'
+import { useMenuRealtime } from '../hooks/useMenuRealtime'
 import { getMenuErrorMessage } from '../utils/menu'
 
 export function TabletMenuPage() {
   const user = useAuthStore((state) => state.user)
+  useMenuRealtime()
   const filters = useMenuFilters(true)
   const query = useMenuItems(filters.params, !filters.invalid)
   const [search, setSearch] = useState('')

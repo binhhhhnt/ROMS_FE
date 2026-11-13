@@ -159,8 +159,10 @@ export function TableCheckoutModal({
 
   if (!isOpen) return null
 
+  const hasBillableItems = Boolean(preview && preview.items && preview.items.length > 0)
+
   const handlePrintProforma = () => {
-    if (!preview) return
+    if (!preview || !hasBillableItems) return
     toast.info('Đang gửi yêu cầu in phiếu tạm tính...')
 
     // Trigger server print
@@ -431,7 +433,7 @@ export function TableCheckoutModal({
               variant="outline"
               size="sm"
               onClick={handlePrintProforma}
-              disabled={!preview}
+              disabled={!hasBillableItems}
               className="text-xs gap-1.5"
             >
               <Printer className="w-4 h-4 mr-1.5" />
@@ -447,7 +449,7 @@ export function TableCheckoutModal({
                 variant="primary"
                 size="sm"
                 onClick={() => setIsPaymentModalOpen(true)}
-                disabled={!preview || preview.items.length === 0}
+                disabled={!hasBillableItems}
                 className="bg-primary hover:bg-primary-hover text-white font-semibold text-xs shadow-xs"
               >
                 <CreditCard className="w-4 h-4 mr-1.5" />

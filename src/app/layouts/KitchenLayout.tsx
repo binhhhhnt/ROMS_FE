@@ -5,7 +5,7 @@ import { useAuthStore } from '@/app/store/authStore'
 import { authApi } from '@/features/auth/api/authApi'
 import { subscribeToTopic } from '@/shared/lib/stomp'
 import { Button } from '@/shared/components/ui/button'
-import { ChefHat, LogOut, Flame, Layers, CheckCircle2, UtensilsCrossed, BookOpen } from 'lucide-react'
+import { ChefHat, LogOut, Flame, Layers, CheckCircle2, UtensilsCrossed, BookOpen, LayoutDashboard } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/shared/utils/cn'
 
@@ -83,8 +83,21 @@ export function KitchenLayout() {
 
         <div className="flex items-center gap-4">
           <span className="text-xs text-white/80 hidden sm:inline">
-            Đầu bếp: <strong>{user?.fullName || user?.username}</strong>
+            {user?.role === 'OWNER' ? 'Quản lý: ' : 'Đầu bếp: '}<strong>{user?.fullName || user?.username}</strong>
           </span>
+
+          {user?.role === 'OWNER' && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/owner/dashboard')}
+              className="bg-white/10 hover:bg-white/20 text-white border-white/20 text-xs flex items-center gap-1.5"
+            >
+              <LayoutDashboard className="w-4 h-4 mr-1" />
+              Về trang quản trị
+            </Button>
+          )}
+
           <Button
             variant="ghost"
             size="sm"

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { RefreshCw, Utensils, Clock, AlertCircle } from 'lucide-react'
+import { Utensils, Clock, AlertCircle } from 'lucide-react'
 
 import { useAuthStore } from '@/app/store/authStore'
 import { orderApi } from '@/features/ordering/api/orderApi'
@@ -45,15 +45,15 @@ export function TabletOrderTrackingPage() {
   })
   const [isCancelling, setIsCancelling] = useState(false)
 
-  // Query orders for current tablet
+  // Query orders for current tablet (only when activeSessionId exists)
   const {
     data: orders = [],
     isLoading,
-    isRefetching,
     refetch,
   } = useQuery({
     queryKey: ['orders', 'tablet', user?.tableId, activeSessionId],
-    queryFn: () => orderApi.getOrders(activeSessionId || undefined),
+    queryFn: () => (activeSessionId ? orderApi.getOrders(activeSessionId) : Promise.resolve([])),
+    enabled: !!activeSessionId,
   })
 
   // Realtime STOMP Subscription
@@ -169,21 +169,6 @@ export function TabletOrderTrackingPage() {
         </div>
 
         <div className="flex items-center gap-2 self-start sm:self-auto">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => refetch()}
-            disabled={isLoading || isRefetching}
-            className="text-xs h-9"
-          >
-            <RefreshCw
-              className={`w-3.5 h-3.5 mr-1.5 ${
-                isRefetching ? 'animate-spin' : ''
-              }`}
-            />
-            Làm mới
-          </Button>
 
           <Link to="/tablet/menu">
             <Button variant="primary" size="sm" className="text-xs h-9 font-semibold">
@@ -203,19 +188,17 @@ export function TabletOrderTrackingPage() {
               key={tab.value}
               type="button"
               onClick={() => setSelectedFilter(tab.value as OrderStatus | 'ALL')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 cursor-pointer ${
-                isActive
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 cursor-pointer ${isActive
                   ? 'bg-primary text-white shadow-xs'
                   : 'text-muted hover:bg-surface/50 hover:text-text'
-              }`}
+                }`}
             >
               <span>{tab.label}</span>
               <span
-                className={`px-1.5 py-0.2 rounded-full text-[10px] ${
-                  isActive
+                className={`px-1.5 py-0.2 rounded-full text-[10px] ${isActive
                     ? 'bg-white/20 text-white'
                     : 'bg-muted-bg text-muted'
-                }`}
+                  }`}
               >
                 {tab.count}
               </span>

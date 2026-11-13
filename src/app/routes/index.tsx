@@ -94,6 +94,7 @@ export function AppRoutes() {
               <Route path="/owner/reports/profit" element={<ProfitReportPage />} />
               <Route path="/owner/reports/operations" element={<OperationsReportPage />} />
               <Route path="/owner/settings" element={<RestaurantSettingsPage />} />
+              <Route path="/owner/recipes" element={<RecipesPage />} />
             </Route>
 
             {/* Inventory Staff & Owner Routes */}
@@ -147,9 +148,6 @@ export function AppRoutes() {
             <Route path="/kitchen/recipes" element={<RecipesPage />} />
           </Route>
         </Route>
-
-        {/* Backward Compatibility Redirect */}
-        <Route path="/inventory/recipes" element={<Navigate to="/kitchen/recipes" replace />} />
 
         {/* Tablet Layout */}
         <Route

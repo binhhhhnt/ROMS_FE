@@ -4,7 +4,6 @@ import { menuApi } from '../api/menuApi'
 import { useMenuItem, useRefreshMenu } from '../hooks/useMenu'
 import { MenuItemForm } from '../components/MenuItemForm'
 import { MenuImageManager } from '../components/MenuImageManager'
-import { MenuStatusControl } from '../components/MenuStatusControl'
 import { MenuFeedback } from '../components/MenuFeedback'
 import { getMenuErrorMessage, positiveMenuId } from '../utils/menu'
 import type { MenuItemWriteRequest } from '../types/menu.types'
@@ -31,7 +30,6 @@ export function MenuItemDetailPage() {
         : query.isError ? <MenuFeedback message={getMenuErrorMessage(query.error)} retry={() => void query.refetch()} />
         : item && <>
           <MenuItemForm key={item.id} item={item} onSave={save} onDeleted={() => navigate('/owner/menu-items', { replace: true })} />
-          <MenuStatusControl key={`${item.id}-${item.status}`} item={item} onChanged={refresh} />
           <MenuImageManager key={item.id} menuItemId={item.id} images={item.images} onChanged={refresh} />
         </>}
     </section>

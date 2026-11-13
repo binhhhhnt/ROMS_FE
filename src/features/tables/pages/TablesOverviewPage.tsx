@@ -35,7 +35,7 @@ interface TablesOverviewPageProps {
   initialActiveOnly?: boolean
 }
 
-export function TablesOverviewPage({ initialActiveOnly = false }: TablesOverviewPageProps) {
+export function TablesOverviewPage({ initialActiveOnly = true }: TablesOverviewPageProps) {
   const queryClient = useQueryClient()
   const { user } = useAuthStore()
   const navigate = useNavigate()
@@ -73,11 +73,22 @@ export function TablesOverviewPage({ initialActiveOnly = false }: TablesOverview
   })
 
   // Fetch active kitchen orders to count dishes waiting to be served
-  const { data: readyKitchenOrders = [], refetch: refetchReadyOrders } = useQuery({
+  const {
+    data: readyKitchenOrders = [],
+    isFetching: isFetchingReadyOrders,
+    refetch: refetchReadyOrders,
+  } = useQuery({
     queryKey: ['tablesOverviewReadyOrders'],
     queryFn: () => kitchenApi.getKitchenOrders(),
     refetchInterval: 10000,
+    refetchOnMount: 'always',
   })
+
+  const isRefreshing = isFetching || isFetchingReadyOrders
+  const handleRefresh = () => {
+    refetch()
+    refetchReadyOrders()
+  }
 
   // Realtime subscription for kitchen orders
   useEffect(() => {
@@ -193,7 +204,7 @@ export function TablesOverviewPage({ initialActiveOnly = false }: TablesOverview
       )
 
       if (hasCompleted) {
-        navigate(`/tables/${table.id}/checkout`)
+        setCheckoutTable(table)
         return
       }
 
@@ -249,11 +260,11 @@ export function TablesOverviewPage({ initialActiveOnly = false }: TablesOverview
           <Button
             variant="outline"
             size="sm"
-            onClick={() => refetch()}
-            disabled={isFetching}
+            onClick={handleRefresh}
+            disabled={isRefreshing}
             className="text-xs"
           >
-            <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${isFetching ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${isRefreshing ? 'animate-spin' : ''}`} />
             Làm mới
           </Button>
 
@@ -416,75 +427,114 @@ export function TablesOverviewPage({ initialActiveOnly = false }: TablesOverview
         </div>
       ) : (
         <div className="bg-card border border-border shadow-md rounded-xl overflow-hidden">
-          <table className="w-full text-left text-xs border-collapse">
-            <thead>
-              <tr className="border-b border-border bg-surface/50 text-muted uppercase tracking-wider font-semibold">
-                <th className="py-3 px-4">Mã bàn</th>
-                <th className="py-3 px-4">Sức chứa</th>
-                <th className="py-3 px-4">Khu vực</th>
-                <th className="py-3 px-4">Trạng thái</th>
-                <th className="py-3 px-4">Phiên hiện tại</th>
-                <th className="py-3 px-4 text-right">Thao tác</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {filteredTables.map((t) => (
-                <tr key={t.id} className="hover:bg-surface/30 transition-colors">
-                  <td className="py-3.5 px-4 font-bold text-text uppercase">Bàn {t.tableCode}</td>
-                  <td className="py-3.5 px-4 text-muted">{t.capacity} người</td>
-                  <td className="py-3.5 px-4 text-muted">{t.area || '-'}</td>
-                  <td className="py-3.5 px-4">
-                    {readyCountByTableId[t.id] && readyCountByTableId[t.id] > 0 ? (
-                      <Badge variant="ready" className="bg-status-ready text-white animate-pulse">
-                        {readyCountByTableId[t.id]} món cần bưng
-                      </Badge>
-                    ) : t.realtimeStatus === 'OCCUPIED' ? (
-                      <Badge variant="cooking">Đang phục vụ</Badge>
-                    ) : t.realtimeStatus === 'EMPTY' && t.isActive ? (
-                      <Badge variant="completed">Bàn trống</Badge>
-                    ) : (
-                      <Badge variant="secondary">Bảo trì</Badge>
-                    )}
-                  </td>
-                  <td className="py-3.5 px-4 font-mono text-muted">
-                    {t.activeSessionId ? `#${t.activeSessionId}` : '-'}
-                  </td>
-                  <td className="py-3.5 px-4 text-right">
-                    <div className="flex items-center justify-end gap-1.5">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => navigate(`/tables/${t.id}`)}
-                        className="h-8 px-2"
-                      >
-                        Chi tiết
-                      </Button>
-                      {t.realtimeStatus === 'OCCUPIED' && isOwner && (
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          onClick={() => setCheckoutTable(t)}
-                          className="h-8 px-2 text-xs bg-primary hover:bg-primary-hover text-white font-semibold"
-                        >
-                          Tính tiền
-                        </Button>
-                      )}
-                      {t.realtimeStatus === 'EMPTY' && t.isActive && (
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          onClick={() => handleOpenSession(t)}
-                          className="h-8 px-2 text-xs"
-                        >
-                          Mở bàn
-                        </Button>
-                      )}
-                    </div>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="border-b border-border bg-surface/60 text-muted uppercase tracking-wider font-semibold">
+                  <th className="py-3 px-4 whitespace-nowrap">Mã bàn</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Sức chứa</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Khu vực</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Trạng thái</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Phiên hiện tại</th>
+                  <th className="py-3 px-4 text-right whitespace-nowrap">Thao tác</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {filteredTables.map((t) => {
+                  const readyCount = readyCountByTableId[t.id] || 0
+                  const isOccupied = t.realtimeStatus === 'OCCUPIED'
+                  const isEmpty = t.realtimeStatus === 'EMPTY' && t.isActive
+                  return (
+                    <tr key={t.id} className="hover:bg-surface/40 transition-colors">
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        <span className="font-bold text-sm text-text uppercase">
+                          Bàn {t.tableCode}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4 text-muted whitespace-nowrap">
+                        {t.capacity} người
+                      </td>
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        {t.area ? (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-surface border border-border text-[11px] text-text font-medium">
+                            {t.area}
+                          </span>
+                        ) : (
+                          <span className="text-muted">—</span>
+                        )}
+                      </td>
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        <div className="flex items-center gap-1.5">
+                          {isOccupied ? (
+                            <Badge variant="cooking" className="whitespace-nowrap">
+                              Đang phục vụ
+                            </Badge>
+                          ) : isEmpty ? (
+                            <Badge variant="completed" className="whitespace-nowrap">
+                              Bàn trống
+                            </Badge>
+                          ) : (
+                            <Badge variant="secondary" className="whitespace-nowrap">
+                              Bảo trì
+                            </Badge>
+                          )}
+                          {isOccupied && readyCount > 0 && (
+                            <Badge
+                              variant="ready"
+                              className="bg-status-ready text-white animate-pulse whitespace-nowrap"
+                            >
+                              {readyCount} món cần bưng
+                            </Badge>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-3.5 px-4 font-mono text-muted whitespace-nowrap">
+                        {t.activeSessionId ? (
+                          <span className="px-2 py-0.5 rounded bg-surface border border-border text-text text-[11px] font-semibold">
+                            #{t.activeSessionId}
+                          </span>
+                        ) : (
+                          '—'
+                        )}
+                      </td>
+                      <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => navigate(`/tables/${t.id}`)}
+                            className="h-8 px-2.5 text-xs"
+                          >
+                            Chi tiết
+                          </Button>
+                          {isOccupied && (
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              onClick={() => setCheckoutTable(t)}
+                              className="h-8 px-3 text-xs bg-primary hover:bg-primary-hover text-white font-semibold"
+                            >
+                              Thanh toán
+                            </Button>
+                          )}
+                          {isEmpty && (
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              onClick={() => handleOpenSession(t)}
+                              className="h-8 px-3 text-xs font-semibold"
+                            >
+                              Mở bàn
+                            </Button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 

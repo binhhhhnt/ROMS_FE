@@ -49,6 +49,7 @@ export function useRefreshMenu() {
   const queryClient = useQueryClient()
   return () => queryClient.invalidateQueries({
     predicate: ({ queryKey }) => queryKey[0] === 'menu'
+      || queryKey[0] === 'menu-items'
       || queryKey[0] === 'categories'
       || (queryKey[0] === 'kitchen' && queryKey[1] === 'menu-items'),
   })

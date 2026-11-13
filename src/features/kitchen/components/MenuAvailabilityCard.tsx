@@ -78,8 +78,25 @@ export function MenuAvailabilityCard({
           <h3 className="font-bold text-base text-text line-clamp-1">
             {item.name}
           </h3>
-          <div className="text-sm font-black text-primary mt-0.5">
-            {formatPrice(item.price)}
+          <div className="flex items-center justify-between mt-0.5">
+            <span className="text-sm font-black text-primary">
+              {formatPrice(item.price)}
+            </span>
+            {item.availability?.reason?.includes('BOM') ? (
+              <span className="text-[11px] font-medium text-amber-600 dark:text-amber-400">
+                Chưa có BOM
+              </span>
+            ) : item.availability?.maxPossibleQuantity != null ? (
+              item.availability.maxPossibleQuantity === 0 ? (
+                <span className="text-[11px] font-medium text-rose-500">
+                  Hết kho (0 suất)
+                </span>
+              ) : (
+                <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+                  Kho: {item.availability.maxPossibleQuantity} suất
+                </span>
+              )
+            ) : null}
           </div>
         </div>
 

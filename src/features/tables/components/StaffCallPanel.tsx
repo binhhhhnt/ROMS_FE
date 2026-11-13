@@ -29,7 +29,7 @@ export function StaffCallPanel() {
         audioRef.current?.play().catch(() => {
           // Bỏ qua lỗi nếu trình duyệt chặn autoplay trước tương tác
         })
-        toast.info(`🔔 Bàn ${data.tableCode} đang gọi nhân viên!`)
+        toast.info(`Bàn ${data.tableCode} đang gọi nhân viên!`)
       }
     )
 
@@ -124,10 +124,13 @@ export function StaffCallPanel() {
                   Hiện không có yêu cầu nào
                 </div>
               ) : (
-                pendingCalls.map((call) => (
+                pendingCalls.map((call, idx) => (
                   <div
                     key={call.requestId}
-                    className="flex items-center justify-between p-3.5 hover:bg-surface/50 transition-colors"
+                    className={cn(
+                      'flex items-center justify-between p-3.5 transition-colors',
+                      idx % 2 === 0 ? 'bg-card hover:bg-surface/60' : 'bg-surface/30 hover:bg-surface/70'
+                    )}
                   >
                     <div>
                       <p className="font-bold text-sm text-primary">

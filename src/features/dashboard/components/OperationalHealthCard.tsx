@@ -24,7 +24,7 @@ export function OperationalHealthCard({ overview, isLoading = false }: Operation
             <Activity className="w-4 h-4" />
           </div>
           <div>
-            <CardTitle className="text-base font-bold text-text">Sức khỏe Vận hành</CardTitle>
+            <CardTitle className="text-base font-bold text-text">Vận hành</CardTitle>
             <p className="text-xs text-muted">Hiệu suất phục vụ & cảnh báo thời gian thực</p>
           </div>
         </div>
@@ -48,9 +48,8 @@ export function OperationalHealthCard({ overview, isLoading = false }: Operation
               </div>
               <div className="w-full bg-muted-bg h-2 rounded-full overflow-hidden">
                 <div
-                  className={`h-full rounded-full transition-all duration-500 ${
-                    completionRate >= 90 ? 'bg-status-ready' : 'bg-status-pending'
-                  }`}
+                  className={`h-full rounded-full transition-all duration-500 ${completionRate >= 90 ? 'bg-status-ready' : 'bg-status-pending'
+                    }`}
                   style={{ width: `${completionRate}%` }}
                 />
               </div>
@@ -78,11 +77,10 @@ export function OperationalHealthCard({ overview, isLoading = false }: Operation
               </div>
 
               {/* Low Stock Alert */}
-              <div className={`border rounded-xl p-3 flex flex-col justify-between transition-colors ${
-                lowStockCount > 0
+              <div className={`border rounded-xl p-3 flex flex-col justify-between transition-colors ${lowStockCount > 0
                   ? 'bg-status-pending/10 border-status-pending/30 text-status-pending'
                   : 'bg-card border-border text-muted'
-              }`}>
+                }`}>
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-medium">Cảnh báo tồn kho</span>
                   <AlertTriangle className={`w-4 h-4 ${lowStockCount > 0 ? 'text-status-pending' : 'text-muted'}`} />

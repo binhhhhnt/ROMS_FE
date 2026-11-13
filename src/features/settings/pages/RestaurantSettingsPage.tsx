@@ -288,18 +288,16 @@ export function RestaurantSettingsPage() {
                     {/* Option 1: Included */}
                     <div
                       onClick={() => setIncludesVat(true)}
-                      className={`relative flex flex-col p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                        includesVat
+                      className={`relative flex flex-col p-4 rounded-xl border-2 cursor-pointer transition-all ${includesVat
                           ? 'border-primary bg-primary/5 shadow-sm'
                           : 'border-border bg-card hover:bg-surface/50'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center justify-between mb-2">
                         <span className="font-semibold text-text text-sm">Đã bao gồm VAT</span>
                         <div
-                          className={`w-5 h-5 rounded-full flex items-center justify-center border ${
-                            includesVat ? 'border-primary bg-primary text-white' : 'border-border'
-                          }`}
+                          className={`w-5 h-5 rounded-full flex items-center justify-center border ${includesVat ? 'border-primary bg-primary text-white' : 'border-border'
+                            }`}
                         >
                           {includesVat && <CheckCircle2 className="w-3.5 h-3.5" />}
                         </div>
@@ -312,18 +310,16 @@ export function RestaurantSettingsPage() {
                     {/* Option 2: Excluded */}
                     <div
                       onClick={() => setIncludesVat(false)}
-                      className={`relative flex flex-col p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                        !includesVat
+                      className={`relative flex flex-col p-4 rounded-xl border-2 cursor-pointer transition-all ${!includesVat
                           ? 'border-primary bg-primary/5 shadow-sm'
                           : 'border-border bg-card hover:bg-surface/50'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center justify-between mb-2">
                         <span className="font-semibold text-text text-sm">Chưa bao gồm VAT</span>
                         <div
-                          className={`w-5 h-5 rounded-full flex items-center justify-center border ${
-                            !includesVat ? 'border-primary bg-primary text-white' : 'border-border'
-                          }`}
+                          className={`w-5 h-5 rounded-full flex items-center justify-center border ${!includesVat ? 'border-primary bg-primary text-white' : 'border-border'
+                            }`}
                         >
                           {!includesVat && <CheckCircle2 className="w-3.5 h-3.5" />}
                         </div>
@@ -558,14 +554,12 @@ export function RestaurantSettingsPage() {
                   <button
                     type="button"
                     onClick={() => setPrintReadyTicket(!printReadyTicket)}
-                    className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
-                      printReadyTicket ? 'bg-primary' : 'bg-border'
-                    }`}
+                    className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${printReadyTicket ? 'bg-primary' : 'bg-border'
+                      }`}
                   >
                     <span
-                      className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
-                        printReadyTicket ? 'translate-x-5' : 'translate-x-1'
-                      }`}
+                      className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${printReadyTicket ? 'translate-x-5' : 'translate-x-1'
+                        }`}
                     />
                   </button>
                 </div>
@@ -622,9 +616,6 @@ export function RestaurantSettingsPage() {
             <Store className="w-5 h-5 text-accent" />
             <div>
               <CardTitle className="text-lg">Thông tin Nhà hàng trên Biên lai & Hóa đơn</CardTitle>
-              <CardDescription>
-                Thông tin xuất hiện ở phần đầu (Header) và chân trang (Footer) của Phiếu tạm tính và Hóa đơn
-              </CardDescription>
             </div>
           </div>
         </CardHeader>

@@ -19,6 +19,7 @@ import { menuApi } from '@/features/menu/api/menuApi'
 import { categoryApi } from '@/features/menu/api/categoryApi'
 import { tableApi } from '@/features/tables/api/tableApi'
 import { orderApi } from '@/features/ordering/api/orderApi'
+import { useMenuRealtime } from '@/features/menu/hooks/useMenuRealtime'
 import { getApiErrorMessage } from '@/shared/lib/axios'
 import type { OrderResponse } from '@/features/ordering/types/ordering.types'
 
@@ -51,10 +52,13 @@ export function StaffOrderModal({
   const [cart, setCart] = useState<CartItem[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // 1. Fetch menu items
+  // Realtime menu updates sync
+  useMenuRealtime(isOpen)
+
+  // 1. Fetch menu items (returns AVAILABLE and TEMPORARILY_UNAVAILABLE with BOM)
   const { data: menuData, isLoading: isLoadingMenu } = useQuery({
-    queryKey: ['menu-items', 'available'],
-    queryFn: () => menuApi.list({ status: 'AVAILABLE', page: 0, size: 100, sort: 'name,asc' }),
+    queryKey: ['menu-items', 'staff-order'],
+    queryFn: () => menuApi.list({ page: 0, size: 100, sort: 'name,asc' }),
     enabled: isOpen,
   })
 
@@ -260,37 +264,40 @@ export function StaffOrderModal({
             )}
 
             {/* Filter and Search Bar */}
-            <div className="flex flex-col sm:flex-row gap-2.5 mb-4 shrink-0">
-              <div className="relative flex-1">
+            <div className="flex flex-col gap-3 mb-4 shrink-0">
+
+              {/* Search Bar - Nằm phía trên */}
+              <div className="relative w-full">
                 <Search className="w-4 h-4 text-muted absolute left-3 top-1/2 -translate-y-1/2" />
                 <Input
                   placeholder="Tìm món ăn nhanh..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 h-9 text-xs"
+                  className="pl-9 h-9 text-xs w-full"
                 />
               </div>
 
-              {/* Category Pills */}
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+              {/* Category Pills - Nằm phía dưới */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 w-full">
                 <button
                   type="button"
                   onClick={() => setSelectedCategory('ALL')}
                   className={`text-xs px-3 py-1.5 rounded-lg whitespace-nowrap font-medium transition-colors ${selectedCategory === 'ALL'
-                      ? 'bg-primary text-white shadow-xs'
-                      : 'bg-surface hover:bg-surface/80 text-muted'
+                    ? 'bg-primary text-white shadow-xs'
+                    : 'bg-surface hover:bg-surface/80 text-muted'
                     }`}
                 >
                   Tất cả
                 </button>
+
                 {categories.map((cat) => (
                   <button
                     key={cat.id}
                     type="button"
                     onClick={() => setSelectedCategory(cat.id.toString())}
                     className={`text-xs px-3 py-1.5 rounded-lg whitespace-nowrap font-medium transition-colors ${selectedCategory === cat.id.toString()
-                        ? 'bg-primary text-white shadow-xs'
-                        : 'bg-surface hover:bg-surface/80 text-muted'
+                      ? 'bg-primary text-white shadow-xs'
+                      : 'bg-surface hover:bg-surface/80 text-muted'
                       }`}
                   >
                     {cat.name}
@@ -315,25 +322,33 @@ export function StaffOrderModal({
                   {filteredMenuItems.map((item) => {
                     const inCartItem = cart.find((c) => c.menuItemId === item.id)
                     const qty = inCartItem?.quantity || 0
+                    const isOutOfStock = item.status === 'TEMPORARILY_UNAVAILABLE' || item.availability?.sellable === false
 
                     return (
                       <div
                         key={item.id}
-                        className={`p-3 rounded-xl border flex flex-col justify-between gap-2.5 transition-all ${qty > 0
+                        className={`p-3 rounded-xl border flex flex-col justify-between gap-2.5 transition-all ${
+                          isOutOfStock
+                            ? 'border-border/50 bg-card/60 opacity-60 grayscale-[30%]'
+                            : qty > 0
                             ? 'border-primary/50 bg-primary/5 shadow-xs'
                             : 'border-border bg-card hover:border-accent/40'
-                          }`}
+                        }`}
                       >
                         <div>
                           <div className="flex items-start justify-between gap-2">
-                            <h4 className="font-bold text-sm text-text leading-tight">
+                            <h4 className={`font-bold text-sm leading-tight ${isOutOfStock ? 'text-muted' : 'text-text'}`}>
                               {item.name}
                             </h4>
-                            {item.isFeatured && (
+                            {isOutOfStock ? (
+                              <span className="text-[10px] bg-rose-500/15 text-rose-600 font-bold px-1.5 py-0.5 rounded shrink-0">
+                                HẾT
+                              </span>
+                            ) : item.isFeatured ? (
                               <span className="text-[10px] bg-amber-500/15 text-amber-600 font-bold px-1.5 py-0.5 rounded shrink-0">
                                 HOT
                               </span>
-                            )}
+                            ) : null}
                           </div>
                           {item.description && (
                             <p className="text-xs text-muted line-clamp-1 mt-1">
@@ -343,11 +358,15 @@ export function StaffOrderModal({
                         </div>
 
                         <div className="flex items-center justify-between pt-1 border-t border-border/50">
-                          <span className="font-extrabold text-sm text-primary">
+                          <span className={`font-extrabold text-sm ${isOutOfStock ? 'text-muted line-through' : 'text-primary'}`}>
                             {formatPrice(item.price)}
                           </span>
 
-                          {qty === 0 ? (
+                          {isOutOfStock && qty === 0 ? (
+                            <span className="text-xs font-bold text-rose-600 bg-rose-50 px-2 py-1 rounded-md border border-rose-200">
+                              Hết
+                            </span>
+                          ) : qty === 0 ? (
                             <Button
                               type="button"
                               size="sm"
@@ -372,8 +391,11 @@ export function StaffOrderModal({
                               </span>
                               <button
                                 type="button"
+                                disabled={isOutOfStock}
                                 onClick={() => handleUpdateQuantity(item.id, 1)}
-                                className="w-6 h-6 rounded flex items-center justify-center hover:bg-surface text-muted hover:text-text"
+                                className={`w-6 h-6 rounded flex items-center justify-center text-muted hover:text-text ${
+                                  isOutOfStock ? 'opacity-30 cursor-not-allowed' : 'hover:bg-surface'
+                                }`}
                               >
                                 <Plus className="w-3 h-3" />
                               </button>

@@ -1,29 +1,21 @@
-import { useState } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMemo } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import {
   ArrowLeft,
   Clock,
   ArrowRightLeft,
-  CheckCircle,
   History,
   Layers,
   AlertCircle,
   User,
   Utensils,
   ClipboardList,
-  Plus,
   PackageOpen,
-  Receipt,
 } from 'lucide-react'
-import { toast } from 'sonner'
 
 import { tableApi } from '@/features/tables/api/tableApi'
 import type { TableTransferHistoryItem } from '@/features/tables/types/table.types'
-import { TransferTableModal } from '@/features/tables/components/TransferTableModal'
-import { StaffOrderModal } from '@/features/ordering/components/StaffOrderModal'
-import { TableItemReturnModal } from '@/features/ordering/components/TableItemReturnModal'
-import { TableCheckoutModal } from '@/features/billing/components/TableCheckoutModal'
 import { orderApi } from '@/features/ordering/api/orderApi'
 import { getApiErrorMessage } from '@/shared/lib/axios'
 import { Button } from '@/shared/components/ui/button'
@@ -33,15 +25,9 @@ export function SessionDetailPage() {
   const { sessionId } = useParams<{ sessionId: string }>()
   const sId = Number(sessionId)
   const navigate = useNavigate()
-  const queryClient = useQueryClient()
-
-  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false)
-  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false)
-  const [isReturnModalOpen, setIsReturnModalOpen] = useState(false)
-  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false)
 
   // Fetch orders belonging to this session
-  const { data: sessionOrders = [], refetch: refetchOrders } = useQuery({
+  const { data: sessionOrders = [] } = useQuery({
     queryKey: ['sessionOrders', sId],
     queryFn: () => orderApi.getOrders(sId),
     enabled: !!sId,
@@ -66,13 +52,6 @@ export function SessionDetailPage() {
     enabled: !!session?.tableId,
   })
 
-  // Fetch tables for transfer options
-  const { data: allTablesData } = useQuery({
-    queryKey: ['allTablesList'],
-    queryFn: () => tableApi.getTables({ size: 100 }),
-    enabled: isTransferModalOpen,
-  })
-
   // Fetch transfer history
   const { data: transfersData } = useQuery({
     queryKey: ['sessionTransfers', sId],
@@ -80,20 +59,49 @@ export function SessionDetailPage() {
     enabled: !!sId,
   })
 
-  // Close session mutation
-  const closeSessionMutation = useMutation({
-    mutationFn: () => tableApi.closeSession(sId),
-    onSuccess: () => {
-      toast.success('Đã kết thúc phiên phục vụ thành công!')
-      queryClient.invalidateQueries({ queryKey: ['sessionDetail', sId] })
-      queryClient.invalidateQueries({ queryKey: ['tableDetail'] })
-      queryClient.invalidateQueries({ queryKey: ['tablesOverview'] })
-      queryClient.invalidateQueries({ queryKey: ['sessionsHistory'] })
-    },
-    onError: (err) => {
-      toast.error(getApiErrorMessage(err) || 'Không thể kết thúc phiên phục vụ')
-    },
-  })
+  // Group direct-sale returned items across all session orders
+  const aggregatedReturnedItems = useMemo(() => {
+    const map = new Map<
+      number,
+      {
+        menuItemId: number
+        menuItemName: string
+        totalReturned: number
+        unitPrice: number
+        totalDeduction: number
+      }
+    >()
+
+    sessionOrders.forEach((o) => {
+      o.items?.forEach((item) => {
+        const retQty = item.returnedQuantity ?? item.returned_quantity ?? 0
+        if (retQty > 0) {
+          let entry = map.get(item.menuItemId)
+          if (!entry) {
+            entry = {
+              menuItemId: item.menuItemId,
+              menuItemName: item.menuItemName,
+              totalReturned: 0,
+              unitPrice: item.unitPrice,
+              totalDeduction: 0,
+            }
+            map.set(item.menuItemId, entry)
+          }
+          entry.totalReturned += retQty
+          entry.totalDeduction += retQty * item.unitPrice
+        }
+      })
+    })
+
+    return Array.from(map.values())
+  }, [sessionOrders])
+
+  const formatPrice = (val: number) => {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND',
+    }).format(val)
+  }
 
   if (isLoading) {
     return (
@@ -147,63 +155,6 @@ export function SessionDetailPage() {
             </p>
           </div>
         </div>
-
-        <div className="flex items-center gap-2">
-          {table && (
-            <Link to={`/tables/${table.id}`}>
-              <Button variant="outline">
-                <Layers className="h-4 w-4 mr-2" />
-                Xem thông tin bàn
-              </Button>
-            </Link>
-          )}
-
-          {isActive && (
-            <>
-              <Button
-                onClick={() => setIsOrderModalOpen(true)}
-                className="bg-primary hover:bg-primary-hover text-white font-bold"
-              >
-                <Utensils className="h-4 w-4 mr-2" />
-                + Đặt món cho bàn
-              </Button>
-              <Button
-                onClick={() => setIsCheckoutModalOpen(true)}
-                className="bg-accent hover:bg-accent-hover text-white font-bold"
-              >
-                <Receipt className="h-4 w-4 mr-2" />
-                Tính tiền
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setIsReturnModalOpen(true)}
-                className="font-semibold text-primary border-primary/30 hover:bg-primary/5"
-              >
-                <PackageOpen className="h-4 w-4 mr-2 text-primary" />
-                Kiểm đồ bàn
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setIsTransferModalOpen(true)}
-              >
-                <ArrowRightLeft className="h-4 w-4 mr-2" />
-                Chuyển bàn
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={() => {
-                  if (confirm('Bạn có chắc chắn muốn kết thúc phiên phục vụ này? Sau khi đóng, bàn sẽ trở về trạng thái trống.')) {
-                    closeSessionMutation.mutate()
-                  }
-                }}
-                disabled={closeSessionMutation.isPending}
-              >
-                <CheckCircle className="h-4 w-4 mr-2" />
-                Kết thúc phiên
-              </Button>
-            </>
-          )}
-        </div>
       </div>
 
       {/* Main Info Cards */}
@@ -246,7 +197,7 @@ export function SessionDetailPage() {
         <div className="rounded-xl border border-border bg-card p-6 shadow-xs space-y-4">
           <h2 className="text-base font-semibold text-text flex items-center gap-2 border-b border-border pb-3">
             <Layers className="h-4 w-4 text-primary" />
-            Thông tin vị trí & Bàn
+            Thông tin Bàn
           </h2>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
@@ -256,31 +207,75 @@ export function SessionDetailPage() {
               </span>
             </div>
             <div>
-              <span className="text-xs text-muted block">Trạng thái bàn hiện tại</span>
-              <span className="font-medium text-text mt-1 block">
-                {table ? (
-                  <Badge variant={table.realtimeStatus === 'EMPTY' ? 'ready' : 'cooking'}>
-                    {table.realtimeStatus === 'EMPTY' ? 'Bàn trống' : 'Có khách'}
-                  </Badge>
-                ) : '—'}
-              </span>
-            </div>
-            <div>
               <span className="text-xs text-muted block">Khu vực bàn</span>
               <span className="font-medium text-text mt-1 block">
                 {table?.area || 'Chung'}
-              </span>
-            </div>
-            <div>
-              <span className="text-xs text-muted block">Sức chứa tối đa</span>
-              <span className="font-medium text-text mt-1 block">
-                {table?.capacity ? `${table.capacity} khách` : '—'}
               </span>
             </div>
           </div>
         </div>
       </div>
 
+      {/* Khung thông tin các đồ bị trả (chỉ hiện khi có đồ bị trả) */}
+      {aggregatedReturnedItems.length > 0 && (
+        <div className="bg-card border border-border rounded-xl p-4 sm:p-5 flex flex-col gap-3 shadow-2xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-border">
+            <div className="flex items-center gap-2.5">
+              <PackageOpen className="w-4 h-4 text-primary" />
+              <div>
+                <h4 className="font-bold text-sm text-text flex items-center gap-2">
+                  Thông tin hàng trả lại kho (Đã kiểm đồ)
+                  <span className="text-xs px-2 py-0.5 rounded-md bg-surface border border-border text-text font-semibold">
+                    {aggregatedReturnedItems.reduce((sum, item) => sum + item.totalReturned, 0)} món
+                  </span>
+                </h4>
+                <p className="text-xs text-muted mt-0.5">
+                  Các sản phẩm khách không dùng hết đã được hoàn kho và trừ trực tiếp vào hóa đơn bàn.
+                </p>
+              </div>
+            </div>
+
+            <div className="text-left sm:text-right">
+              <span className="text-xs text-muted block">Tổng tiền giảm trừ:</span>
+              <span className="text-sm font-bold text-status-cancelled">
+                -{formatPrice(aggregatedReturnedItems.reduce((sum, item) => sum + item.totalDeduction, 0))}
+              </span>
+            </div>
+          </div>
+
+          {/* Bảng đơn giản - nền card chuẩn, viền border trung tính */}
+          <div className="overflow-x-auto rounded-lg border border-border">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-surface/50 text-muted font-semibold border-b border-border">
+                <tr>
+                  <th className="py-2.5 px-3">Đồ đã trả</th>
+                  <th className="py-2.5 px-3 text-center">Số lượng trả</th>
+                  <th className="py-2.5 px-3 text-right">Đơn giá</th>
+                  <th className="py-2.5 px-3 text-right">Số tiền trừ</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {aggregatedReturnedItems.map((item) => (
+                  <tr key={item.menuItemId} className="hover:bg-surface/30 transition-colors">
+                    <td className="py-2.5 px-3 font-semibold text-status-cancelled">
+                      {item.menuItemName}
+                    </td>
+                    <td className="py-2.5 px-3 text-center font-bold text-status-cancelled">
+                      -{item.totalReturned}
+                    </td>
+                    <td className="py-2.5 px-3 text-right text-muted">
+                      {formatPrice(item.unitPrice)}
+                    </td>
+                    <td className="py-2.5 px-3 text-right font-bold text-status-cancelled">
+                      -{formatPrice(item.totalDeduction)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* Session Orders List */}
       <div className="rounded-xl border border-border bg-card p-6 shadow-xs space-y-4">
@@ -289,90 +284,153 @@ export function SessionDetailPage() {
             <ClipboardList className="h-4 w-4 text-primary" />
             Các đơn gọi món trong phiên ({sessionOrders.length})
           </h2>
-          {isActive && (
-            <Button
-              size="sm"
-              onClick={() => setIsOrderModalOpen(true)}
-              className="text-xs h-8 bg-primary hover:bg-primary-hover text-white font-semibold gap-1"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              Thêm món
-            </Button>
-          )}
         </div>
 
         {sessionOrders.length === 0 ? (
           <div className="text-center py-8 text-muted text-sm">
             <Utensils className="w-8 h-8 mx-auto mb-2 opacity-30" />
             <p>Phiên phục vụ này chưa có đơn gọi món nào.</p>
-            {isActive && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsOrderModalOpen(true)}
-                className="mt-3 text-xs"
-              >
-                Bấm vào đây để đặt món ngay
-              </Button>
-            )}
           </div>
         ) : (
-          <div className="divide-y divide-border/60">
-            {sessionOrders.map((order) => (
-              <div key={order.id} className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2.5">
-                    <span className="font-bold text-sm text-text">Đơn #{order.id}</span>
-                    <Badge variant={
-                      order.status === 'PENDING' ? 'pending' :
-                      order.status === 'COOKING' ? 'cooking' :
-                      order.status === 'COMPLETED' ? 'completed' : 'cancelled'
-                    }>
-                      {order.status === 'PENDING' ? 'Chờ tiếp nhận' :
-                       order.status === 'COOKING' ? 'Đang nấu' :
-                       order.status === 'COMPLETED' ? 'Hoàn thành' : 'Đã hủy'}
-                    </Badge>
-                  </div>
-                  <p className="text-xs text-muted">
-                    {order.items.map((i) => {
-                      const ret = i.returnedQuantity ?? i.returned_quantity ?? 0
-                      return ret > 0
-                        ? `${i.menuItemName} x${i.quantity} (dùng ${i.quantity - ret}, trả ${ret})`
-                        : `${i.menuItemName} x${i.quantity}`
-                    }).join(', ')}
-                  </p>
-                  <span className="text-[11px] text-muted block">
-                    Đặt lúc: {new Date(order.createdAt).toLocaleTimeString('vi-VN')}
-                  </span>
-                </div>
+          <div className="space-y-4">
+            {sessionOrders.map((order) => {
+              return (
+                <div
+                  key={order.id}
+                  className="rounded-xl border border-border bg-card overflow-hidden shadow-2xs"
+                >
+                  {/* Order Header */}
+                  <div className="bg-surface/50 px-4 py-3 border-b border-border flex flex-wrap items-center justify-between gap-3 text-xs">
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <span className="font-black text-sm text-text">
+                        Đơn #{order.id}
+                      </span>
 
-                <div className="flex items-center justify-between sm:justify-end gap-4">
-                  <span className="font-extrabold text-sm text-primary">
-                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.totalAmount)}
-                  </span>
-                  <Link to={`/staff/orders/${order.id}`}>
-                    <Button variant="outline" size="sm" className="text-xs h-8">
-                      Chi tiết
-                    </Button>
-                  </Link>
+                      {/* Order Status Badge */}
+                      {order.status === 'PENDING' && (
+                        <Badge variant="pending" className="text-[11px] py-0.5">
+                          Chờ tiếp nhận
+                        </Badge>
+                      )}
+                      {order.status === 'COOKING' && (
+                        <Badge variant="cooking" className="text-[11px] py-0.5">
+                          Đang chế biến
+                        </Badge>
+                      )}
+                      {order.status === 'COMPLETED' && (
+                        <Badge variant="completed" className="text-[11px] py-0.5">
+                          Hoàn thành
+                        </Badge>
+                      )}
+                      {order.status === 'CANCELLED' && (
+                        <Badge variant="cancelled" className="text-[11px] py-0.5">
+                          Đã hủy
+                        </Badge>
+                      )}
+
+                      <span className="text-muted">
+                        ({order.createdByName ? `Tạo bởi: ${order.createdByName}` : 'Khách gọi từ Tablet'})
+                      </span>
+                      <span className="text-muted">
+                        {new Date(order.createdAt).toLocaleTimeString('vi-VN', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <div className="font-extrabold text-sm text-primary">
+                        {new Intl.NumberFormat('vi-VN', {
+                          style: 'currency',
+                          currency: 'VND',
+                        }).format(order.totalAmount)}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Items List */}
+                  <div className="divide-y divide-border">
+                    {order.items.map((item) => (
+                      <div
+                        key={item.id}
+                        className={`p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs ${item.status === 'READY'
+                          ? 'bg-status-ready/10'
+                          : item.status === 'CANCELLED'
+                            ? 'opacity-60 bg-surface/20'
+                            : 'hover:bg-surface/20'
+                          }`}
+                      >
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-text text-sm">
+                              {item.menuItemName}
+                            </span>
+                            <span className="px-2 py-0.5 rounded bg-surface border border-border font-black text-primary text-xs">
+                              x{item.quantity}
+                            </span>
+                          </div>
+                          {item.note && (
+                            <p className="text-[11px] text-amber-800 mt-1 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-300 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-900/50 inline-block">
+                              Ghi chú: {item.note}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
+                          <div className="text-right">
+                            <span className="font-semibold text-text">
+                              {new Intl.NumberFormat('vi-VN', {
+                                style: 'currency',
+                                currency: 'VND',
+                              }).format(
+                                item.subtotal || item.unitPrice * item.quantity
+                              )}
+                            </span>
+                          </div>
+
+                          {/* Status Badge per item */}
+                          <div className="min-w-[100px] flex justify-end items-center">
+                            {item.status === 'PENDING' ? (
+                              <span className="px-2 py-1 rounded-md bg-surface text-muted font-semibold text-[11px] border border-border">
+                                Chờ tiếp nhận
+                              </span>
+                            ) : item.status === 'READY' ? (
+                              <span className="px-2.5 py-1 rounded-md bg-status-ready/15 text-emerald-700 dark:text-emerald-400 font-semibold text-[11px] border border-status-ready/20">
+                                Sẵn sàng phục vụ
+                              </span>
+                            ) : item.status === 'COMPLETED' ? (
+                              <span className="px-2.5 py-1 rounded-md bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-semibold text-[11px] border border-emerald-500/20">
+                                Đã phục vụ
+                              </span>
+                            ) : item.status === 'COOKING' ? (
+                              <span className="px-2.5 py-1 rounded-md bg-amber-500/15 text-amber-700 dark:text-amber-400 font-semibold text-[11px] border border-amber-500/20">
+                                Bếp đang nấu
+                              </span>
+                            ) : item.status === 'CANCELLED' ? (
+                              <span className="px-2.5 py-1 rounded-md bg-red-500/15 text-red-700 dark:text-red-400 font-semibold text-[11px] border border-red-500/20">
+                                Đã hủy
+                              </span>
+                            ) : null}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </div>
-      {/* Transfer History */}
-      <div className="rounded-xl border border-border bg-card p-6 shadow-xs space-y-4">
-        <h2 className="text-base font-semibold text-text flex items-center gap-2 border-b border-border pb-3">
-          <History className="h-4 w-4 text-primary" />
-          Lịch sử chuyển bàn trong phiên ({transfers.length})
-        </h2>
+      {/* Transfer History (Chỉ hiển thị khi có phát sinh chuyển bàn) */}
+      {transfers.length > 0 && (
+        <div className="rounded-xl border border-border bg-card p-6 shadow-xs space-y-4">
+          <h2 className="text-base font-semibold text-text flex items-center gap-2 border-b border-border pb-3">
+            <History className="h-4 w-4 text-primary" />
+            Lịch sử chuyển bàn trong phiên ({transfers.length})
+          </h2>
 
-        {transfers.length === 0 ? (
-          <p className="text-sm text-muted text-center py-6">
-            Phiên này chưa có lịch sử đổi hoặc chuyển bàn.
-          </p>
-        ) : (
           <div className="divide-y divide-border/60">
             {transfers.map((t) => (
               <div key={t.id} className="py-3 flex items-start justify-between text-sm">
@@ -394,63 +452,8 @@ export function SessionDetailPage() {
               </div>
             ))}
           </div>
-        )}
-      </div>
-
-      {/* Transfer Table Modal */}
-      {table && (
-        <TransferTableModal
-          isOpen={isTransferModalOpen}
-          onClose={() => setIsTransferModalOpen(false)}
-          currentTable={table}
-          availableEmptyTables={allTablesData?.content || []}
-          onSuccess={() => {
-            queryClient.invalidateQueries({ queryKey: ['sessionDetail', sId] })
-            queryClient.invalidateQueries({ queryKey: ['sessionTransfers', sId] })
-            queryClient.invalidateQueries({ queryKey: ['tableDetail'] })
-            queryClient.invalidateQueries({ queryKey: ['tablesOverview'] })
-          }}
-        />
+        </div>
       )}
-
-      {/* Staff Direct Ordering Modal */}
-      <StaffOrderModal
-        isOpen={isOrderModalOpen}
-        onClose={() => setIsOrderModalOpen(false)}
-        initialSessionId={sId}
-        initialTableCode={session.tableCode}
-        onSuccess={() => {
-          refetchOrders()
-          queryClient.invalidateQueries({ queryKey: ['sessionOrders', sId] })
-          queryClient.invalidateQueries({ queryKey: ['orders'] })
-        }}
-      />
-
-      {/* Table Direct-Sale Item Return Modal */}
-      <TableItemReturnModal
-        isOpen={isReturnModalOpen}
-        onClose={() => setIsReturnModalOpen(false)}
-        sessionId={sId}
-        tableCode={session.tableCode}
-        onSuccess={() => {
-          refetchOrders()
-          queryClient.invalidateQueries({ queryKey: ['sessionOrders', sId] })
-          queryClient.invalidateQueries({ queryKey: ['sessionDetail', sId] })
-          queryClient.invalidateQueries({ queryKey: ['orders'] })
-        }}
-      />
-
-      {/* Table Checkout & Payment Modal */}
-      <TableCheckoutModal
-        isOpen={isCheckoutModalOpen}
-        onClose={() => setIsCheckoutModalOpen(false)}
-        sessionId={sId}
-        tableCode={session.tableCode}
-        onCheckoutSuccess={() => {
-          setIsCheckoutModalOpen(false)
-          navigate('/tables')
-        }}
-      />
     </div>
   )
 }
