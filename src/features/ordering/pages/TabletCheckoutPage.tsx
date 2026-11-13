@@ -101,7 +101,10 @@ export function TabletCheckoutPage() {
           orderId: createdOrder.id,
           tableCode: createdOrder.tableCode || user?.tableName || `Bàn ${user?.tableId}`,
           totalAmount: createdOrder.totalAmount,
-          itemCount: createdOrder.items?.length || items.length,
+          itemCount: createdOrder.items?.reduce(
+            (total, item) => total + item.quantity,
+            0
+          ) ?? getTotalItemCount(),
         },
       })
     } catch (err: unknown) {

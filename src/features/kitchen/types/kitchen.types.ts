@@ -47,6 +47,11 @@ export interface MenuItemReadItem {
   isFeatured?: boolean
   category?: CategoryItem | null
   images: MenuItemImage[]
+  availability?: {
+    sellable: boolean
+    reason?: string | null
+    maxPossibleQuantity?: number | null
+  }
 }
 
 export interface UpdateMenuStatusRequest {

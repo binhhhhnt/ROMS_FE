@@ -4,10 +4,13 @@ export function Toaster() {
   return (
     <SonnerToaster
       position="top-right"
+      closeButton
       toastOptions={{
         classNames: {
           toast:
-            'border border-border bg-card text-text shadow-lg rounded-lg p-4 font-sans text-sm',
+            'border border-border bg-card text-text shadow-lg rounded-lg p-3.5 font-sans text-sm flex items-center gap-3',
+          closeButton:
+            '!static !transform-none !order-first !self-stretch !w-9 !h-auto !min-h-8 !rounded-md !border !border-border/70 !bg-muted-bg/60 hover:!bg-muted-bg !text-muted hover:!text-text !shrink-0 [&>svg]:!w-4 [&>svg]:!h-4',
           description: 'text-muted text-xs',
           actionButton: 'bg-primary text-white font-medium text-xs px-3 py-1.5 rounded',
           cancelButton: 'bg-muted-bg text-text text-xs px-3 py-1.5 rounded',

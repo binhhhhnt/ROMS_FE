@@ -22,7 +22,6 @@ export function MenuFilters({ params, onChange, onReset, tablet = false }: {
         <div className="flex items-center gap-2">
           <label htmlFor="menu-sort" className="sr-only">Sắp xếp món ăn</label>
           <select id="menu-sort" className={`${menuControlClass} min-h-11 min-w-40 rounded-xl`} value={params.sort} onChange={(event) => onChange('sort', event.target.value)}>
-            <option value="id,asc">Thứ tự thêm: cũ → mới</option>
             <option value="name,asc">Tên A → Z</option><option value="name,desc">Tên Z → A</option>
             <option value="price,asc">Giá tăng dần</option><option value="price,desc">Giá giảm dần</option>
           </select>

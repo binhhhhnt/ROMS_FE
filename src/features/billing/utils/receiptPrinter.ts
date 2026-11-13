@@ -217,8 +217,8 @@ export function printReceiptViaBrowser(data: ReceiptPrintData) {
           <td>${item.index}</td>
           <td>${item.itemName}</td>
           <td class="text-center font-bold">${item.quantity}</td>
-          <td class="text-right">${(item.unitPrice / 1000).toFixed(0)}k</td>
-          <td class="text-right font-bold">${(item.subtotal / 1000).toFixed(0)}k</td>
+          <td class="text-right">${item.unitPrice.toLocaleString('vi-VN')}</td>
+          <td class="text-right font-bold">${item.subtotal.toLocaleString('vi-VN')}</td>
         </tr>
       `
       )

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Utensils, Sparkles, ChefHat, ShoppingCart, HelpCircle, ArrowRight } from 'lucide-react'
@@ -5,14 +6,17 @@ import { toast } from 'sonner'
 
 import { useAuthStore } from '@/app/store/authStore'
 import { tableApi } from '@/features/tables/api/tableApi'
+import { staffCallApi } from '@/features/tables/api/staffCallApi'
 import { getApiErrorMessage } from '@/shared/lib/axios'
 import { Button } from '@/shared/components/ui/button'
+import { ConfirmDialog } from '@/shared/components/ui/confirm-dialog'
 
 export function TabletWelcomePage() {
   const { user } = useAuthStore()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const tableId = user?.tableId
+  const [isConfirmCallOpen, setIsConfirmCallOpen] = useState(false)
 
   // Fetch current table status
   const { data: table, isLoading } = useQuery({
@@ -36,6 +40,18 @@ export function TabletWelcomePage() {
       queryClient.invalidateQueries({ queryKey: ['tabletTableInfo', tableId] })
       toast.success('Bắt đầu phiên phục vụ thành công! Chúc quý khách ngon miệng.')
       navigate('/tablet/menu')
+    },
+    onError: (err) => {
+      toast.error(getApiErrorMessage(err))
+    },
+  })
+
+  // Call staff mutation
+  const callStaffMutation = useMutation({
+    mutationFn: () => staffCallApi.callStaff(tableId!),
+    onSuccess: () => {
+      setIsConfirmCallOpen(false)
+      toast.success('Đã gửi thông báo. Nhân viên phục vụ sẽ đến hỗ trợ quý khách ngay!')
     },
     onError: (err) => {
       toast.error(getApiErrorMessage(err))
@@ -103,7 +119,9 @@ export function TabletWelcomePage() {
           <Button
             variant="outline"
             size="md"
-            onClick={() => toast.info('Đã gửi thông báo. Nhân viên phục vụ sẽ đến hỗ trợ quý khách ngay!')}
+            onClick={() => setIsConfirmCallOpen(true)}
+            isLoading={callStaffMutation.isPending}
+            disabled={!tableId}
             className="text-xs"
           >
             <HelpCircle className="w-4 h-4 mr-1.5 text-muted" />
@@ -111,6 +129,19 @@ export function TabletWelcomePage() {
           </Button>
         </div>
       </div>
+
+      {/* Modal xác nhận gọi nhân viên */}
+      <ConfirmDialog
+        isOpen={isConfirmCallOpen}
+        onClose={() => setIsConfirmCallOpen(false)}
+        onConfirm={() => callStaffMutation.mutate()}
+        title="Gọi nhân viên phục vụ"
+        description="Quý khách có cần nhân viên hỗ trợ tại bàn không?"
+        confirmText="Xác nhận"
+        cancelText="Hủy"
+        variant="primary"
+        isLoading={callStaffMutation.isPending}
+      />
     </div>
   )
 }

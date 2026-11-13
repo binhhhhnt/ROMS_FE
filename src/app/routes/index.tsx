@@ -94,6 +94,7 @@ export function AppRoutes() {
               <Route path="/owner/reports/profit" element={<ProfitReportPage />} />
               <Route path="/owner/reports/operations" element={<OperationsReportPage />} />
               <Route path="/owner/settings" element={<RestaurantSettingsPage />} />
+              <Route path="/owner/recipes" element={<RecipesPage />} />
             </Route>
 
             {/* Inventory Staff & Owner Routes */}
@@ -148,14 +149,12 @@ export function AppRoutes() {
           </Route>
         </Route>
 
-        {/* Backward Compatibility Redirect */}
-        <Route path="/inventory/recipes" element={<Navigate to="/kitchen/recipes" replace />} />
-
         {/* Tablet Layout */}
         <Route
           element={<RoleGuard allowedRoles={['TABLE_ACCOUNT', 'OWNER']} />}
         >
           <Route element={<TabletLayout />}>
+            <Route path="/tablet" element={<Navigate to="/tablet/welcome" replace />} />
             <Route path="/tablet/welcome" element={<TabletWelcomePage />} />
             <Route path="/tablet/cart" element={<TabletCartPage />} />
             <Route path="/tablet/checkout" element={<TabletCheckoutPage />} />

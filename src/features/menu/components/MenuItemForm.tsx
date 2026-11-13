@@ -43,6 +43,7 @@ export function MenuItemForm({ item, onSave, onDeleted }: {
       price: item ? String(item.price) : '',
       isFeatured: item?.isFeatured ?? false,
       isDirectSale: item?.isDirectSale ?? item?.is_direct_sale ?? false,
+      status: item?.status ?? 'DISCONTINUED',
     },
   })
 
@@ -155,6 +156,19 @@ export function MenuItemForm({ item, onSave, onDeleted }: {
           <Input id="menu-item-price" inputMode="decimal" placeholder="Ví dụ: 65000" aria-required="true" aria-invalid={!!errors.price} aria-describedby="menu-item-price-error" {...register('price')} />
           <p id="menu-item-price-error" className="mt-1 text-sm text-status-cancelled">{errors.price?.message}</p>
           <p className="mt-1 text-xs text-muted">Không nhập dấu phân cách hàng nghìn; dùng dấu chấm cho phần thập phân.</p>
+        </div>
+
+        {/* Status */}
+        <div>
+          <label htmlFor="menu-item-status" className="mb-2 block text-sm font-semibold">Trạng thái kinh doanh</label>
+          <select id="menu-item-status" className={menuControlClass} {...register('status')}>
+            <option value="DISCONTINUED">Ngừng kinh doanh (Mặc định - Chưa lên menu)</option>
+            <option value="AVAILABLE">Đang kinh doanh (Mở bán ngay)</option>
+            <option value="TEMPORARILY_UNAVAILABLE">Tạm ngưng phục vụ</option>
+          </select>
+          <p className="mt-1 text-xs text-muted">
+            {item ? 'Cập nhật trạng thái mở bán của món.' : 'Mặc định là "Ngừng kinh doanh" để món chưa hiện lên menu cho đến khi sẵn sàng.'}
+          </p>
         </div>
 
         {/* Featured */}

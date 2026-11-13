@@ -8,6 +8,7 @@ export const menuItemSchema = z.object({
   price: z.string().trim().regex(/^\d{1,10}(\.\d{1,2})?$/, 'Giá phải không âm, tối đa 10 chữ số nguyên và 2 chữ số thập phân'),
   isFeatured: z.boolean(),
   isDirectSale: z.boolean(),
+  status: z.enum(['AVAILABLE', 'TEMPORARILY_UNAVAILABLE', 'DISCONTINUED']).optional(),
 })
 
 export type MenuItemFormValues = z.infer<typeof menuItemSchema>

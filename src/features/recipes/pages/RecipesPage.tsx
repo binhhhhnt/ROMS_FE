@@ -19,6 +19,7 @@ import {
   ShieldCheck,
   Eye,
   SlidersHorizontal,
+  AlertCircle,
 } from 'lucide-react'
 
 export function RecipesPage() {
@@ -287,8 +288,10 @@ export function RecipesPage() {
                   const isTempUnavailable = item.status === 'TEMPORARILY_UNAVAILABLE'
                   const isDiscontinued = item.status === 'DISCONTINUED'
 
-                  const sellable = item.availability?.sellable ?? true
+                  const sellable = item.availability?.sellable ?? false
                   const maxPossible = item.availability?.maxPossibleQuantity
+                  const reason = item.availability?.reason || ''
+                  const isNoBom = !sellable && (reason.includes('BOM') || maxPossible === null)
 
                   return (
                     <tr
@@ -353,17 +356,38 @@ export function RecipesPage() {
 
                       {/* Availability based on stock */}
                       <td className="px-4 py-3 text-center">
-                        {sellable ? (
+                        {isNoBom ? (
+                          <div
+                            className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 text-xs font-medium cursor-pointer hover:underline"
+                            title={reason || 'Món chưa được thiết lập định lượng nguyên liệu (BOM)'}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleOpenDrawer(item)
+                            }}
+                          >
+                            <AlertCircle className="w-3.5 h-3.5" />
+                            <span>Chưa có BOM</span>
+                          </div>
+                        ) : sellable ? (
                           <div className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 text-xs font-medium">
                             <CheckCircle2 className="w-3.5 h-3.5" />
                             <span>
-                              {maxPossible !== undefined ? `Tối đa ${maxPossible} suất` : 'Sẵn sàng'}
+                              {maxPossible != null ? `Tối đa ${maxPossible} suất` : 'Sẵn sàng'}
                             </span>
                           </div>
                         ) : (
-                          <div className="inline-flex items-center gap-1 text-rose-500 text-xs font-medium" title={item.availability?.reason || 'Hết nguyên liệu tồn kho'}>
+                          <div
+                            className="inline-flex items-center gap-1 text-rose-500 text-xs font-medium"
+                            title={reason || 'Hết nguyên liệu tồn kho'}
+                          >
                             <XCircle className="w-3.5 h-3.5" />
-                            <span>Hết nguyên liệu</span>
+                            <span>
+                              {maxPossible != null && maxPossible === 0
+                                ? 'Hết nguyên liệu (0 suất)'
+                                : maxPossible != null && maxPossible > 0
+                                ? `Kho còn ${maxPossible} suất (Tạm ngưng)`
+                                : 'Hết nguyên liệu'}
+                            </span>
                           </div>
                         )}
                       </td>

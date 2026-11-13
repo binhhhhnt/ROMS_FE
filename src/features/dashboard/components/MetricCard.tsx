@@ -54,13 +54,17 @@ export function MetricCard({
       </div>
 
       {(subtext || badgeText) && (
-        <div className="flex items-center gap-2 mt-3 pt-2.5 border-t border-border/60 text-xs">
+        <div className="flex items-start gap-2 mt-3 pt-2.5 border-t border-border/60 text-xs">
           {badgeText && (
-            <span className={cn('px-2 py-0.5 rounded-full text-[11px] font-semibold border', badgeVariants[badgeVariant])}>
+            <span className={cn('px-2 py-0.5 rounded-full text-[11px] font-semibold border whitespace-nowrap shrink-0', badgeVariants[badgeVariant])}>
               {badgeText}
             </span>
           )}
-          {subtext && <span className="text-muted text-[11px] truncate">{subtext}</span>}
+          {subtext && (
+            <span className="text-muted text-[11px] leading-snug break-words">
+              {subtext}
+            </span>
+          )}
         </div>
       )}
     </Card>

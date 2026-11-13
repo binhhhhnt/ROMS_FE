@@ -5,8 +5,6 @@ import {
   Tag,
   Plus,
   Search,
-  Percent,
-  Banknote,
   Calendar,
   Copy,
   Edit2,
@@ -359,12 +357,10 @@ export function PromotionsPage() {
                       <td className="py-3.5 px-4">
                         {promo.discountType === 'PERCENT' ? (
                           <span className="inline-flex items-center gap-1 font-bold text-accent text-sm">
-                            <Percent className="w-3.5 h-3.5" />
                             {promo.discountValue}%
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400 text-sm">
-                            <Banknote className="w-3.5 h-3.5" />
                             {formatCurrency(promo.discountValue)}
                           </span>
                         )}
@@ -381,13 +377,12 @@ export function PromotionsPage() {
                         {promo.maxUses !== null && usagePercent !== null && (
                           <div className="w-full h-1.5 bg-surface rounded-full overflow-hidden">
                             <div
-                              className={`h-full transition-all duration-300 ${
-                                usagePercent >= 100
-                                  ? 'bg-rose-500'
-                                  : usagePercent >= 80
+                              className={`h-full transition-all duration-300 ${usagePercent >= 100
+                                ? 'bg-rose-500'
+                                : usagePercent >= 80
                                   ? 'bg-amber-500'
                                   : 'bg-accent'
-                              }`}
+                                }`}
                               style={{ width: `${usagePercent}%` }}
                             />
                           </div>
@@ -401,7 +396,7 @@ export function PromotionsPage() {
                           <span>
                             {formatDate(
                               promo.startDate ||
-                                (promo.createdAt ? promo.createdAt.slice(0, 10) : null)
+                              (promo.createdAt ? promo.createdAt.slice(0, 10) : null)
                             )}{' '}
                             - {formatDate(promo.endDate) || 'Vô thời hạn'}
                           </span>
@@ -421,11 +416,10 @@ export function PromotionsPage() {
                             onClick={() => toggleMutation.mutate(promo.id)}
                             disabled={toggleMutation.isPending}
                             title={promo.isActive ? 'Tạm ngưng mã này' : 'Bật lại mã này'}
-                            className={`p-1.5 rounded-lg transition-colors ${
-                              promo.isActive
-                                ? 'text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40'
-                                : 'text-zinc-400 hover:bg-surface hover:text-zinc-600'
-                            }`}
+                            className={`p-1.5 rounded-lg transition-colors ${promo.isActive
+                              ? 'text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40'
+                              : 'text-zinc-400 hover:bg-surface hover:text-zinc-600'
+                              }`}
                           >
                             <Power className="w-4 h-4" />
                           </button>

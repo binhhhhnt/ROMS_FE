@@ -46,12 +46,12 @@
 | FE-027 | Danh sách món & Excel (`FE-SCR-027`; Page) | ROMS-021, BE-038 | Member 3 | Todo | Lọc category/status; thêm nút Tải mẫu, Xuất Excel, Nhập Excel |
 | FE-028 | Tạo món (`FE-SCR-028`; Page) | ROMS-022 | Member 3 | Todo | Cloudinary upload qua BE; DB lưu ảnh URL; chọn thuế suất |
 | FE-029 | Chi tiết/sửa món (`FE-SCR-029`; Page + Action) | ROMS-023 | Member 3 | Todo | Quản lý ảnh/status/is_featured/tax_category_id |
-| FE-030 | Thực đơn tablet (`FE-SCR-030`; Page) | ROMS-025 | Member 3 | Todo | Best Seller ảo từ is_featured, kiểm tra sellability BE |
+| FE-030 | Thực đơn tablet (`FE-SCR-030`; Page) | ROMS-025 | BINH-DEV | Done | Hiển thị làm mờ card món Tạm ngưng báo 'Hết', lọc chặn món không có BOM, đồng bộ STOMP /topic/menu realtime, build verified |
 | FE-031 | Chi tiết món tablet (`FE-SCR-031`; Page/Drawer) | ROMS-026 | Member 3 | Todo | Xem chi tiết món và thêm vào giỏ hàng |
 | FE-032 | Nguyên liệu & Excel (`FE-SCR-032`; Page + Modal/Action) | ROMS-043, ROMS-044, BE-039 | Member 4 | Todo | CRUD master data, tồn kho; thêm nút Tải mẫu, Xuất Excel, Nhập Excel |
 | FE-033 | Kiểm kê/điều chỉnh kho (`FE-SCR-033`; Page + Modal/Action) | ROMS-048 | Member 4 | Todo | Chênh lệch do BE tính; movement append-only |
 | FE-034 | Lịch sử biến động kho (`FE-SCR-034`; Page) | ROMS-049 | Member 4 | Todo | Filter movementType, ingredient, phân trang |
-| FE-035 | Quản lý Recipe/BOM (`FE-SCR-035`; Page + Drawer/Modal) | ROMS-051, ROMS-052, ROMS-053 | Member 4 | Todo | Route `/kitchen/recipes` (OWNER & KITCHEN_STAFF) |
+| FE-035 | Quản lý Recipe/BOM (`FE-SCR-035`; Page + Drawer/Modal) | ROMS-051, ROMS-052, ROMS-053 | Member 4 | Done | Route `/owner/recipes` (OWNER trong StaffLayout) & `/kitchen/recipes` (KITCHEN_STAFF trong KitchenLayout) |
 | FE-036 | Danh sách phiếu mua (`FE-SCR-036`; Page) | ROMS-057 | Member 4 | Todo | Phiếu hàng đã nhận, không quản lý PO/supplier |
 | FE-037 | Tạo phiếu mua (`FE-SCR-037`; Page) | ROMS-058 | Member 4 | Todo | Tạo phiếu nhập hàng thực tế |
 | FE-038 | Chi tiết/chỉnh sửa phiếu mua (`FE-SCR-038`; Page + Modal/Action) | ROMS-059 | Member 4 | Todo | Sửa dòng phiếu mua, BE tạo movement bù trừ |

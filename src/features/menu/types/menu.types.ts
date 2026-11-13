@@ -44,6 +44,7 @@ export interface MenuItemWriteRequest {
   isFeatured: boolean
   isDirectSale?: boolean
   is_direct_sale?: boolean
+  status?: MenuStatus
 }
 
 export interface MenuItemWriteResponse extends Omit<MenuItemWriteRequest, 'description'> {

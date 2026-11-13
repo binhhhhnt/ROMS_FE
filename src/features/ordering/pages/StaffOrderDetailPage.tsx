@@ -12,7 +12,6 @@ import {
   User,
   Info,
   CheckCircle2,
-  PackageOpen,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -26,7 +25,6 @@ import { subscribeToTopic } from '@/shared/lib/stomp'
 import { Badge } from '@/shared/components/ui/badge'
 import { Button } from '@/shared/components/ui/button'
 import { CancelItemModal } from '@/features/ordering/components/CancelItemModal'
-import { TableItemReturnModal } from '@/features/ordering/components/TableItemReturnModal'
 
 export function StaffOrderDetailPage() {
   const { orderId } = useParams<{ orderId: string }>()
@@ -65,7 +63,6 @@ export function StaffOrderDetailPage() {
     | null
   >(null)
   const [isCancelling, setIsCancelling] = useState(false)
-  const [isReturnModalOpen, setIsReturnModalOpen] = useState(false)
 
   const handleCancelConfirm = async (reason: string, quantity?: number) => {
     if (!cancelTarget || !order) return
@@ -334,18 +331,6 @@ export function StaffOrderDetailPage() {
 
           <div className="flex items-center gap-3">
             {getOrderStatusBadge(order.status)}
-            {order.sessionId && order.status !== 'CANCELLED' && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setIsReturnModalOpen(true)}
-                className="text-xs h-8 text-primary border-primary/30 hover:bg-primary/5 font-semibold"
-              >
-                <PackageOpen className="w-3.5 h-3.5 mr-1 text-primary" />
-                Kiểm đồ bàn
-              </Button>
-            )}
             {order.status === 'PENDING' && (
               <Button
                 type="button"
@@ -422,7 +407,7 @@ export function StaffOrderDetailPage() {
                       &times; {item.quantity}
                     </span>
                     {((item.returnedQuantity ?? item.returned_quantity ?? 0) > 0) && (
-                      <span className="text-xs text-amber-600 font-semibold bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-md">
+                      <span className="text-xs text-muted font-medium bg-card border border-border px-2 py-0.5 rounded-md">
                         Đã dùng: {item.quantity - (item.returnedQuantity ?? item.returned_quantity ?? 0)} (Đã trả: {item.returnedQuantity ?? item.returned_quantity})
                       </span>
                     )}
@@ -530,16 +515,6 @@ export function StaffOrderDetailPage() {
         isLoading={isCancelling}
       />
 
-      {/* Table Item Return Modal */}
-      {order.sessionId && (
-        <TableItemReturnModal
-          isOpen={isReturnModalOpen}
-          onClose={() => setIsReturnModalOpen(false)}
-          sessionId={order.sessionId}
-          tableCode={order.tableCode}
-          onSuccess={() => refetch()}
-        />
-      )}
     </div>
   )
 }

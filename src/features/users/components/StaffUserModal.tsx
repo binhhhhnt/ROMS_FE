@@ -82,16 +82,21 @@ export function StaffUserModal({
         setCustomError('Mật khẩu phải có ít nhất 6 ký tự')
         return
       }
+    } else if (values.password && values.password.trim().length > 0 && values.password.trim().length < 6) {
+      setCustomError('Mật khẩu mới phải có ít nhất 6 ký tự')
+      return
     }
 
     setIsSubmitting(true)
     try {
       if (isEditMode && userToEdit) {
+        const trimmedPassword = values.password?.trim()
         await userApi.updateUser(userToEdit.id, {
           fullName: values.fullName.trim(),
           email: values.email.trim(),
           role: values.role,
           tableId: null, // Không gắn bàn cho tài khoản người dùng
+          ...(trimmedPassword ? { password: trimmedPassword } : {}),
         })
         toast.success(`Cập nhật thông tin nhân viên "${userToEdit.username}" thành công!`)
       } else {
@@ -171,21 +176,29 @@ export function StaffUserModal({
             )}
           </div>
 
-          {/* Password (only in create mode) */}
-          {!isEditMode && (
-            <div>
-              <label className="block text-xs font-semibold text-text mb-1">
-                Mật khẩu khởi tạo <span className="text-status-cancelled">*</span>
-              </label>
-              <Input
-                type="password"
-                {...register('password')}
-                placeholder="Tối thiểu 6 ký tự"
-                leftIcon={<Lock className="w-4 h-4 text-muted" />}
-                error={!!errors.password}
-              />
-            </div>
-          )}
+          {/* Password */}
+          <div>
+            <label className="block text-xs font-semibold text-text mb-1">
+              {isEditMode ? 'Mật khẩu mới (tùy chọn)' : 'Mật khẩu khởi tạo'}{' '}
+              {!isEditMode && <span className="text-status-cancelled">*</span>}
+            </label>
+            <Input
+              type="password"
+              {...register('password')}
+              placeholder={
+                isEditMode
+                  ? 'Để trống nếu không đổi mật khẩu (tối thiểu 6 ký tự)'
+                  : 'Tối thiểu 6 ký tự'
+              }
+              leftIcon={<Lock className="w-4 h-4 text-muted" />}
+              error={!!errors.password}
+            />
+            {isEditMode && (
+              <span className="text-[11px] text-muted mt-1 block">
+                Nếu nhập mật khẩu mới, hệ thống sẽ mã hóa và đăng xuất các phiên hiện tại của nhân viên.
+              </span>
+            )}
+          </div>
 
           {/* Full Name */}
           <div>

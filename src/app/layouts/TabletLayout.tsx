@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuthStore } from '@/app/store/authStore'
@@ -9,7 +9,8 @@ import { useCartStore } from '@/features/ordering/store/cartStore'
 import { subscribeToTopic } from '@/shared/lib/stomp'
 import { Button } from '@/shared/components/ui/button'
 import { CartItemCountBadge } from '@/features/ordering/components/CartItemCountBadge'
-import { Utensils, ShoppingCart, Clock, LogOut, Sparkles } from 'lucide-react'
+import { TableLogoutConfirmModal } from '@/features/auth/components/TableLogoutConfirmModal'
+import { Home, Utensils, ShoppingCart, Clock, LogOut, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 
 export function TabletLayout() {
@@ -19,6 +20,7 @@ export function TabletLayout() {
   const queryClient = useQueryClient()
   const tableId = user?.tableId
   const prevSessionIdRef = useRef<number | null | undefined>(undefined)
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false)
 
   // Query current table information and session status
   const { data: table } = useQuery({
@@ -39,9 +41,25 @@ export function TabletLayout() {
 
   // 1. Realtime STOMP Subscription for session closed event
   useEffect(() => {
-    if (!activeSessionId) return
+    // Also listen to /topic/tables for table-level status events (including checkout and close session)
+    const unsubTables = subscribeToTopic(
+      '/topic/tables',
+      (event: any) => {
+        if (event && event.tableId === tableId && event.status === 'CLOSED') {
+          resetTabletData()
+          toast.info('Phiên phục vụ của bàn đã kết thúc. Cảm ơn quý khách!')
+          navigate('/tablet/welcome', { replace: true })
+        }
+      }
+    )
 
-    const unsub = subscribeToTopic(
+    if (!activeSessionId) {
+      return () => {
+        unsubTables()
+      }
+    }
+
+    const unsubSession = subscribeToTopic(
       `/topic/session/${activeSessionId}/orders`,
       (event: any) => {
         if (event?.status === 'CLOSED') {
@@ -53,7 +71,8 @@ export function TabletLayout() {
     )
 
     return () => {
-      unsub()
+      unsubTables()
+      unsubSession()
     }
   }, [activeSessionId, tableId, navigate])
 
@@ -73,7 +92,7 @@ export function TabletLayout() {
     }
   }, [activeSessionId, table, location.pathname, navigate])
 
-  const handleLogout = async () => {
+  const performLogout = async () => {
     try {
       await authApi.logout()
     } catch {
@@ -82,9 +101,18 @@ export function TabletLayout() {
       clearAuth()
       useAiChatStore.getState().clearAll()
       useCartStore.getState().clearCart()
+      setIsLogoutModalOpen(false)
       toast.success('Đã đăng xuất máy tính bảng')
       navigate('/login')
     }
+  }
+
+  const handleLogout = () => {
+    if (user?.role === 'TABLE_ACCOUNT') {
+      setIsLogoutModalOpen(true)
+      return
+    }
+    void performLogout()
   }
 
   const navClass = ({ isActive }: { isActive: boolean }) =>
@@ -114,6 +142,10 @@ export function TabletLayout() {
 
           {/* Navigation Links */}
           <nav className="flex flex-wrap items-center gap-1 sm:gap-2" aria-label="Điều hướng gọi món">
+            <NavLink to="/tablet/welcome" className={navClass}>
+              <Home className="h-4 w-4" aria-hidden="true" />
+              <span>Trang chủ</span>
+            </NavLink>
             <NavLink to="/tablet/menu" className={navClass}>
               <Utensils className="h-4 w-4" aria-hidden="true" />
               <span>Thực đơn</span>
@@ -148,6 +180,16 @@ export function TabletLayout() {
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 md:px-8 md:py-8">
         <Outlet />
       </main>
+
+      {user?.role === 'TABLE_ACCOUNT' && (
+        <TableLogoutConfirmModal
+          isOpen={isLogoutModalOpen}
+          onClose={() => setIsLogoutModalOpen(false)}
+          onConfirmLogout={performLogout}
+          username={user.username}
+          tableLabel={user.tableName ? `Bàn ${user.tableName}` : undefined}
+        />
+      )}
     </div>
   )
 }
