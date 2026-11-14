@@ -3,7 +3,6 @@ import { ShieldAlert, ArrowLeft, LogOut, Home } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
 import { useAuthStore } from '@/app/store/authStore'
 import { authApi } from '@/features/auth/api/authApi'
-import { toast } from 'sonner'
 
 export function AccessDeniedPage() {
   const { user, clearAuth } = useAuthStore()
@@ -35,7 +34,6 @@ export function AccessDeniedPage() {
       // ignore
     } finally {
       clearAuth()
-      toast.success('Đã đăng xuất thành công')
       navigate('/login', { replace: true })
     }
   }

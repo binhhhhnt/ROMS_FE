@@ -49,7 +49,6 @@ export function RevenueReportPage() {
   // Refresh
   const handleRefresh = async () => {
     await queryClient.invalidateQueries({ queryKey: ['reports'] })
-    toast.info('Đã làm mới dữ liệu báo cáo')
   }
 
   // Export CSV (Task FE-045)

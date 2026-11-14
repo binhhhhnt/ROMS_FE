@@ -71,7 +71,6 @@ export function OwnerDashboardPage() {
   // Refresh all dashboard queries
   const handleRefresh = async () => {
     await queryClient.invalidateQueries({ queryKey: ['dashboard'] })
-    toast.info('Đã làm mới số liệu Dashboard')
   }
 
   // Export CSV

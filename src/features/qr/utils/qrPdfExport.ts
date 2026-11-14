@@ -64,28 +64,18 @@ async function renderQrCardCanvas(
 export async function exportTableQrsToPdf(data: GenerateTableQrResponse): Promise<void> {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
   const pageWidth = 210
-  const cols = 2
-  const rows = 2
-  const perPage = cols * rows
-  const cardW = 86
-  const cardH = 108
-  const gapX = 12
-  const gapY = 14
-  const startX = (pageWidth - (cols * cardW + (cols - 1) * gapX)) / 2
-  const startY = 24
+  const pageHeight = 297
+  const cardW = 140
+  const cardH = 175
+  const x = (pageWidth - cardW) / 2
+  const y = (pageHeight - cardH) / 2
 
   for (let idx = 0; idx < data.tables.length; idx++) {
     const table = data.tables[idx]
-    const posInPage = idx % perPage
 
-    if (idx > 0 && posInPage === 0) {
+    if (idx > 0) {
       doc.addPage()
     }
-
-    const col = posInPage % cols
-    const row = Math.floor(posInPage / cols)
-    const x = startX + col * (cardW + gapX)
-    const y = startY + row * (cardH + gapY)
 
     const imgData = await renderQrCardCanvas(
       data.restaurantName,

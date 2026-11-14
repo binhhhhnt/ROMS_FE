@@ -29,7 +29,6 @@ import {
   QrCode,
   type LucideIcon,
 } from 'lucide-react'
-import { toast } from 'sonner'
 import { cn } from '@/shared/utils/cn'
 import { StaffCallPanel } from '@/features/tables/components/StaffCallPanel'
 import { ReadyDishesPanel } from '@/features/tables/components/ReadyDishesPanel'
@@ -94,7 +93,6 @@ export function StaffLayout() {
       // ignore
     } finally {
       clearAuth()
-      toast.success('Đã đăng xuất thành công')
       navigate('/login')
     }
   }

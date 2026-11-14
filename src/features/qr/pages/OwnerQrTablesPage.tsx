@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import QRCode from 'qrcode'
-import { Download, QrCode, RefreshCw, Loader2, CheckSquare, Square } from 'lucide-react'
+import { Download, QrCode, Loader2, CheckSquare, Square } from 'lucide-react'
 import { toast } from 'sonner'
 import { settingsApi } from '@/features/settings/api/settingsApi'
 import { tableApi } from '@/features/tables/api/tableApi'
@@ -9,6 +9,7 @@ import { qrApi } from '../api/qrApi'
 import type { GenerateTableQrResponse } from '../types/qr.types'
 import { buildTableQrUrl, exportTableQrsToPdf } from '../utils/qrPdfExport'
 import { Button } from '@/shared/components/ui/button'
+import { ConfirmDialog } from '@/shared/components/ui/confirm-dialog'
 import { getApiErrorMessage } from '@/shared/lib/axios'
 
 export function OwnerQrTablesPage() {
@@ -17,6 +18,8 @@ export function OwnerQrTablesPage() {
   const [generated, setGenerated] = useState<GenerateTableQrResponse | null>(null)
   const [qrDataUrls, setQrDataUrls] = useState<Record<number, string>>({})
   const [isToggling, setIsToggling] = useState(false)
+  const [isToggleConfirmOpen, setIsToggleConfirmOpen] = useState(false)
+  const [isRegenerateConfirmOpen, setIsRegenerateConfirmOpen] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
 
@@ -149,7 +152,7 @@ export function OwnerQrTablesPage() {
             variant={qrEnabled ? 'primary' : 'outline'}
             size="sm"
             disabled={isLoadingSettings || isToggling}
-            onClick={() => void handleToggleQrOrdering()}
+            onClick={() => setIsToggleConfirmOpen(true)}
           >
             {qrEnabled ? 'Đang bật' : 'Đang tắt'}
           </Button>
@@ -242,10 +245,10 @@ export function OwnerQrTablesPage() {
               <Button
                 variant="outline"
                 disabled={selectedIds.length === 0 || isGenerating}
-                onClick={() => void handleGenerate(true)}
+                onClick={() => setIsRegenerateConfirmOpen(true)}
                 title="Cấp lại mã QR mới (vô hiệu hóa mã cũ)"
               >
-                <RefreshCw className="w-4 h-4" />
+                Cấp lại mã
               </Button>
             </div>
           </div>
@@ -273,48 +276,84 @@ export function OwnerQrTablesPage() {
                 Tích chọn các bàn bên trái và bấm <strong>Tạo mã QR</strong> để xem trước và tải PDF.
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {generated.tables.map((item) => (
-                  <div
-                    key={item.tableId}
-                    className="border border-border rounded-xl overflow-hidden bg-white text-center shadow-xs"
-                  >
-                    <div className="bg-primary text-white px-3 py-2.5">
-                      <p className="font-bold text-sm truncate">
-                        {generated.restaurantName}
-                      </p>
-                      {generated.address && (
-                        <p className="text-[11px] text-surface/90 truncate">
-                          {generated.address}
+              <div className="max-h-[420px] overflow-y-auto pr-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {generated.tables.map((item) => (
+                    <div
+                      key={item.tableId}
+                      className="border border-border rounded-xl overflow-hidden bg-white text-center shadow-xs"
+                    >
+                      <div className="bg-primary text-white px-3 py-2.5">
+                        <p className="font-bold text-sm truncate">
+                          {generated.restaurantName}
                         </p>
-                      )}
+                        {generated.address && (
+                          <p className="text-[11px] text-surface/90 truncate">
+                            {generated.address}
+                          </p>
+                        )}
+                      </div>
+                      <div className="p-4 space-y-2 flex flex-col items-center">
+                        <p className="font-bold text-base text-primary">
+                          BÀN {item.tableCode}
+                        </p>
+                        {qrDataUrls[item.tableId] ? (
+                          <img
+                            src={qrDataUrls[item.tableId]}
+                            alt={`QR Bàn ${item.tableCode}`}
+                            className="w-40 h-40"
+                          />
+                        ) : (
+                          <div className="w-40 h-40 flex items-center justify-center bg-slate-50">
+                            <Loader2 className="w-5 h-5 animate-spin text-muted" />
+                          </div>
+                        )}
+                        <p className="text-[11px] text-muted">
+                          Quét mã QR để xem thực đơn & gọi món
+                        </p>
+                      </div>
                     </div>
-                    <div className="p-4 space-y-2 flex flex-col items-center">
-                      <p className="font-bold text-base text-primary">
-                        BÀN {item.tableCode}
-                      </p>
-                      {qrDataUrls[item.tableId] ? (
-                        <img
-                          src={qrDataUrls[item.tableId]}
-                          alt={`QR Bàn ${item.tableCode}`}
-                          className="w-40 h-40"
-                        />
-                      ) : (
-                        <div className="w-40 h-40 flex items-center justify-center bg-slate-50">
-                          <Loader2 className="w-5 h-5 animate-spin text-muted" />
-                        </div>
-                      )}
-                      <p className="text-[11px] text-muted">
-                        Quét mã QR để xem thực đơn & gọi món
-                      </p>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={isToggleConfirmOpen}
+        onClose={() => setIsToggleConfirmOpen(false)}
+        onConfirm={() => {
+          setIsToggleConfirmOpen(false)
+          void handleToggleQrOrdering()
+        }}
+        isLoading={isToggling}
+        title={qrEnabled ? 'Tắt chức năng gọi món QR?' : 'Bật chức năng gọi món QR?'}
+        description={
+          qrEnabled
+            ? 'Khách hàng đang ngồi tại bàn sẽ không thể quét mã QR để xem thực đơn hoặc gửi yêu cầu gọi món mới.'
+            : 'Khách hàng tại bàn sẽ có thể quét mã QR để xem thực đơn và gửi yêu cầu gọi món.'
+        }
+        confirmText={qrEnabled ? 'Tắt QR' : 'Bật QR'}
+        cancelText="Hủy bỏ"
+        variant={qrEnabled ? 'danger' : 'primary'}
+      />
+
+      <ConfirmDialog
+        isOpen={isRegenerateConfirmOpen}
+        onClose={() => setIsRegenerateConfirmOpen(false)}
+        onConfirm={() => {
+          setIsRegenerateConfirmOpen(false)
+          void handleGenerate(true)
+        }}
+        isLoading={isGenerating}
+        title="Xác nhận cấp lại mã QR?"
+        description={`Bạn đang chọn ${selectedIds.length} bàn. Mã QR mới sẽ được tạo và toàn bộ mã QR cũ của các bàn này sẽ bị vô hiệu hóa ngay lập tức.`}
+        confirmText="Cấp lại mã"
+        cancelText="Hủy bỏ"
+        variant="danger"
+      />
     </div>
   )
 }

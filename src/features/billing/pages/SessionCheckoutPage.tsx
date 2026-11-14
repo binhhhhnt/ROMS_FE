@@ -159,8 +159,8 @@ export function SessionCheckoutPage() {
           receiptFooter: settings?.receiptFooter,
           cashierName: savedBill.createdByName || currentUser?.username || 'Thu ngân',
           tableCode: savedBill.tableCode,
-          openedAt: preview?.openedAt ? new Date(preview.openedAt).toLocaleString('vi-VN') : undefined,
-          closedAt: new Date().toLocaleString('vi-VN'),
+          openedAt: preview?.openedAt,
+          closedAt: savedBill.closedAt || savedBill.createdAt || new Date().toISOString(),
           billCode: savedBill.billCode,
           items: receiptItems,
           amountBeforeDiscount: savedBill.amountBeforeDiscount,
@@ -196,7 +196,6 @@ export function SessionCheckoutPage() {
 
   const handlePrintProforma = () => {
     if (!preview || !hasBillableItems) return
-    toast.info('Đang gửi yêu cầu in phiếu tạm tính...')
 
     billApi.printProforma(parsedSessionId).catch(() => {})
 
@@ -222,8 +221,8 @@ export function SessionCheckoutPage() {
       receiptFooter: settings?.receiptFooter,
       cashierName: currentUser?.fullName || currentUser?.username || 'Thu ngân',
       tableCode: preview.tableCode,
-      openedAt: preview.openedAt ? new Date(preview.openedAt).toLocaleString('vi-VN') : undefined,
-      closedAt: new Date().toLocaleString('vi-VN'),
+      openedAt: preview.openedAt,
+      closedAt: new Date().toISOString(),
       items: receiptItems,
       amountBeforeDiscount: preview.amountBeforeDiscount,
       discountAmount,

@@ -152,13 +152,12 @@ export function TableDetailPage() {
   const handleCompleteItem = async (
     orderId: number,
     itemId: number,
-    itemName: string
+    _itemName: string
   ) => {
     setServingItemId(itemId)
     try {
       await kitchenApi.updateOrderItemStatus(orderId, itemId, 'COMPLETED')
       useReadyDishesStore.getState().removeReadyDish(itemId)
-      toast.success(`Đã xác nhận bưng món "${itemName}" ra Bàn ${table?.tableCode}!`)
       await refetchOrders()
       queryClient.invalidateQueries({ queryKey: ['tablesOverview'] })
       queryClient.invalidateQueries({ queryKey: ['tablesOverviewReadyOrders'] })
@@ -184,9 +183,6 @@ export function TableDetailPage() {
         )
         removeReadyDish(item.itemId)
       }
-      toast.success(
-        `Đã bưng tất cả ${allReadyItems.length} món sẵn sàng ra Bàn ${table?.tableCode}!`
-      )
       await refetchOrders()
       queryClient.invalidateQueries({ queryKey: ['tablesOverview'] })
       queryClient.invalidateQueries({ queryKey: ['tablesOverviewReadyOrders'] })

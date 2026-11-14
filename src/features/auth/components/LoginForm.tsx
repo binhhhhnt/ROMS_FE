@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate } from 'react-router-dom'
-import { toast } from 'sonner'
 import { User, Lock, Eye, EyeOff, LogIn, AlertCircle } from 'lucide-react'
 
 import { loginSchema, type LoginFormValues } from '@/features/auth/schemas/loginSchema'
@@ -49,7 +48,6 @@ export function LoginForm() {
 
       // 3. Save to Zustand store
       setAuth(loginData.accessToken, userProfile)
-      toast.success(`Xin chào, ${userProfile.fullName || userProfile.username}!`)
 
       // 4. Role-aware redirection
       if (userProfile.role === 'KITCHEN_STAFF') {
