@@ -42,7 +42,6 @@ export function PopularItemsReportPage() {
   // Refresh
   const handleRefresh = async () => {
     await queryClient.invalidateQueries({ queryKey: ['reports'] })
-    toast.info('Đã làm mới dữ liệu món bán chạy')
   }
 
   // Export CSV

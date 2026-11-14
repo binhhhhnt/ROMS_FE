@@ -30,8 +30,8 @@ import { TransferTableModal } from '@/features/tables/components/TransferTableMo
 import { StaffOrderModal } from '@/features/ordering/components/StaffOrderModal'
 import { TableItemReturnModal } from '@/features/ordering/components/TableItemReturnModal'
 import { CancelItemModal } from '@/features/ordering/components/CancelItemModal'
-import { TableCheckoutModal } from '@/features/billing/components/TableCheckoutModal'
 import { getApiErrorMessage } from '@/shared/lib/axios'
+import { useReadyDishesStore } from '@/features/tables/store/readyDishesStore'
 import { ConfirmDialog } from '@/shared/components/ui/confirm-dialog'
 import { Button } from '@/shared/components/ui/button'
 import { Badge } from '@/shared/components/ui/badge'
@@ -46,7 +46,6 @@ export function TableDetailPage() {
   const [isCloseConfirmOpen, setIsCloseConfirmOpen] = useState(false)
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false)
   const [isReturnModalOpen, setIsReturnModalOpen] = useState(false)
-  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false)
 
   const [servingItemId, setServingItemId] = useState<number | null>(null)
   const [isServingAll, setIsServingAll] = useState(false)
@@ -153,15 +152,16 @@ export function TableDetailPage() {
   const handleCompleteItem = async (
     orderId: number,
     itemId: number,
-    itemName: string
+    _itemName: string
   ) => {
     setServingItemId(itemId)
     try {
       await kitchenApi.updateOrderItemStatus(orderId, itemId, 'COMPLETED')
-      toast.success(`Đã xác nhận bưng món "${itemName}" ra Bàn ${table?.tableCode}!`)
+      useReadyDishesStore.getState().removeReadyDish(itemId)
       await refetchOrders()
       queryClient.invalidateQueries({ queryKey: ['tablesOverview'] })
       queryClient.invalidateQueries({ queryKey: ['tablesOverviewReadyOrders'] })
+      queryClient.invalidateQueries({ queryKey: ['readyDishesPanelOrders'] })
     } catch (err) {
       toast.error(getApiErrorMessage(err))
     } finally {
@@ -174,19 +174,19 @@ export function TableDetailPage() {
     if (allReadyItems.length === 0) return
     setIsServingAll(true)
     try {
+      const { removeReadyDish } = useReadyDishesStore.getState()
       for (const item of allReadyItems) {
         await kitchenApi.updateOrderItemStatus(
           item.orderId,
           item.itemId,
           'COMPLETED'
         )
+        removeReadyDish(item.itemId)
       }
-      toast.success(
-        `Đã bưng tất cả ${allReadyItems.length} món sẵn sàng ra Bàn ${table?.tableCode}!`
-      )
       await refetchOrders()
       queryClient.invalidateQueries({ queryKey: ['tablesOverview'] })
       queryClient.invalidateQueries({ queryKey: ['tablesOverviewReadyOrders'] })
+      queryClient.invalidateQueries({ queryKey: ['readyDishesPanelOrders'] })
     } catch (err) {
       toast.error(getApiErrorMessage(err))
     } finally {
@@ -320,7 +320,11 @@ export function TableDetailPage() {
       )
       return
     }
-    setIsCheckoutModalOpen(true)
+    if (activeSessionId) {
+      navigate(`/sessions/${activeSessionId}/checkout`, {
+        state: { from: `/tables/${id}`, tableCode: table?.tableCode },
+      })
+    }
   }
 
   const handleOpenCloseConfirm = () => {
@@ -341,6 +345,7 @@ export function TableDetailPage() {
       queryClient.invalidateQueries({ queryKey: ['tableDetail', id] })
       queryClient.invalidateQueries({ queryKey: ['tablesOverview'] })
       toast.success(`Đã đóng phiên phục vụ #${session.id} thành công!`)
+      navigate('/tables', { replace: true })
     },
     onError: (err) => {
       toast.error(getApiErrorMessage(err))
@@ -931,23 +936,6 @@ export function TableDetailPage() {
             refetchOrders()
             refetch()
             queryClient.invalidateQueries({ queryKey: ['tablesOverview'] })
-          }}
-        />
-      )}
-
-      {/* Table Checkout & Payment Modal */}
-      {activeSessionId && table && (
-        <TableCheckoutModal
-          isOpen={isCheckoutModalOpen}
-          onClose={() => setIsCheckoutModalOpen(false)}
-          sessionId={activeSessionId}
-          tableCode={table.tableCode}
-          onCheckoutSuccess={() => {
-            setIsCheckoutModalOpen(false)
-            refetch()
-            queryClient.invalidateQueries({ queryKey: ['tableDetail', id] })
-            queryClient.invalidateQueries({ queryKey: ['tablesOverview'] })
-            toast.success(`Đã thanh toán và hoàn tất phiên Bàn ${table.tableCode}!`)
           }}
         />
       )}

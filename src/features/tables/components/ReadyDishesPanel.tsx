@@ -1,5 +1,5 @@
 import { Utensils, ArrowRight, CheckCircle2, X } from 'lucide-react'
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useEffect, useRef, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { kitchenApi } from '@/features/kitchen/api/kitchenApi'
@@ -8,8 +8,17 @@ import { subscribeToTopic } from '@/shared/lib/stomp'
 import { Button } from '@/shared/components/ui/button'
 import { cn } from '@/shared/utils/cn'
 
-export function ReadyDishesPanel() {
-  const [isOpen, setIsOpen] = useState(false)
+interface ReadyDishesPanelProps {
+  isOpen: boolean
+  onToggle: () => void
+  onClose: () => void
+}
+
+export function ReadyDishesPanel({
+  isOpen,
+  onToggle,
+  onClose,
+}: ReadyDishesPanelProps) {
   const navigate = useNavigate()
   const { readyItems, setReadyOrders, addReadyDish, removeReadyDish } = useReadyDishesStore()
   const audioRef = useRef<HTMLAudioElement | null>(null)
@@ -21,29 +30,32 @@ export function ReadyDishesPanel() {
   }, [])
 
   // 1. Fetch ban đầu danh sách các món đang READY từ Kitchen Orders
-  const { data: kitchenOrders = [] } = useQuery({
+  const { data: kitchenOrders, isSuccess } = useQuery({
     queryKey: ['readyDishesPanelOrders'],
     queryFn: () => kitchenApi.getKitchenOrders(),
     staleTime: 5000,
     refetchInterval: 15000,
   })
 
-  // Đồng bộ orders lấy từ API vào Store
+  // Đồng bộ orders lấy từ API vào Store (kể cả khi danh sách về rỗng)
   useEffect(() => {
-    if (kitchenOrders.length > 0) {
+    if (isSuccess && kitchenOrders) {
       setReadyOrders(kitchenOrders)
     }
-  }, [kitchenOrders, setReadyOrders])
+  }, [isSuccess, kitchenOrders, setReadyOrders])
 
   // 2. Lắng nghe WebSocket STOMP
   useEffect(() => {
-    // Topic Bếp ra món: /topic/service/ready-dishes
+    // Topic Bếp ra món & cập nhật món đã bưng/hủy: /topic/service/ready-dishes
     const unsubReady = subscribeToTopic<ReadyDishItem>(
       '/topic/service/ready-dishes',
       (data) => {
         if (!data || !data.orderItemId) return
+        if (data.status === 'COMPLETED' || data.status === 'CANCELLED') {
+          removeReadyDish(data.orderItemId)
+          return
+        }
         addReadyDish(data)
-        setIsOpen(true) // Tự mở panel để nhân viên chú ý
         audioRef.current?.play().catch(() => {
           // Bỏ qua nếu browser chặn autoplay trước khi có user interaction
         })
@@ -112,7 +124,7 @@ export function ReadyDishesPanel() {
   const totalReadyDishes = readyItems.reduce((sum, i) => sum + i.quantity, 0)
 
   const handleNavigateToTable = (tableId: number) => {
-    setIsOpen(false)
+    onClose()
     navigate(`/tables/${tableId}`)
   }
 
@@ -121,7 +133,7 @@ export function ReadyDishesPanel() {
       {/* Nút biểu tượng Món ra trên Header */}
       <button
         type="button"
-        onClick={() => setIsOpen((prev) => !prev)}
+        onClick={onToggle}
         className={cn(
           'relative p-2 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
           totalReadyDishes > 0
@@ -145,7 +157,7 @@ export function ReadyDishesPanel() {
         <>
           <div
             className="fixed inset-0 z-40"
-            onClick={() => setIsOpen(false)}
+            onClick={onClose}
             aria-hidden="true"
           />
           <div className="absolute right-0 top-full mt-2 w-88 bg-card border border-border rounded-xl shadow-2xl z-50 overflow-hidden animate-in fade-in-50 duration-200">
@@ -159,7 +171,7 @@ export function ReadyDishesPanel() {
               </div>
               <button
                 type="button"
-                onClick={() => setIsOpen(false)}
+                onClick={onClose}
                 className="text-muted hover:text-text p-1 rounded transition-colors"
                 title="Đóng"
               >

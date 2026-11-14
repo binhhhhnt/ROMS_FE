@@ -14,6 +14,7 @@ import {
   CheckCircle2,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { getApiErrorMessage } from '@/shared/lib/axios'
 import type { AxiosError } from 'axios'
 import type { ApiResponse } from '@/shared/types/api.types'
 
@@ -88,8 +89,7 @@ export function CorrectPurchaseItemModal({
       onClose()
     },
     onError: (err: AxiosError<ApiResponse<unknown>>) => {
-      const msg = err.response?.data?.message || 'Không thể điều chỉnh dòng phiếu nhập'
-      toast.error(msg)
+      toast.error(getApiErrorMessage(err))
     },
   })
 

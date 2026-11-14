@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
-import { User, Lock, Eye, EyeOff, LogIn } from 'lucide-react'
+import { User, Lock, Eye, EyeOff, LogIn, AlertCircle } from 'lucide-react'
 
 import { loginSchema, type LoginFormValues } from '@/features/auth/schemas/loginSchema'
 import { authApi } from '@/features/auth/api/authApi'
@@ -15,6 +15,7 @@ import { Input } from '@/shared/components/ui/input'
 export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [formError, setFormError] = useState<string | null>(null)
   const { setAuth } = useAuthStore()
   const navigate = useNavigate()
 
@@ -32,6 +33,7 @@ export function LoginForm() {
 
   const onSubmit = async (values: LoginFormValues) => {
     setIsLoading(true)
+    setFormError(null)
     try {
       // 1. Call login API to get accessToken
       const loginData = await authApi.login({
@@ -64,8 +66,7 @@ export function LoginForm() {
         navigate('/staff/orders', { replace: true })
       }
     } catch (err) {
-      const message = getApiErrorMessage(err)
-      toast.error(message)
+      setFormError(getApiErrorMessage(err))
     } finally {
       setIsLoading(false)
     }
@@ -88,7 +89,11 @@ export function LoginForm() {
           placeholder="Nhập tên đăng nhập hoặc email"
           leftIcon={<User className="w-4 h-4 text-muted" />}
           error={!!errors.username}
-          {...register('username')}
+          {...register('username', {
+            onChange: () => {
+              if (formError) setFormError(null)
+            },
+          })}
         />
         {errors.username && (
           <span className="text-xs text-status-cancelled">{errors.username.message}</span>
@@ -128,12 +133,26 @@ export function LoginForm() {
             </button>
           }
           error={!!errors.password}
-          {...register('password')}
+          {...register('password', {
+            onChange: () => {
+              if (formError) setFormError(null)
+            },
+          })}
         />
         {errors.password && (
           <span className="text-xs text-status-cancelled">{errors.password.message}</span>
         )}
       </div>
+
+      {formError && (
+        <div
+          role="alert"
+          className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-xs font-medium text-red-700 text-left"
+        >
+          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-600" />
+          <span>{formError}</span>
+        </div>
+      )}
 
       {/* Submit Button */}
       <Button

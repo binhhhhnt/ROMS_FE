@@ -10,6 +10,7 @@ export interface ReadyDishItem {
   menuItemName: string
   quantity: number
   note?: string
+  status?: string
   readyAt: string
 }
 
