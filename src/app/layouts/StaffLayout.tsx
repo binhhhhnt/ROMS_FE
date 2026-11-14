@@ -42,6 +42,12 @@ interface SidebarNavItem {
   isActiveOverride?: boolean
 }
 
+interface SidebarNavGroup {
+  id: string
+  title: string
+  items: SidebarNavItem[]
+}
+
 const getNavLinkClassName = ({
   isActive,
   collapsed,
@@ -101,74 +107,125 @@ export function StaffLayout() {
   const isServiceOrOwner = isOwner || user?.role === 'SERVICE_STAFF'
   const isInventoryOrOwner = isOwner || user?.role === 'INVENTORY_STAFF'
 
-  const navItems: SidebarNavItem[] = [
-    // OWNER Links
-    { to: '/owner/dashboard', label: 'Tổng quan', icon: LayoutDashboard, visible: isOwner },
-    { to: '/owner/users', label: 'Quản lý tài khoản', icon: Users, visible: isOwner },
-    { to: '/owner/categories', label: 'Danh mục món', icon: FolderOpen, visible: isOwner },
-    { to: '/owner/menu-items', label: 'Danh sách món', icon: UtensilsCrossed, visible: isOwner },
-    { to: '/owner/expenses', label: 'Quản lý Chi phí', icon: Receipt, visible: isOwner },
-    { to: '/owner/bills', label: 'Lịch sử hóa đơn', icon: ReceiptText, visible: isOwner },
-    { to: '/owner/promotions', label: 'Khuyến mãi', icon: Tag, visible: isOwner },
+  const navGroups: SidebarNavGroup[] = [
     {
-      to: '/owner/reports/revenue',
-      label: 'Báo cáo & Thống kê',
-      icon: BarChart3,
-      visible: isOwner,
-      isActiveOverride: isReportsPage,
+      id: 'overview',
+      title: 'Tổng quan & Báo cáo',
+      items: [
+        { to: '/owner/dashboard', label: 'Tổng quan', icon: LayoutDashboard, visible: isOwner },
+        {
+          to: '/owner/reports/revenue',
+          label: 'Báo cáo & Thống kê',
+          icon: BarChart3,
+          visible: isOwner,
+          isActiveOverride: isReportsPage,
+        },
+      ],
     },
-    { to: '/owner/settings', label: 'Cài đặt & Thuế', icon: Sliders, visible: isOwner },
-    { to: '/owner/qr-tables', label: 'Quản lý QR bàn', icon: QrCode, visible: isOwner },
-
-    // SERVICE_STAFF & OWNER Links
-    { to: '/tables', label: 'Sơ đồ bàn', icon: Layers, visible: isServiceOrOwner },
-    { to: '/staff/qr-orders', label: 'Xác nhận đơn QR', icon: QrCode, visible: isServiceOrOwner },
-    { to: '/staff/orders', label: 'Danh sách Order', icon: ClipboardList, visible: isServiceOrOwner },
-    { to: '/sessions/history', label: 'Lịch sử phiên bàn', icon: History, visible: isServiceOrOwner },
-
-    // INVENTORY_STAFF & OWNER Links
-    { to: '/inventory/ingredients', label: 'Nguyên liệu & Tồn kho', icon: Boxes, visible: isInventoryOrOwner },
-    { to: '/inventory/movements', label: 'Biến động kho', icon: History, visible: isInventoryOrOwner },
-    { to: '/inventory/checks', label: 'Kiểm kê kho', icon: ClipboardCheck, visible: isInventoryOrOwner },
-    { to: '/owner/recipes', label: 'Công thức món (BOM)', icon: BookOpen, visible: isOwner },
-    { to: '/inventory/purchases', label: 'Phiếu nhập hàng', icon: ShoppingBag, visible: isInventoryOrOwner },
+    {
+      id: 'finance',
+      title: 'Tài chính',
+      items: [
+        { to: '/owner/bills', label: 'Lịch sử hóa đơn', icon: ReceiptText, visible: isOwner },
+        { to: '/owner/expenses', label: 'Quản lý Chi phí', icon: Receipt, visible: isOwner },
+      ],
+    },
+    {
+      id: 'operations',
+      title: 'Vận hành bàn & Order',
+      items: [
+        { to: '/tables', label: 'Sơ đồ bàn', icon: Layers, visible: isServiceOrOwner },
+        { to: '/staff/qr-orders', label: 'Xác nhận đơn QR', icon: QrCode, visible: isServiceOrOwner },
+        { to: '/staff/orders', label: 'Danh sách Order', icon: ClipboardList, visible: isServiceOrOwner },
+        { to: '/sessions/history', label: 'Lịch sử phiên bàn', icon: History, visible: isServiceOrOwner },
+      ],
+    },
+    {
+      id: 'menu',
+      title: 'Thực đơn & Khuyến mãi',
+      items: [
+        { to: '/owner/categories', label: 'Danh mục món', icon: FolderOpen, visible: isOwner },
+        { to: '/owner/menu-items', label: 'Danh sách món', icon: UtensilsCrossed, visible: isOwner },
+        { to: '/owner/recipes', label: 'Công thức món (BOM)', icon: BookOpen, visible: isOwner },
+        { to: '/owner/promotions', label: 'Khuyến mãi', icon: Tag, visible: isOwner },
+      ],
+    },
+    {
+      id: 'inventory',
+      title: 'Kho & Nhập hàng',
+      items: [
+        { to: '/inventory/ingredients', label: 'Nguyên liệu & Tồn kho', icon: Boxes, visible: isInventoryOrOwner },
+        { to: '/inventory/purchases', label: 'Phiếu nhập hàng', icon: ShoppingBag, visible: isInventoryOrOwner },
+        { to: '/inventory/checks', label: 'Kiểm kê kho', icon: ClipboardCheck, visible: isInventoryOrOwner },
+        { to: '/inventory/movements', label: 'Biến động kho', icon: History, visible: isInventoryOrOwner },
+      ],
+    },
+    {
+      id: 'system',
+      title: 'Hệ thống',
+      items: [
+        { to: '/owner/users', label: 'Quản lý tài khoản', icon: Users, visible: isOwner },
+        { to: '/owner/qr-tables', label: 'Quản lý QR bàn', icon: QrCode, visible: isOwner },
+        { to: '/owner/settings', label: 'Cài đặt & Thuế', icon: Sliders, visible: isOwner },
+      ],
+    },
   ]
+
+  const visibleGroups = navGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => item.visible),
+    }))
+    .filter((group) => group.items.length > 0)
 
   const renderNavLinks = (collapsed: boolean) => (
     <>
-      {navItems
-        .filter((item) => item.visible)
-        .map((item) => {
-          const Icon = item.icon
-          if (item.isActiveOverride !== undefined) {
+      {visibleGroups.map((group, groupIndex) => (
+        <div
+          key={group.id}
+          className={cn(
+            'flex flex-col gap-1',
+            groupIndex > 0 && 'mt-2 pt-2 border-t border-border/60'
+          )}
+        >
+          {!collapsed && (
+            <div className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-muted/80 select-none">
+              {group.title}
+            </div>
+          )}
+          {group.items.map((item) => {
+            const Icon = item.icon
+            if (item.isActiveOverride !== undefined) {
+              return (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  title={collapsed ? item.label : undefined}
+                  aria-current={item.isActiveOverride ? 'page' : undefined}
+                  className={() =>
+                    getNavLinkClassName({ isActive: item.isActiveOverride!, collapsed })
+                  }
+                >
+                  <Icon className="w-4 h-4 text-accent shrink-0" />
+                  {!collapsed && <span className="truncate">{item.label}</span>}
+                </NavLink>
+              )
+            }
+
             return (
               <NavLink
                 key={item.to}
                 to={item.to}
                 title={collapsed ? item.label : undefined}
-                aria-current={item.isActiveOverride ? 'page' : undefined}
-                className={() =>
-                  getNavLinkClassName({ isActive: item.isActiveOverride!, collapsed })
-                }
+                className={({ isActive }) => getNavLinkClassName({ isActive, collapsed })}
               >
                 <Icon className="w-4 h-4 text-accent shrink-0" />
                 {!collapsed && <span className="truncate">{item.label}</span>}
               </NavLink>
             )
-          }
-
-          return (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              title={collapsed ? item.label : undefined}
-              className={({ isActive }) => getNavLinkClassName({ isActive, collapsed })}
-            >
-              <Icon className="w-4 h-4 text-accent shrink-0" />
-              {!collapsed && <span className="truncate">{item.label}</span>}
-            </NavLink>
-          )
-        })}
+          })}
+        </div>
+      ))}
 
       {/* Bottom Profile Link */}
       <NavLink
