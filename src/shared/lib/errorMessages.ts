@@ -68,6 +68,7 @@ export const ERROR_CODE_MESSAGES: Record<string, string> = {
   EMPTY_ORDER_ITEMS: 'Đơn hàng phải có ít nhất một món.',
   INVALID_ORDER_STATUS: 'Trạng thái đơn hàng không hợp lệ cho thao tác này.',
   INVALID_ORDER_ITEM: 'Món trong đơn hàng không hợp lệ.',
+  INVALID_ITEM_STATUS: 'Chỉ có thể xác nhận hoàn tất cho món đang ở trạng thái sẵn sàng (READY).',
   INVALID_ORDER_ITEM_STATUS: 'Trạng thái món không hợp lệ cho thao tác này.',
   INVALID_ORDER_ITEM_TRANSITION: 'Không thể chuyển trạng thái món theo thao tác này.',
   INVALID_CANCEL_QUANTITY: 'Số lượng hủy không hợp lệ.',
@@ -192,6 +193,10 @@ export function resolveApiErrorMessage(error: unknown): string {
       if (firstDetail) {
         return translateRawMessage(firstDetail, status ?? 400)
       }
+    }
+
+    if (errorCode === 'UNAUTHORIZED' && rawMessage) {
+      return translateRawMessage(rawMessage, status ?? 401)
     }
 
     if (errorCode && ERROR_CODE_MESSAGES[errorCode]) {
