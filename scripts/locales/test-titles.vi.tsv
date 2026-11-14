@@ -1,0 +1,720 @@
+1|GeminiConfig tạo bean RestClient với các thuộc tính đã cấu hình
+2|POST /api/ai/recommendations trả 200 và dữ liệu được bọc trong ApiResponse
+3|isConfigured trả false khi khóa API trống hoặc null
+4|isConfigured trả true khi đã cung cấp khóa API
+5|generateContent ném GeminiIntegrationException khi chưa cấu hình khóa API
+6|generateContent thực thi RestClient và trả phản hồi đúng kiểu
+7|generateText trả đoạn văn bản đầu tiên của phương án trả lời
+8|Phân tích phản hồi Gemini, kiểm tra mã món và khả năng bán hiện tại
+9|Loại bỏ món hết nguyên liệu hoặc tạm ngưng phục vụ
+10|Trả danh sách gợi ý trống cho lời chào hoặc trò chuyện thông thường
+11|Trả danh sách gợi ý trống cho câu hỏi về giờ mở cửa hoặc Wi-Fi
+12|Gợi ý món có nguyên liệu trong công thức khớp yêu cầu người dùng
+13|Thông báo không tìm thấy và không gợi ý ngẫu nhiên khi nguyên liệu không tồn tại
+14|Đăng nhập thành công: trả 200, JWT truy cập và cookie làm mới HttpOnly
+15|Sai mật khẩu: trả 401 và không tiết lộ sự tồn tại của tài khoản
+16|Tên đăng nhập không tồn tại: trả 401 và không tiết lộ sự tồn tại của tài khoản
+17|Tài khoản bàn: đăng nhập mới tự động thu hồi phiên trước
+18|Token làm mới hợp lệ được xoay vòng và trả token truy cập mới
+19|Chống phát lại: từ chối token làm mới đã được xoay vòng
+20|Đăng xuất: trả 204, xóa cookie và thu hồi phiên để token truy cập mất hiệu lực ngay
+21|GET /api/auth/me trả hồ sơ người dùng đã xác thực
+22|GET /api/auth/me thiếu tiêu đề xác thực trả 401
+23|POST /api/auth/forgot-password trả 200, gửi OTP và lưu mã băm trong Redis
+24|POST /api/auth/reset-password trả 200 và đặt lại mật khẩu khi OTP hợp lệ
+25|Đăng nhập: từ chối tên người dùng không tồn tại và không tạo phiên
+26|Đăng nhập: từ chối mật khẩu sai và không tạo phiên
+27|Đăng nhập: từ chối tài khoản ngừng hoạt động dù mật khẩu đúng
+28|Đăng nhập: chủ nhà hàng nhận token Bearer và cookie làm mới có hạn bảy ngày
+29|Đăng nhập: tài khoản bàn nhận cookie làm mới có hạn chín mươi ngày
+30|Làm mới: từ chối yêu cầu thiếu cookie
+31|Làm mới: từ chối cookie chỉ chứa khoảng trắng
+32|Làm mới: từ chối mã băm token không tồn tại
+33|Làm mới: từ chối phiên đã thu hồi
+34|Làm mới: từ chối phiên hết hạn
+35|Làm mới: từ chối người dùng ngừng hoạt động và không xoay vòng phiên
+36|Làm mới: cắt khoảng trắng cookie, xoay vòng token và cấp token truy cập
+37|Đăng xuất: principal null không thực hiện thao tác phiên
+38|Quên mật khẩu: email không tồn tại không được gửi OTP
+39|Quên mật khẩu: tài khoản ngừng hoạt động không được gửi OTP
+40|Quên mật khẩu: chuẩn hóa email và lưu mã băm OTP sáu chữ số đã gửi
+41|Xác minh OTP: tài khoản bị chặn không được đọc mã băm OTP
+42|Xác minh OTP: từ chối mã hết hạn
+43|Xác minh OTP: mã sai làm tăng số lần thử
+44|Xác minh OTP: mã đúng sau khi cắt khoảng trắng không làm tăng số lần thử
+45|Đặt lại mật khẩu: lưu mật khẩu mã hóa, xóa OTP và thu hồi mọi phiên
+46|Đăng xuất: chỉ thu hồi phiên đã xác thực
+47|Hồ sơ: người dùng không tồn tại gây lỗi không tìm thấy tài nguyên
+48|Làm mới: tài khoản bàn giữ chính sách phiên chín mươi ngày
+49|Đặt lại mật khẩu: giới hạn số lần thử chặn thay mật khẩu và sử dụng OTP
+50|Đặt lại mật khẩu: OTP hết hạn ngăn thay đổi mật khẩu
+51|Đặt lại mật khẩu: tài khoản ngừng hoạt động giữ nguyên mật khẩu và phiên
+52|Đặt lại mật khẩu: OTP sai giữ nguyên mật khẩu và phiên
+53|Email: gửi OTP đúng người nhận, người gửi và hướng dẫn hết hạn qua SMTP giả lập
+54|Email: thiếu cấu hình SMTP không gửi thư và không làm lỗi luồng khôi phục
+55|Email: xử lý lỗi SMTP theo hợp đồng hiện tại của dịch vụ
+56|storeOtp dùng TTL mặc định lưu mã băm và xóa số lần thử trước
+57|storeOtp dùng TTL tùy chỉnh lưu mã băm và xóa số lần thử trước
+58|getOtpHash trả Optional chứa mã băm khi dữ liệu tồn tại
+59|getOtpHash trả rỗng khi khóa không tồn tại hoặc hết hạn
+60|incrementAttempts ở lần đầu đặt TTL theo thời gian còn lại của OTP
+61|incrementAttempts ở lần đầu dùng TTL mặc định khi TTL của OTP thiếu hoặc hết hạn
+62|incrementAttempts ở lần sau trả số lần thử mới và không đặt lại TTL
+63|getAttempts trả số lần thử dạng số nguyên từ Redis
+64|getAttempts trả 0 khi khóa null
+65|isMaxAttemptsReached trả giá trị đúng theo ngưỡng đã cấu hình
+66|deleteOtp xóa cả khóa mã băm và khóa số lần thử
+67|Tài khoản bàn chỉ có một phiên hoạt động; phiên đăng nhập mới thu hồi phiên trước
+68|Nhân viên và chủ nhà hàng được có nhiều phiên hoạt động đồng thời
+69|Xoay vòng phiên thay mã băm token và gia hạn theo lần sử dụng
+70|Đăng xuất thu hồi một phiên
+71|Từ chối xoay vòng phiên đã thu hồi
+72|Phiên: đăng nhập tài khoản bàn thu hồi phiên cũ và chỉ lưu mã băm token
+73|Phiên: chủ nhà hàng đăng nhập không thu hồi phiên trên thiết bị khác
+74|Xoay vòng phiên: từ chối phiên không tồn tại hoặc đã thu hồi
+75|Xoay vòng phiên: đánh dấu thu hồi và từ chối phiên hết hạn
+76|Xoay vòng phiên: thay mã băm và gia hạn phiên hợp lệ
+77|Đăng xuất phiên: chỉ thu hồi phiên được yêu cầu
+78|Đặt lại phiên: thu hồi mọi phiên của người dùng được yêu cầu
+79|CONNECT thiếu tiêu đề Authorization ném AuthenticationCredentialsNotFoundException
+80|CONNECT có JWT không hợp lệ ném BadCredentialsException
+81|CONNECT có JWT hợp lệ và phiên hoạt động thiết lập principal đã xác thực
+82|KITCHEN_STAFF đăng ký /topic/kitchen/orders thành công
+83|KITCHEN_STAFF đăng ký /topic/tables bị AccessDeniedException
+84|TABLE_ACCOUNT đăng ký phiên của bàn khác bị AccessDeniedException
+85|TABLE_ACCOUNT đăng ký đúng phiên của bàn mình thành công
+86|Lấy dữ liệu tạm tính trả 200
+87|Thanh toán trả 201
+88|In hóa đơn gọi dịch vụ in và trả 200
+89|In phiếu tạm tính gọi dịch vụ in và trả 200
+90|Lấy danh sách hóa đơn có tìm kiếm trả 200
+91|Hai luồng thanh toán đồng thời chỉ tạo một hóa đơn và không gây deadlock
+92|getBillPreview thành công khi giá menu đã bao gồm VAT
+93|getBillPreview thành công khi giá menu chưa bao gồm VAT, tách dòng thuế 8% và 10%
+94|getBillPreview ném lỗi khi bàn còn món PENDING hoặc COOKING
+95|Thanh toán thành công bằng toàn bộ tiền mặt và không có mã giảm giá
+96|Thanh toán thành công bằng hai phương thức và áp dụng giảm giá PERCENT
+97|Từ chối thanh toán khi tổng tiền các phương thức không khớp totalAmount
+98|Danh sách danh mục trả cấu trúc phản hồi chuẩn và phân trang mặc định
+99|Trang, kích thước và sắp xếp được truyền tới repository
+100|Nhân viên xem được chi tiết danh mục ngừng hoạt động
+101|Tablet xem danh mục ngừng hoạt động nhận cấu trúc lỗi 404
+102|Thiếu xác thực trả 401 cho cả hai endpoint
+103|Mã không hợp lệ và kiểu sắp xếp không hỗ trợ trả cấu trúc lỗi 400
+104|Danh sách cho tablet lọc tại cơ sở dữ liệu trước phân trang và ánh xạ siêu dữ liệu
+105|Mọi vai trò nhân viên đều đọc được danh mục ngừng hoạt động
+106|Danh sách cho nhân viên gồm danh mục ngừng hoạt động, giới hạn kích thước trang và sắp xếp ổn định
+107|Tablet đọc được danh mục hoạt động; danh mục ẩn và không tồn tại cùng trả lỗi không tìm thấy
+108|Yêu cầu đọc chưa xác thực không truy cập repository
+109|Kiểu sắp xếp không hỗ trợ và mã không dương bị chặn trước truy vấn
+110|Tải ảnh dùng mã cố định, không ghi đè và trả URL bảo mật
+111|Xóa tài nguyên không tồn tại vẫn thành công để hỗ trợ thử lại sau lỗi cơ sở dữ liệu
+112|Từ chối thao tác xóa chưa được xác nhận và URL không hợp lệ
+113|Thiếu thông tin xác thực gây lỗi và không gọi mạng
+114|Tải lên và xóa ảnh PNG kiểm thử độc lập
+115|Tuần tự hóa phản hồi thành công đúng API_CONVENTIONS.md
+116|Tuần tự hóa phản hồi lỗi đúng API_CONVENTIONS.md
+117|Bọc Spring Data Page trong PageResponse đúng API_CONVENTIONS.md
+118|Ánh xạ các phần tử PageResponse bằng hàm mapper
+119|RedisConfig tạo các bean StringRedisTemplate và RedisTemplate
+120|redisConnectionFactory tạo kết nối độc lập khi redisUrl trống
+121|redisConnectionFactory phân tích URL Redis hợp lệ
+122|redisConnectionFactory tự loại tiền tố lệnh redis-cli
+123|OWNER tải được mẫu Excel và xuất danh sách món
+124|SERVICE_STAFF không được tải mẫu Excel món ăn, trả 403
+125|OWNER tải được mẫu Excel và xuất danh sách nguyên liệu
+126|OWNER nhập món từ mẫu Excel đã tạo
+127|OWNER nhập nguyên liệu từ mẫu Excel đã tạo
+128|Truy vấn RestaurantTable đã có dữ liệu mẫu theo tableCode
+129|Truy vấn User đã có dữ liệu mẫu theo username và xác minh vai trò
+130|Kiểm tra ánh xạ MenuItem không có availableQuantity
+131|Ràng buộc uq_service_sessions_active_table chỉ cho một phiên ACTIVE mỗi bàn
+132|Ràng buộc nguồn StockMovement gây lỗi khi cả ba khóa ngoại nguồn đều null
+133|Lưu Order và OrderItem trong giao dịch cùng ảnh chụp unitPrice
+134|Chuyển ResourceNotFoundException thành 404 với cấu trúc phản hồi chuẩn
+135|Chuyển BusinessRuleException thành 409 và giữ mã lỗi tùy chỉnh
+136|Chuyển MethodArgumentNotValidException thành 400 kèm chi tiết trường
+137|Chuyển AccessDeniedException thành 403 Forbidden
+138|Chuyển AuthenticationException thành 401 Unauthorized
+139|Chuyển ngoại lệ chung thành 500 và không tiết lộ chi tiết nội bộ
+140|Khởi tạo ngữ cảnh ứng dụng thành công
+141|CSV: BOM UTF-8 giữ nguyên tiêu đề tiếng Việt khi mở bằng Excel
+142|CSV: danh sách bản ghi null chỉ tạo dòng tiêu đề
+143|CSV: làm tròn HALF_UP đến hai chữ số thập phân
+144|CSV: ngày thiếu để trống và số tiền thiếu được ghi bằng không
+145|CSV: giữ nguyên và làm tròn lợi nhuận âm
+146|CSV: giữ thứ tự bản ghi và không dùng ký hiệu khoa học cho số tiền lớn
+147|GET /api/dashboard/overview thành công với OWNER và trả 200
+148|GET /api/dashboard/overview từ chối vai trò khác OWNER và trả 403
+149|GET /api/dashboard/overview chưa xác thực trả 401
+150|GET /api/dashboard/overview có khoảng ngày sai trả 409
+151|GET /api/dashboard/best-selling thành công và trả 200
+152|GET /api/dashboard/trends thành công và trả 200
+153|GET /api/dashboard/export trả 200 cùng tệp CSV và BOM UTF-8
+154|getOverview tính đúng doanh thu, chi phí và lợi nhuận ròng
+155|getOverview ném BusinessRuleException khi khoảng ngày không hợp lệ
+156|getBestSellingDishes trả danh sách món bán chạy theo thứ hạng
+157|getDailyTrends tổng hợp dữ liệu phân tích theo ngày
+158|exportDailyReportCsv tạo CSV có BOM UTF-8
+159|OWNER tạo chi phí qua POST /api/expenses thành công, trả 201
+160|POST /api/expenses từ chối số tiền âm, trả 400
+161|POST /api/expenses từ chối vai trò không phải chủ nhà hàng, trả 403
+162|POST /api/expenses từ chối yêu cầu chưa xác thực, trả 401
+163|GET /api/expenses trả danh sách chi phí phân trang, mã 200
+164|GET /api/expenses/{id} tìm thấy chi phí, trả 200
+165|GET /api/expenses/{id} không tìm thấy chi phí, trả 404
+166|PUT /api/expenses/{id} cập nhật thành công, trả 200
+167|PUT /api/expenses/{id} gặp chi phí đã hủy, trả 409
+168|POST /api/expenses/{id}/cancel hủy thành công, trả 200
+169|POST /api/expenses/{id}/cancel từ chối chi phí đã hủy, trả 409
+170|createExpense tạo chi phí thành công
+171|createExpense ném ForbiddenException khi chưa xác thực
+172|updateExpense cập nhật chi phí thành công
+173|updateExpense ném BusinessRuleException khi chi phí đã hủy
+174|updateExpense ném ResourceNotFoundException khi mã không tồn tại
+175|cancelExpense hủy chi phí thành công
+176|cancelExpense ném BusinessRuleException khi chi phí đã hủy
+177|getExpenseById lấy chi phí thành công
+178|getExpenseById không tìm thấy chi phí
+179|getExpenses trả danh sách đúng phân trang và bộ lọc
+180|getExpenses ném BusinessRuleException khi khoảng ngày không hợp lệ
+181|getExpenses ném BusinessRuleException khi trạng thái lọc không hợp lệ
+182|Khóa phiên AI cách ly phiên bàn, bàn chờ, nhân viên và người dùng ẩn danh
+183|Trạng thái AI ban đầu tạo danh sách tin nhắn và giá trị mặc định riêng cho mỗi cuộc trò chuyện
+184|Tin nhắn AI và tiêu chí ăn uống được cách ly giữa các bàn
+185|Dọn dẹp AI chỉ xóa phiên cũ của bàn được chọn
+186|Đặt lại AI thay lịch sử trò chuyện nhưng giữ tiêu chí ăn uống hiện tại
+187|Gợi ý AI giữ dị ứng, ngân sách, số người và lấy dữ liệu câu trả lời khỏi lớp bọc
+188|Lỗi nhà cung cấp AI được truyền lên thay vì hiển thị như gợi ý món
+189|Đăng nhập trả token truy cập; làm mới được chuyển tới bộ điều phối token
+190|Đọc danh tính và hồ sơ rồi đăng xuất qua HTTP client đã xác thực
+191|Khôi phục tài khoản trả thông báo máy chủ và giữ OTP sáu chữ số
+192|Sửa hồ sơ và đổi mật khẩu chỉ gửi các trường được cung cấp
+193|Thông tin đăng nhập sai được truyền lỗi lên và không tạo danh tính xác thực giả
+194|Đăng nhập chấp nhận tên người dùng và mật khẩu ở biên sáu ký tự
+195|Đăng nhập từ chối tên trống và mật khẩu ngắn hơn sáu ký tự
+196|Quên mật khẩu chấp nhận email hợp lệ, từ chối email sai định dạng hoặc trống
+197|Đặt lại mật khẩu chấp nhận OTP sáu chữ số có số không ở đầu
+198|Đặt lại mật khẩu từ chối OTP sai độ dài hoặc chứa ký tự không phải số
+199|Đặt lại mật khẩu báo lỗi xác nhận không khớp tại trường confirmPassword
+200|Đặt lại mật khẩu chấp nhận 100 ký tự và từ chối 101 ký tự
+201|Đổi mật khẩu chấp nhận mật khẩu hiện tại khác mật khẩu mới
+202|Đổi mật khẩu từ chối sử dụng lại mật khẩu hiện tại
+203|Đổi mật khẩu từ chối mật khẩu hiện tại trống và xác nhận không khớp
+204|Hồ sơ chấp nhận họ tên tiếng Việt và email hợp lệ
+205|Hồ sơ từ chối họ tên trống và email sai định dạng
+206|Hồ sơ chấp nhận tên 255 ký tự và từ chối 256 ký tự
+207|Hóa đơn lấy tạm tính từ máy chủ và hỗ trợ hai cách tra cứu hóa đơn
+208|Thanh toán giữ mã khuyến mãi và số tiền chia theo phương thức
+209|Lịch sử hóa đơn cắt khoảng trắng tìm kiếm và giữ phân trang bắt đầu từ không
+210|Yêu cầu in trỏ đúng endpoint hóa đơn và phiên, không in tại máy cục bộ
+211|Xung đột thanh toán trùng được truyền lên bên gọi
+212|Phiếu tạm tính có thông tin bàn, món và ghi chú chưa thanh toán
+213|Hóa đơn đã thanh toán có phương thức thanh toán và cấu hình trang A5
+214|Hóa đơn giấy nhiệt chọn K58 và xóa khung in giả lập sau khi in
+215|Tổng quan áp dụng khoảng ngày được chọn và lấy tổng số từ phản hồi
+216|Mặc định lấy năm món bán chạy và cho phép xem xu hướng không có bộ lọc
+217|Xuất CSV tổng quan trả Blob thô thay vì cấu trúc JSON bọc
+218|Lỗi quyền truy cập tổng quan được truyền lên, không tạo kết quả rỗng thành công
+219|Danh sách chi phí bỏ trạng thái ALL nhưng giữ khoảng ngày và trang số không
+220|Chi phí được tạo, đọc, sửa và hủy với lý do đã yêu cầu
+221|Xung đột hủy chi phí được truyền lên bên gọi
+222|Chi phí chấp nhận biên số tiền bằng không và tối đa
+223|Chi phí từ chối số tiền âm hoặc vượt mức tối đa
+224|Chi phí bắt buộc có tên và ngày phát sinh
+225|Hủy chi phí bắt buộc có lý do không quá 255 ký tự
+226|Đọc tiêu đề tiếng Việt, cắt khoảng trắng, giữ số dòng Excel và bỏ dòng trống
+227|Chấp nhận tiêu đề đổi thứ tự và cột tồn tối thiểu tùy chọn
+228|Phát hiện tên trùng không phân biệt hoa thường; bỏ chọn một dòng sẽ hết xung đột
+229|Hiển thị ô thiếu và giá trị số ngoài phạm vi trước khi xác nhận
+230|Từ chối ô công thức và ngày thay vì nhập giá trị bộ nhớ đệm hoặc gây hiểu nhầm
+231|Từ chối tiêu đề thiếu hoặc trùng, dữ liệu trống và tệp Excel hỏng
+232|Chấp nhận 500 dòng và từ chối tệp vượt giới hạn
+233|API nguyên liệu giữ bộ lọc ngừng hoạt động và cấu trúc nhập theo lô
+234|Kiểm kê gửi số lượng thực đo và lấy lịch sử đã sắp xếp
+235|Lịch sử biến động kho giữ bộ lọc nguyên liệu, loại biến động và trang số không
+236|API Excel kho giữ dữ liệu tải xuống dạng nhị phân và tải lên multipart
+237|Biểu mẫu nguyên liệu cắt tên và đơn vị, từ chối tồn tối thiểu âm
+238|Bếp đọc hàng đợi và chi tiết đơn không có dấu phân cách truy vấn thừa
+239|Bếp nhận đơn và gửi lệnh nấu, ra món theo lô
+240|Bếp cập nhật riêng trạng thái món trong đơn và khả năng phục vụ món
+241|Menu bếp áp dụng danh mục, phân trang và lấy lựa chọn danh mục
+242|Bếp truyền nguyên lỗi xung đột chuyển trạng thái từ máy chủ
+243|Danh sách và chi tiết menu giữ tín hiệu hủy, bộ lọc và số phần được yêu cầu
+244|Tạo, sửa, đổi trạng thái và xóa menu thao tác đúng món được chọn
+245|Tải ảnh menu giữ tệp và thứ tự, cho phép tự tạo ranh giới multipart
+246|Bật tắt danh mục giữ thứ tự hiển thị và chỉ đổi trạng thái hoạt động
+247|Bộ chọn danh mục sắp theo thứ tự hiển thị và hỗ trợ các hàm CRUD cũ
+248|Biểu mẫu menu cắt tên món, kiểm tra giá thập phân và mã thuế
+249|Biểu mẫu danh mục chấp nhận biên số nguyên và từ chối thứ tự hiển thị dạng phân số
+250|Phân tích mã món từ chối số không, số nguyên không an toàn, dấu và đường dẫn sai
+251|Ảnh menu sắp theo thứ tự rồi mã, không thay đổi mảng đầu vào
+252|Kiểm tra ảnh menu theo loại MIME cho phép và biên năm megabyte
+253|Menu phân biệt thông báo lỗi cấm truy cập, không tìm thấy, xung đột và mạng
+254|Menu truyền lỗi xung đột sửa danh mục lên bên gọi
+255|Nhập menu đọc tiêu đề bắt buộc và giữ số dòng qua các dòng trống
+256|Nhập menu từ chối tệp hỏng, thiếu tiêu đề và trang tính rỗng
+257|Nhập menu từ chối tên món trùng, danh mục không tồn tại và VAT trên 100%
+258|Xác nhận trùng Excel menu chỉ chấp nhận phản hồi có cấu trúc hợp lệ
+259|Lỗi Excel menu loại chi tiết dòng sai cấu trúc và giải mã lỗi JSON trong Blob
+260|Excel menu gửi tệp và token xác nhận bằng biểu mẫu multipart
+261|Xem trước và tải mẫu Excel menu giữ cách xử lý phản hồi nhị phân
+262|Giỏ hàng thêm món mới với số lượng mặc định và tính tổng tiền
+263|Giỏ hàng gộp món trùng và giữ ghi chú cũ khi không cung cấp ghi chú mới
+264|Giỏ hàng cho phép ghi chú mới thay hoặc xóa ghi chú trước
+265|Cập nhật số lượng bằng không hoặc âm sẽ xóa món khỏi giỏ
+266|Giỏ hàng tính tổng nhiều món sau khi đổi số lượng và xóa món
+267|Xóa giỏ đặt lại cả hai tổng số và không đổi trạng thái đã chụp trước đó
+268|Gọi món tạo đơn đúng phiên, số lượng từng món và trả tổng tiền máy chủ
+269|Gọi món lọc theo phiên, trạng thái và đọc chi tiết đơn
+270|Hủy món giữ lý do và số lượng hủy một phần
+271|Hủy không có dữ liệu tùy chọn gửi đối tượng rỗng
+272|Hoàn thành món đã phục vụ và trả hàng bán thẳng theo phiên
+273|Gọi món truyền lỗi thiếu nguyên liệu và không trả thành công giả
+274|Tìm khuyến mãi cắt khoảng trắng và giữ trạng thái hoạt động false
+275|Quản lý khuyến mãi gồm danh sách hợp lệ, tạo, sửa, bật tắt và xóa
+276|Khuyến mãi truyền lỗi trùng mã lên bên gọi
+277|Khuyến mãi cắt tên và mã trước khi gửi
+278|Khuyến mãi chấp nhận biên 100% và từ chối tỷ lệ vượt mức
+279|Giảm giá số tiền cố định được vượt một trăm đơn vị tiền tệ
+280|Khuyến mãi từ chối mức giảm không hoặc âm và ký tự mã không hợp lệ
+281|Khuyến mãi cho phép không giới hạn lượt dùng; giới hạn nếu có phải là số nguyên dương
+282|Khuyến mãi cho phép ngày đầu bằng ngày cuối và từ chối khoảng ngày đảo ngược
+283|Nhập hàng giữ khoảng ngày được chọn và trang số không
+284|Tạo, xem và điều chỉnh phiếu nhập giữ số lượng và đơn giá nguyên liệu
+285|Nhập hàng truyền lỗi xung đột điều chỉnh tồn và không tự động thử lại
+286|Dòng phiếu nhập chấp nhận biên số lượng tối thiểu và đơn giá bằng không
+287|Dòng phiếu nhập từ chối nguyên liệu thiếu, số lượng không dương và đơn giá âm
+288|Phiếu nhập bắt buộc có ngày và ít nhất một nguyên liệu
+289|Phiếu nhập chấp nhận nhiều nguyên liệu và kiểm tra biên độ dài ghi chú
+290|Đọc mẫu, số thập phân dùng dấu phẩy và khớp mã nguyên liệu thật, không tạo nguyên liệu mới
+291|Nguyên liệu không tồn tại, ngừng dùng hoặc sai đơn vị vẫn hiển thị nhưng không được gửi
+292|Hỗ trợ đổi thứ tự cột, thiếu đơn vị tùy chọn và không đoán tên mơ hồ
+293|Số hoặc công thức không hợp lệ được giữ dưới dạng lỗi; sửa thủ công sẽ xóa lỗi
+294|Kiểm tra số lượng, giá và phát hiện nguyên liệu bị ngừng dùng sau khi xem trước
+295|Từ chối tệp hỏng, trống, thiếu hoặc trùng tiêu đề và vượt dung lượng
+296|Trạng thái gọi nhân viên loại mã yêu cầu STOMP gửi lại và xếp mới nhất trước
+297|Xác nhận gọi nhân viên chỉ xóa yêu cầu đã chọn
+298|Món sẵn sàng thay bản ghi trùng và giữ số lượng mới nhất
+299|Khởi tạo hàng đợi chỉ với món READY và xếp mới nhất trước
+300|Làm mới API giữ thời điểm STOMP của món sẵn sàng và xóa món đã phục vụ
+301|Đọc công thức món cùng chi phí nguyên liệu từ máy chủ
+302|Thay toàn bộ công thức và giữ số lượng định mức thập phân
+303|Sửa hoặc xóa một nguyên liệu trong công thức không thay các dòng khác
+304|Bộ chọn món công thức giữ trang số không và bộ lọc danh mục
+305|Công thức truyền lỗi xung đột nguyên liệu ngừng dùng lên bên gọi
+306|Báo cáo truy vấn xu hướng ngày và tổng quan với cùng khoảng ngày
+307|Báo cáo mặc định yêu cầu hai mươi món bán chạy và cho phép đổi giới hạn
+308|Báo cáo xuất dữ liệu CSV với kiểu phản hồi Blob
+309|Lỗi xuất báo cáo được truyền lên và không tải báo cáo giả
+310|Cài đặt chuẩn hóa phản hồi snake_case, giữ VAT và cờ in false
+311|Cài đặt ưu tiên giá trị camelCase và dùng mặc định cho trường thiếu
+312|Cập nhật cài đặt ánh xạ các giá trị được sửa và giữ VAT false
+313|Cài đặt xử lý danh sách máy in thiếu thành rỗng và hỗ trợ thao tác nhóm thuế
+314|Cài đặt truyền lỗi cập nhật không có quyền, không tạo giá trị mặc định giả
+315|Bàn giữ bộ lọc hoạt động false và cắt khoảng trắng khu vực, tìm kiếm
+316|Tạo, sửa, xem và ngừng hoạt động đúng bàn được chọn
+317|Phiên bàn hỗ trợ mở, đóng, chuyển bàn và truy vấn lịch sử chuyển
+318|Danh sách phiên bàn giữ bộ lọc bàn và trạng thái
+319|Gọi nhân viên xác nhận đúng yêu cầu, không gửi trùng ở máy cục bộ
+320|Chuyển bàn truyền lỗi bàn đích đã có khách
+321|Bàn chấp nhận mã chữ và số có dấu gạch ngang, gạch dưới
+322|Bàn chấp nhận biên sức chứa một và năm mươi chỗ
+323|Bàn từ chối sức chứa không, âm, quá mức hoặc không phải số
+324|Bàn từ chối mã trống, có khoảng trắng hoặc dấu câu
+325|Bàn kiểm tra biên độ dài mã và khu vực
+326|Bàn cho phép bỏ qua hoặc để trống khu vực
+327|Danh sách nhân viên giữ bộ lọc ngừng hoạt động và cắt khoảng trắng tìm kiếm
+328|Tạo, sửa, xem và vô hiệu hóa đúng mã tài khoản được chọn
+329|Bộ chọn bàn của tài khoản chỉ lấy content từ truy vấn bàn hoạt động
+330|Biểu mẫu nhân viên từ chối vai trò bàn và email sai định dạng
+331|Biểu mẫu tablet yêu cầu bàn được gán và xác nhận mật khẩu khớp
+332|Lỗi trùng tên đăng nhập được truyền lên bên gọi
+333|Nhập các dòng hợp lệ trả 201
+334|Dòng lồng nhau sai và danh sách trống bị chặn trước khi gọi dịch vụ
+335|Từ chối lô nhập vượt giới hạn
+336|generateTemplate trả mảng byte XLSX hợp lệ với tiêu đề mẫu
+337|exportIngredients trả XLSX hợp lệ chứa toàn bộ nguyên liệu
+338|importIngredients tạo nguyên liệu mới và cập nhật nguyên liệu trùng tên
+339|Nhập nguyên liệu tạo mọi dòng với tồn ban đầu bằng không và các trường đã cắt khoảng trắng
+340|Tên trùng trong tệp nhập khiến không dòng nào được lưu
+341|Tên nguyên liệu đã tồn tại ngăn lưu cả các dòng hợp lệ đứng trước
+342|Nhập nguyên liệu từ chối tồn tối thiểu vượt độ chính xác cơ sở dữ liệu
+343|Tạo nguyên liệu thành công với tên đã cắt khoảng trắng và tồn mặc định bằng không
+344|Tạo nguyên liệu trùng tên ném BusinessRuleException
+345|Sửa thông tin nguyên liệu giữ nguyên tồn hiện tại
+346|Ngừng nguyên liệu bị từ chối khi đang dùng cho món hoạt động
+347|Ngừng nguyên liệu thành công khi không dùng cho món hoạt động
+348|Tính đúng trạng thái tồn OUT_OF_STOCK, LOW và NORMAL
+349|Lấy nguyên liệu theo mã ném ResourceNotFoundException khi không tìm thấy
+350|Lấy danh sách nguyên liệu đúng phân trang và bộ lọc isActive
+351|Kiểm kê có chênh lệch cập nhật tồn và ghi biến động kho
+352|Kiểm kê xác nhận không chênh lệch không tạo biến động kho
+353|Lấy phiếu kiểm kê theo mã ném ResourceNotFoundException nếu không tồn tại
+354|Vòng đời bếp: nhận đơn PENDING, chuyển COOKING, món READY rồi COMPLETED và tự hoàn tất đơn
+355|Thao tác bếp theo lô: cook-all bắt đầu mọi món, ready-all hoàn tất mọi món
+356|SERVICE_STAFF không được nhận đơn bếp, trả 403
+357|TABLE_ACCOUNT không được xem hoặc nhận đơn bếp, trả 403
+358|acceptOrder chuyển PENDING sang COOKING và phát STOMP, không trừ tồn
+359|acceptOrder gây lỗi 409 khi đơn đã COOKING
+360|acceptOrder gây lỗi 403 khi SERVICE_STAFF cố nhận đơn
+361|cookAll chuyển đơn PENDING và mọi món PENDING sang COOKING
+362|readyAll chuyển mọi món COOKING sang READY và phát thông báo món sẵn sàng
+363|getKitchenOrders trả danh sách theo thứ tự vào trước ra trước
+364|Chuyển món PENDING sang COOKING đồng thời chuyển đơn cha sang COOKING
+365|Chuyển món COOKING sang READY thành công và phát thông báo ra món
+366|SERVICE_STAFF chuyển READY sang COMPLETED và hoàn tất đơn khi mọi món đã xong
+367|SERVICE_STAFF bắt đầu nấu gây lỗi 403
+368|KITCHEN_STAFF chuyển READY sang COMPLETED gây lỗi 403
+369|Chuyển trạng thái không hợp lệ, ví dụ PENDING sang COMPLETED, gây lỗi 409
+370|acceptOrder gây lỗi 409 khi đơn đã COMPLETED
+371|Đơn có một món COMPLETED và một món CANCELLED được tự hoàn tất
+372|Chuyển ngược từ READY sang COOKING gây lỗi 409
+373|Tạo danh mục trả Location và cấu trúc phản hồi chuẩn
+374|Kiểm tra các trường bắt buộc và giới hạn độ dài của danh mục
+375|Tạo và cập nhật menu trả mã trạng thái HTTP đã quy định
+376|Menu từ chối giá âm, quá độ chính xác và các trường bắt buộc thiếu
+377|Tải multipart chấp nhận định dạng ảnh cho phép và từ chối MIME sai
+378|Xóa ảnh chuyển yêu cầu tới dịch vụ
+379|OWNER được đổi trạng thái món thành TEMPORARILY_UNAVAILABLE
+380|OWNER được đổi trạng thái món thành DISCONTINUED
+381|KITCHEN_STAFF được đổi trạng thái món thành TEMPORARILY_UNAVAILABLE
+382|KITCHEN_STAFF không được ngừng kinh doanh món bằng DISCONTINUED, trả 403
+383|SERVICE_STAFF không được đổi trạng thái menu, trả 403
+384|Đổi trạng thái menu chưa xác thực trả 401
+385|Mọi người dùng đã xác thực, kể cả TABLE_ACCOUNT, được kiểm tra khả năng bán hiện tại
+386|Kiểm tra khả năng bán chưa xác thực trả 401
+387|Số lượng không hợp lệ, nhỏ hơn hoặc bằng không, trả 400
+388|Yêu cầu HTTP mặc định dùng thứ tự thêm mới và giữ sắp theo tên khi chỉ định
+389|JWT hợp lệ xem chi tiết món nhưng không lộ dữ liệu kho nội bộ
+390|Danh sách nhận đúng phân trang, danh mục, số lượng và sắp xếp
+391|Chuỗi bảo mật thật từ chối JWT thiếu hoặc sai
+392|Phiên đã thu hồi và tài khoản bị vô hiệu hóa không được đọc
+393|Món bị ẩn trả 404 sau khi xác thực JWT
+394|Số lượng, mã và sắp xếp sai trả 400 sau xác thực
+395|Bộ lọc trạng thái không vượt được quyền vai trò JWT
+396|Từ chối trạng thái sai định dạng
+397|Chủ nhà hàng lọc được món ngừng kinh doanh cùng danh mục và phân trang
+398|Truy vấn danh mục tuân thủ khả năng hiển thị, bộ lọc và thứ tự ảnh
+399|Cơ sở dữ liệu lọc trạng thái, danh mục và vai trò trước khi đếm và phân trang
+400|Xóa danh mục trống trả phản hồi không có nội dung
+401|Danh mục còn món trả xung đột và giữ nguyên dữ liệu
+402|Xóa danh mục ở giữa thu gọn thứ tự, giữ mã và các danh mục ngừng hoạt động
+403|Xóa danh mục đầu dịch chuyển vị trí tất cả danh mục còn lại
+404|Xóa danh mục cuối không ghi lại các vị trí không đổi
+405|Xóa danh mục sửa khoảng trống và vị trí trùng, vẫn giữ thứ tự hiển thị
+406|Xóa thất bại không đổi vị trí danh mục khác
+407|Xóa món chưa được sử dụng cùng công thức và ảnh
+408|Món đã được gọi trả xung đột trước khi xóa ảnh hoặc công thức
+409|Lỗi xử lý ảnh không xóa món hoặc công thức
+410|Chuyển đổi lỗi tham chiếu đồng thời và không xóa cache
+411|Tài nguyên không tồn tại trả 404
+412|Mã không hợp lệ trả 400 và không truy cập lưu trữ
+413|Mọi vai trò khác OWNER bị chặn trước khi tra tài nguyên
+414|Yêu cầu xóa ẩn danh bị chặn trước khi tra tài nguyên
+415|Tạo danh mục ánh xạ đúng trường và chỉ xóa cache sau commit
+416|Cập nhật danh mục có thể ngừng hoạt động mà không xóa
+417|Tạo món mặc định AVAILABLE và giữ độ chính xác giá
+418|Cập nhật món giữ trạng thái và không sửa lịch sử đơn
+419|Mọi vai trò khác OWNER bị chặn trước khi truy cập lưu trữ
+420|Yêu cầu ghi ẩn danh bị từ chối
+421|Thiếu danh mục ngăn lưu món và ngăn xóa cache
+422|Rollback không xóa cache
+423|Mã cập nhật sai hoặc thiếu gây lỗi trước khi ghi
+424|Quyền danh mục: từ chối người gọi chưa xác thực
+425|Quyền danh mục: chủ nhà hàng được quản lý món và danh mục
+426|Quyền danh mục: từ chối mọi vai trò không phải chủ nhà hàng
+427|OWNER đổi món thành TEMPORARILY_UNAVAILABLE và xóa cache
+428|OWNER được đổi món thành DISCONTINUED
+429|KITCHEN_STAFF được đổi món thành TEMPORARILY_UNAVAILABLE
+430|KITCHEN_STAFF đổi món thành DISCONTINUED gây lỗi 403
+431|SERVICE_STAFF đổi trạng thái menu gây lỗi 403
+432|Món không tồn tại gây ResourceNotFoundException
+433|Bếp có thể mở lại món tạm ngưng phục vụ
+434|Bếp không thể mở lại hoặc đổi món ngừng kinh doanh
+435|Chủ nhà hàng có thể mở lại món ngừng kinh doanh
+436|Món TEMPORARILY_UNAVAILABLE trả sellable=false, không kiểm tra công thức
+437|Món DISCONTINUED trả sellable=false
+438|Món không có công thức trả sellable=true và sức bán không giới hạn
+439|Đủ tồn cho số lượng yêu cầu trả sellable=true và sức bán tối đa
+440|Không đủ tồn cho số lượng yêu cầu trả sellable=false cùng chi tiết
+441|Nguyên liệu ngừng dùng trả sellable=false và maxPossibleQuantity=0
+442|saveMenuContext dùng TTL mặc định để lưu ngữ cảnh trong Redis
+443|saveMenuContext dùng TTL tùy chỉnh để lưu ngữ cảnh trong Redis
+444|saveMenuContext nhận chuỗi null thì bỏ qua thao tác ghi an toàn
+445|saveMenuContext xử lý lỗi Redis và không ném lỗi ra ngoài
+446|getMenuContext trả JSON đã lưu khi tìm thấy cache
+447|getMenuContext trả rỗng khi không có cache
+448|getMenuContext trả rỗng khi Redis gián đoạn để bên gọi dùng cơ sở dữ liệu dự phòng
+449|invalidateMenuContext xóa khóa cache
+450|invalidateMenuContext xử lý Redis gián đoạn và không ném lỗi ra ngoài
+451|hasMenuContext trả true khi khóa tồn tại
+452|hasMenuContext trả false khi khóa không tồn tại hoặc Redis có lỗi
+453|Cache menu: xóa cache yêu cầu giao dịch đang hoạt động
+454|Cache menu: hoãn xóa cache tới khi giao dịch commit
+455|Cache menu: rollback giữ nguyên ngữ cảnh đã lưu
+456|Trả ngữ cảnh đã lưu khi tìm thấy cache
+457|Khi thiếu cache, dựng lại ngữ cảnh từ cơ sở dữ liệu và lưu cache
+458|invalidateMenuContext xóa cache khi được yêu cầu
+459|Mẫu có đúng hai trang tính, cột được quy định và giá dạng số
+460|Nhập danh mục mới và gán món vào danh mục đã lưu
+461|Danh mục mới nối sau thứ tự lớn nhất theo thứ tự dòng thực tế
+462|Danh mục dùng lại giữ vị trí; danh mục mới đứng sau thứ tự lớn nhất hiện có
+463|Món được lưu theo thứ tự dòng, không theo số thứ tự hay bảng chữ cái
+464|Tràn thứ tự danh mục chặn nhập trước khi ghi
+465|Dùng lại danh mục duy nhất trong cơ sở dữ liệu sau chuẩn hóa hoa thường và khoảng trắng
+466|Tìm được danh mục hiện có khi trang danh mục chỉ chứa tiêu đề
+467|Danh mục trùng trong cơ sở dữ liệu bị chặn trước mọi thao tác ghi
+468|Thiếu danh mục không tạo dữ liệu danh mục một phần
+469|Từ chối tên danh mục trùng trong tệp
+470|Bỏ qua món trùng trong workbook
+471|Tải lại tệp bỏ qua món hiện có và không ghi đè
+472|Bỏ qua món hiện có nhưng thêm món mới trong cùng lần tải lên
+473|Liệt kê mọi món trùng từ danh mục và tệp trước khi lưu
+474|Token xem xét không được duyệt tệp khác hoặc xác nhận tùy ý
+475|Danh sách trùng thay đổi yêu cầu xác nhận mới
+476|Ưu tiên lỗi dữ liệu; xác nhận không được bỏ qua xung đột mới
+477|Phản hồi HTTP về trùng liệt kê dòng và yêu cầu đúng token đã trả mới được lưu
+478|Trùng tên ở danh mục khác trong cơ sở dữ liệu là lỗi dù danh mục đó không có trong tệp
+479|Cặp món và danh mục đã tồn tại được bỏ qua; chỉ báo dòng sai danh mục
+480|Cùng tên món ở hai danh mục trong tệp báo cả hai dòng xung đột
+481|Thu thập lỗi ô trên nhiều dòng, trang tính và xung đột cơ sở dữ liệu cùng lúc
+482|Phản hồi HTTP gồm mọi lỗi cùng trang tính, dòng và cột
+483|Từ chối giá không hợp lệ trước khi ghi cơ sở dữ liệu
+484|Từ chối công thức, cột thừa và trang tính thừa
+485|Từ chối tiêu đề sai và workbook trống
+486|Từ chối tệp XLS cũ và tệp XLS đã đổi tên
+487|Người không phải chủ nhà hàng và chưa xác thực không được đọc mẫu hoặc nhập
+488|Từ chối tệp tải lên sai định dạng và vượt dung lượng
+489|Các endpoint HTTP phục vụ tải mẫu, xem trước và nhập multipart
+490|Lỗi nhập HTTP trả phản hồi 400 có thông tin hữu ích
+491|generateTemplate trả mảng byte XLSX hợp lệ với tiêu đề mẫu
+492|exportMenuItems trả XLSX hợp lệ chứa mọi món
+493|importMenuItems tạo món mới và cập nhật món hiện có khi trùng tên
+494|Tải ảnh ánh xạ siêu dữ liệu và không xóa tài nguyên đã commit
+495|Tải ảnh thất bại và rollback dọn tài nguyên có mã xác định
+496|Lỗi cơ sở dữ liệu sau tải ảnh cũng dọn tài nguyên khi rollback
+497|Lỗi dọn dẹp không che mất lỗi rollback ban đầu
+498|Từ chối tệp trống, vượt dung lượng và giả định dạng trước khi gọi cơ sở dữ liệu hoặc nhà cung cấp
+499|Xóa ảnh của món khác không gọi nhà cung cấp
+500|Nhà cung cấp xóa thất bại giữ siêu dữ liệu để thử lại
+501|Xóa tài nguyên nhà cung cấp trước khi xóa siêu dữ liệu
+502|Người không phải chủ nhà hàng không được tải hoặc xóa ảnh
+503|Danh sách tablet lọc hiển thị tại cơ sở dữ liệu trước phân trang và lấy ảnh theo lô
+504|Thứ tự mặc định của chủ nhà hàng đặt món thêm sau đứng sau món cũ trên các trang
+505|Chủ nhà hàng và nhân viên kho vẫn truy cập món ngừng kinh doanh và danh mục ngừng hoạt động
+506|Tablet gặp món ẩn hoặc không tồn tại cùng trả 404, không tra khả năng bán hay ảnh
+507|Nhân viên thấy món tạm ngưng và khả năng bán được kiểm tra lại mỗi lần đọc
+508|Danh sách nhân viên giới hạn kích thước trang và thêm sắp xếp theo mã ổn định
+509|Yêu cầu ẩn danh hoặc dữ liệu sai không thực hiện truy vấn
+510|Nhóm ảnh theo món và dùng mảng rỗng khi không có ảnh
+511|Tích hợp logic BE-008 thật và phản ánh thay đổi tồn nguyên liệu
+512|Mỗi vai trò chỉ gửi trạng thái được phép xem tới cơ sở dữ liệu trước phân trang
+513|Trạng thái chỉ định hợp lệ kết hợp được với danh mục và phân trang cho mọi vai trò
+514|Trạng thái chỉ định không vượt được quyền vai trò và không truy vấn cơ sở dữ liệu
+515|Chi tiết bị giới hạn không vượt được quy tắc hiển thị danh sách
+516|TABLE_ACCOUNT tạo đơn cho bàn mình trả 201 và trạng thái PENDING
+517|TABLE_ACCOUNT không được gọi món cho phiên bàn khác, trả 403
+518|KITCHEN_STAFF không được tạo đơn, trả 403
+519|Yêu cầu tạo đơn chưa xác thực trả 401
+520|Hủy đơn PENDING trả 200 và CANCELLED; hủy lần hai trả 409
+521|SERVICE_STAFF được hủy đơn PENDING
+522|KITCHEN_STAFF không được hủy đơn, trả 403
+523|Truy vấn danh sách đơn trả 200 cùng các đơn
+524|Hai đơn đồng thời tranh lượng nguyên liệu cuối: đúng một thành công và một nhận 409
+525|Các yêu cầu hủy đồng thời cùng đơn không hoàn tồn hai lần
+526|Luồng trạng thái xuyên suốt: tạo đơn, bếp nhận, món tiến triển rồi đơn hoàn tất
+527|Đơn hỗn hợp một món COMPLETED và một món CANCELLED tự hoàn tất
+528|createOrder tạo đơn, trừ tồn, ghi biến động âm và phát sự kiện STOMP
+529|createOrder gây lỗi 403 khi TABLE_ACCOUNT gọi món cho bàn khác
+530|createOrder gây lỗi 409 khi phiên phục vụ CLOSED
+531|createOrder gây lỗi 409 khi món TEMPORARILY_UNAVAILABLE
+532|createOrder gây lỗi 409 khi thiếu tồn nguyên liệu, không lưu đơn hoặc đổi tồn
+533|cancelOrder hủy đơn PENDING, hoàn nguyên liệu và thêm biến động bù trừ
+534|cancelOrder gây lỗi 409 khi đơn COOKING hoặc đã CANCELLED
+535|cancelOrderItem hủy một món, hoàn tồn và hủy đơn cha nếu mọi món bị hủy
+536|cancelOrderItem bảo vệ tính lặp lại, không hoàn tồn hai lần
+537|createOrder gây lỗi 409 khi món DISCONTINUED
+538|cancelOrder gây lỗi 409 khi đơn COMPLETED
+539|cancelOrderItem gây lỗi 409 khi món COOKING
+540|cancelOrderItem gây lỗi 409 khi món COMPLETED
+541|cancelOrder gây lỗi 403 khi vai trò không có quyền cố hủy đơn
+542|cancelOrder cho SERVICE_STAFF hủy đơn PENDING
+543|cancelOrderItem gây lỗi 403 khi vai trò không có quyền cố hủy món
+544|SERVICE_STAFF chuyển món READY sang COMPLETED và đơn tự hoàn tất
+545|completeOrderItem gây lỗi 409 khi món chưa READY
+546|completeOrderItem gây lỗi 403 khi TABLE_ACCOUNT cố hoàn tất món
+547|returnSessionDirectSaleItems hoàn tồn và ghi biến động ORDER_RETURN thành công
+548|returnSessionDirectSaleItems gây lỗi khi số lượng trả vượt số lượng đã gọi
+549|returnSessionDirectSaleItems gây lỗi khi món không phải hàng bán thẳng
+550|Lấy máy in đã cài trả danh sách không rỗng trên Windows
+551|In hóa đơn khi chưa cấu hình máy in được bỏ qua và không lỗi
+552|In hóa đơn khi đã cấu hình máy in sẽ lấy hóa đơn
+553|In tạm tính khi đã cấu hình máy in sẽ lấy dữ liệu tạm tính
+554|In phiếu ra món được bỏ qua khi tính năng in tắt
+555|In phiếu ra món khi bật và có cấu hình sẽ lấy đơn và món
+556|Máy in: liệt kê tên thiết bị giả lập, không truy vấn hệ điều hành
+557|Máy in: không có thiết bị đã cài thì trả danh sách rỗng
+558|Máy in: chưa cấu hình máy in hóa đơn thì không lấy hoặc in hóa đơn
+559|Máy in: chưa cấu hình máy in tạm tính thì không lấy dữ liệu tạm tính
+560|Máy in: tắt phiếu ra món thì không đọc đơn
+561|Máy in: thiếu đơn bếp thì dừng trước khi tra món
+562|Máy in: thiết bị đã cấu hình nhưng không có sẽ lấy hóa đơn và không gửi lệnh in thật
+563|Lấy khuyến mãi trả trang dữ liệu
+564|Lấy khuyến mãi hợp lệ trả danh sách
+565|Tạo khuyến mãi thành công
+566|Tạo khuyến mãi thất bại kiểm tra dữ liệu khi tên trống
+567|Xóa khuyến mãi thành công
+568|Bật tắt hoạt động thành công
+569|Tạo khuyến mãi thành công
+570|Tạo khuyến mãi trùng mã ném ngoại lệ
+571|Tạo khuyến mãi phần trăm trên 100 ném ngoại lệ
+572|Tạo khuyến mãi có khoảng ngày sai ném ngoại lệ
+573|Lấy khuyến mãi đếm lượt dùng theo lô để tránh truy vấn N+1
+574|Lấy khuyến mãi hợp lệ loại các chương trình hết lượt dùng
+575|Xóa khuyến mãi bằng xóa mềm
+576|Bật tắt hoạt động thay đổi trạng thái
+577|Tạo phiếu nhập có nguyên liệu ngừng dùng không thay đổi tồn
+578|Tạo phiếu nhập cập nhật tồn, tạo các dòng và biến động trong một giao dịch nguyên tử
+579|Sửa dòng phiếu nhập tăng số lượng điều chỉnh đúng tồn và tổng tiền
+580|Sửa dòng phiếu nhập giảm số lượng thất bại khi tồn còn lại không đủ
+581|Lấy phiếu nhập theo bộ lọc khoảng ngày
+582|WebSocketConfig cấu hình đúng đích broker và tiền tố
+583|WebSocketConfig đăng ký endpoint STOMP với CORS và SockJS
+584|WebSocketConfig đăng ký authChannelInterceptor cho kênh nhận
+585|publishOrderCreated gửi KitchenOrderEvent tới bếp và OrderStatusChangedEvent tới phiên
+586|publishOrderCreated xử lý an toàn đơn không có phiên
+587|publishOrderStatusChanged gửi OrderStatusChangedEvent tới bếp và phiên
+588|publishOrderStatusChanged xử lý an toàn đơn không có phiên
+589|publishOrderItemStatusChanged gửi OrderItemStatusChangedEvent tới bếp và phiên
+590|publishOrderItemStatusChanged xử lý an toàn món thiếu phiên hoặc menuItem
+591|Hàm tạo đích trả đường dẫn đúng
+592|extractSessionId đọc đúng mã phiên từ đích hợp lệ
+593|OWNER được đăng ký mọi đích
+594|KITCHEN_STAFF chỉ được đăng ký chủ đề bếp
+595|SERVICE_STAFF được đăng ký chủ đề bàn và phiên bất kỳ, không được đăng ký bếp
+596|TABLE_ACCOUNT chỉ được đăng ký chủ đề phiên khi tableId khớp
+597|INVENTORY_STAFF không được truy cập chủ đề realtime phục vụ hoặc bếp
+598|Tham số null được từ chối an toàn
+599|send chuyển ngay đích và dữ liệu tới SimpMessagingTemplate
+600|send xử lý lỗi template và không ném lại lỗi
+601|publishAfterCommit gửi ngay khi không có giao dịch hoạt động
+602|publishAfterCommit đăng ký đồng bộ và chỉ gửi sau commit
+603|publishToUserAfterCommit gửi vào hàng đợi người dùng sau commit
+604|Lấy công thức món hiện có trả các nguyên liệu
+605|Lấy công thức món không tồn tại ném ResourceNotFoundException
+606|Thêm dòng công thức lưu dòng và xóa cache ngữ cảnh menu Redis
+607|Thêm nguyên liệu trùng ném BusinessRuleException
+608|Thêm nguyên liệu ngừng dùng ném BusinessRuleException
+609|Thay công thức theo lô xóa dòng cũ, lưu dòng mới và xóa cache
+610|Thay công thức có nguyên liệu trùng trong dữ liệu gửi ném BusinessRuleException
+611|Sửa số lượng dòng công thức cập nhật giá trị và xóa cache
+612|Xóa dòng công thức xóa dữ liệu và cache
+613|Lấy cài đặt trả 200 cùng dữ liệu
+614|Cập nhật cài đặt bằng dữ liệu hợp lệ trả 200
+615|Cập nhật cài đặt có trường null trả 400
+616|Lấy máy in khả dụng trả danh sách
+617|Cài đặt đã có được ánh xạ và trả về
+618|Cài đặt chưa có được tạo mặc định và trả về
+619|Cập nhật cài đặt lưu và trả giá trị mới
+620|isMenuPriceIncludesVat trả giá trị boolean đúng
+621|Tạo và xác minh JWT có các claim sub, role và sid
+622|Từ chối JWT bị sửa đổi hoặc không hợp lệ
+623|Gây lỗi khi khóa bí mật ngắn hơn 256 bit, tương đương 32 byte
+624|Tạo token ngẫu nhiên có độ bất định cao và tính mã băm SHA-256
+625|Ngữ cảnh bảo mật: thiếu xác thực không trả người dùng hoặc phiên
+626|Ngữ cảnh bảo mật: không tin cậy principal dạng chuỗi hoặc chưa xác thực
+627|Ngữ cảnh bảo mật: principal bàn đã xác thực trả đúng người dùng, bàn, vai trò và phiên
+628|Mã băm token: SHA-256 khớp vector kiểm thử abc đã công bố
+629|Mã băm token: token rỗng có mã băm SHA-256 của chuỗi rỗng
+630|Mã băm token: từ chối đầu vào null
+631|Mã băm token: chấp nhận token khớp, từ chối token sai hoặc giá trị null
+632|Tạo token: đầu ra là Base64 an toàn cho URL, không đệm, của 32 byte
+633|Mở phiên phục vụ
+634|Cho TABLE_ACCOUNT mở phiên trên bàn được gán
+635|Từ chối TABLE_ACCOUNT mở phiên trên bàn khác
+636|Từ chối khi bàn ngừng hoạt động
+637|Từ chối khi bàn đã có phiên hoạt động
+638|Từ chối mở phiên khi tài khoản bàn bị khóa
+639|Bàn không tồn tại gây ResourceNotFoundException
+640|Đóng phiên phục vụ
+641|Từ chối đóng phiên khi còn đơn chưa bị hủy
+642|Từ chối đóng phiên đã đóng
+643|Phiên không tìm thấy gây ResourceNotFoundException
+644|Chuyển bàn
+645|Từ chối chuyển sang chính bàn hiện tại
+646|Từ chối chuyển sang bàn ngừng hoạt động
+647|Từ chối chuyển sang bàn có tài khoản bị khóa
+648|Từ chối chuyển sang bàn đã có phiên hoạt động
+649|Lấy lịch sử chuyển bàn
+650|Phiên không tồn tại gây ResourceNotFoundException
+651|Ghi điều chỉnh kho thêm biến động đúng loại và balanceAfter
+652|Ghi nhập hàng thêm biến động loại PURCHASE
+653|Ghi tiêu hao gọi món thêm biến động loại ORDER_CONSUMPTION
+654|Truy vấn biến động theo ingredientId và movementType
+655|Lấy danh sách bàn
+656|Lấy bàn theo mã
+657|Bàn không tìm thấy gây ngoại lệ
+658|Tạo bàn
+659|Mã bàn trùng gây ngoại lệ
+660|Cập nhật bàn
+661|Cập nhật có mã bàn trùng gây ngoại lệ
+662|Cập nhật trạng thái bàn
+663|Ngừng bàn đang có phiên hoạt động gây ngoại lệ
+664|Kích hoạt bàn thành công
+665|Lấy các khu vực không trùng
+666|Lấy mọi nhóm thuế trả 200 và danh sách
+667|Lấy nhóm thuế đã tồn tại trả 200
+668|Lấy nhóm thuế không tồn tại trả 404
+669|Tạo nhóm thuế hợp lệ trả 201
+670|Tạo nhóm thuế trùng trả 409
+671|Tạo nhóm thuế có thuế suất âm trả 400
+672|Lấy mọi nhóm thuế trả danh sách đã sắp xếp
+673|Lấy nhóm thuế hiện có trả dữ liệu
+674|Lấy nhóm thuế không tồn tại ném ngoại lệ
+675|Tạo nhóm thuế có thuế suất mới lưu và trả dữ liệu
+676|Tạo nhóm thuế có thuế suất trùng ném BusinessRuleException
+677|Tạo nhóm thuế có thuế suất âm ném ngoại lệ
+678|Tìm hoặc tạo theo thuế suất: đã có thì trả bản ghi hiện tại
+679|Tìm hoặc tạo theo thuế suất: chưa có thì tạo và trả bản ghi mới
+680|Tìm hoặc tạo theo thuế suất phục hồi an toàn khi có xung đột đồng thời
+681|GET /api/users chưa xác thực trả 401
+682|GET /api/users với SERVICE_STAFF trả 403
+683|GET /api/users với OWNER trả 200
+684|POST /api/users khi OWNER tạo người dùng mới trả 201
+685|GET /api/users/me/profile trả 200 cùng hồ sơ người dùng đã xác thực
+686|Truy vấn người dùng có phân trang và bộ lọc vai trò
+687|Tạo nhân viên thành công khi không có tableId
+688|Tạo TABLE_ACCOUNT thành công với bàn chưa được gán
+689|Từ chối tạo TABLE_ACCOUNT thiếu tableId
+690|Từ chối tạo nhân viên có tableId
+691|Từ chối tên đăng nhập trùng
+692|Từ chối TABLE_ACCOUNT khi bàn đã được gán
+693|Cập nhật hồ sơ và thông tin người dùng
+694|Vô hiệu hóa người dùng thành công
+695|Đổi mật khẩu thành công khi đã xác thực
+696|Đổi mật khẩu thất bại khi mật khẩu hiện tại không đúng
+697|Cho khóa tài khoản bàn khi bàn hoạt động nhưng không có phiên hoạt động
+698|Từ chối khóa tài khoản bàn khi bàn có phiên phục vụ hoạt động
+699|Cho khóa tài khoản bàn khi bàn ngừng hoạt động và không có phiên hoạt động
+700|Người dùng: tạo nhân viên với danh tính đã cắt khoảng trắng, email chuẩn hóa và mật khẩu mã hóa
+701|Người dùng: tên đăng nhập trùng không được lưu hoặc mã hóa mật khẩu
+702|Người dùng: email chuẩn hóa bị trùng không được lưu
+703|Người dùng: tạo tablet bắt buộc có bàn được gán
+704|Người dùng: tablet không được gán bàn ngừng hoạt động
+705|Người dùng: tablet không được dùng bàn đã gán cho tài khoản khác
+706|Người dùng: tạo tablet liên kết bàn khả dụng và cho phép không có email
+707|Người dùng: nhân viên không được liên kết với bàn
+708|Người dùng: danh sách cắt khoảng trắng tìm kiếm, giữ bộ lọc vai trò, hoạt động và phân trang
+709|Người dùng: tài khoản không tồn tại gây lỗi không tìm thấy
+710|Người dùng: quản trị đặt lại mật khẩu mã hóa mật khẩu mới và thu hồi các phiên
+711|Người dùng: sửa hồ sơ không kèm mật khẩu giữ nguyên thông tin đăng nhập và phiên
+712|Người dùng: vô hiệu hóa tài khoản thu hồi mọi phiên của tài khoản đích
+713|Người dùng: chủ nhà hàng không được tự vô hiệu hóa tài khoản
+714|Người dùng: không được khóa tablet khi bàn có phiên phục vụ hoạt động
+715|Người dùng: kích hoạt tài khoản không thu hồi phiên
+716|Người dùng: thao tác hồ sơ và mật khẩu chưa xác thực bị từ chối
+717|Người dùng: hồ sơ cá nhân chuẩn hóa email và không được đổi vai trò
+718|Người dùng: mật khẩu hiện tại sai ngăn lưu dữ liệu và thu hồi phiên
+719|Người dùng: từ chối sử dụng lại mật khẩu
+720|Người dùng: đổi mật khẩu hợp lệ lưu mã băm trước khi thu hồi mọi phiên

@@ -9,6 +9,8 @@
     "test:system:public": "playwright test --grep @public",
     "test:system:list": "playwright test --list",
     "test:system:report": "playwright show-report playwright-report/system",
+    "test": "node --test tests/*.test.mjs",
+    "test:unit": "node --test tests/*.test.mjs",
     "test:purchase-import": "node --test tests/purchaseImport.test.mjs",
     "test:ingredient-import": "node --test tests/ingredientImport.test.mjs",
     "dev": "vite",
