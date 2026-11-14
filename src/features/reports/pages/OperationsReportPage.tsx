@@ -42,7 +42,6 @@ export function OperationsReportPage() {
   // Refresh data
   const handleRefresh = async () => {
     await queryClient.invalidateQueries({ queryKey: ['reports'] })
-    toast.info('Đã làm mới dữ liệu báo cáo vận hành')
   }
 
   // Export CSV

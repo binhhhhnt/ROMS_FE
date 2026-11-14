@@ -67,8 +67,8 @@ export function TableCard({
     >
       {/* Top Header */}
       <div>
-        <div className="flex items-start justify-between gap-2 mb-3">
-          <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+        <div className="flex flex-col items-start gap-2 mb-3">
+          <div className="flex flex-wrap items-center gap-1.5">
             <span className="text-xl font-black text-text tracking-tight uppercase whitespace-nowrap">
               Bàn {table.tableCode}
             </span>

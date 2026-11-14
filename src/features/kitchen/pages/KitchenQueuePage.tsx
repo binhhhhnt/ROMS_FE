@@ -70,7 +70,6 @@ export function KitchenQueuePage() {
   const handleAcceptItem = async (orderId: number, itemId: number) => {
     try {
       await kitchenApi.updateOrderItemStatus(orderId, itemId, 'COOKING')
-      toast.success('Đã nhận món vào chế biến!')
       await queryClient.invalidateQueries({ queryKey: ['kitchen', 'orders'] })
     } catch (err) {
       const msg = getApiErrorMessage(err)
@@ -82,7 +81,6 @@ export function KitchenQueuePage() {
   const handleAcceptAllOrderItems = async (orderId: number) => {
     try {
       await kitchenApi.cookAll(orderId)
-      toast.success('Đã nhận toàn bộ món vào chế biến!')
       await queryClient.invalidateQueries({ queryKey: ['kitchen', 'orders'] })
     } catch (err) {
       const msg = getApiErrorMessage(err)

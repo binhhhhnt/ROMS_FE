@@ -50,6 +50,7 @@ import { SessionDetailPage } from '@/features/tables/pages/SessionDetailPage'
 import { SessionHistoryPage } from '@/features/tables/pages/SessionHistoryPage'
 import { TabletWelcomePage } from '@/features/tables/pages/TabletWelcomePage'
 import { AiAssistantPage } from '@/features/tables/pages/AiAssistantPage'
+import { SessionCheckoutPage } from '@/features/billing/pages/SessionCheckoutPage'
 import { RestaurantSettingsPage } from '@/features/settings/pages/RestaurantSettingsPage'
 
 export function AppRoutes() {
@@ -116,6 +117,8 @@ export function AppRoutes() {
               <Route path="/staff/tables/:tableId" element={<TableDetailPage />} />
               <Route path="/sessions/:sessionId" element={<SessionDetailPage />} />
               <Route path="/staff/sessions/:sessionId" element={<SessionDetailPage />} />
+              <Route path="/sessions/:sessionId/checkout" element={<SessionCheckoutPage />} />
+              <Route path="/staff/sessions/:sessionId/checkout" element={<SessionCheckoutPage />} />
               <Route path="/sessions/history" element={<SessionHistoryPage />} />
               <Route path="/staff/sessions/history" element={<SessionHistoryPage />} />
               <Route path="/sessions/:sessionId/history" element={<SessionHistoryPage />} />

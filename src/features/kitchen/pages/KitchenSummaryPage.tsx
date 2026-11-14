@@ -149,11 +149,6 @@ export function KitchenSummaryPage() {
       }
 
       await kitchenApi.updateOrderItemStatus(orderId, itemId, targetStatus)
-      toast.success(
-        targetStatus === 'READY'
-          ? 'Đã báo món nấu xong (READY)!'
-          : 'Đã nhận món vào chế biến (COOKING)!'
-      )
       await queryClient.invalidateQueries({ queryKey: ['kitchen', 'orders'] })
     } catch (err) {
       toast.error(getApiErrorMessage(err))

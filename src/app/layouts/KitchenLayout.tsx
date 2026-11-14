@@ -6,7 +6,6 @@ import { authApi } from '@/features/auth/api/authApi'
 import { subscribeToTopic } from '@/shared/lib/stomp'
 import { Button } from '@/shared/components/ui/button'
 import { ChefHat, LogOut, Flame, Layers, CheckCircle2, UtensilsCrossed, BookOpen, LayoutDashboard } from 'lucide-react'
-import { toast } from 'sonner'
 import { cn } from '@/shared/utils/cn'
 
 export function KitchenLayout() {
@@ -33,7 +32,6 @@ export function KitchenLayout() {
       // ignore
     } finally {
       clearAuth()
-      toast.success('Đã đăng xuất khỏi màn hình bếp')
       navigate('/login')
     }
   }

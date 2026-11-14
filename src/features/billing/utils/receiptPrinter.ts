@@ -55,6 +55,22 @@ export function printReceiptViaBrowser(data: ReceiptPrintData) {
 
   const formatVnd = (num: number) => num.toLocaleString('vi-VN') + ' đ'
 
+  const formatReceiptDateTime = (value?: string): string => {
+    if (!value) return ''
+    const parsed = new Date(value)
+    if (Number.isNaN(parsed.getTime())) return value
+    const pad = (n: number) => String(n).padStart(2, '0')
+    const hh = pad(parsed.getHours())
+    const min = pad(parsed.getMinutes())
+    const dd = pad(parsed.getDate())
+    const mm = pad(parsed.getMonth() + 1)
+    const yyyy = parsed.getFullYear()
+    return `${hh}:${min} ${dd}/${mm}/${yyyy}`
+  }
+
+  const formattedOpenedAt = formatReceiptDateTime(data.openedAt)
+  const formattedClosedAt = formatReceiptDateTime(data.closedAt)
+
   const html = `
 <!DOCTYPE html>
 <html>
@@ -178,18 +194,18 @@ export function printReceiptViaBrowser(data: ReceiptPrintData) {
     <tr>
       <td>Thu ngân: ${data.cashierName || 'Thu ngân'}</td>
     </tr>
-    ${data.openedAt
+    ${formattedOpenedAt
       ? `
     <tr>
-      <td>Thời gian vào: ${data.openedAt}</td>
+      <td>Thời gian vào: ${formattedOpenedAt}</td>
     </tr>
     `
       : ''
     }
-    ${data.closedAt
+    ${formattedClosedAt
       ? `
     <tr>
-      <td>Thời gian ra: ${data.closedAt}</td>
+      <td>Thời gian ra: ${formattedClosedAt}</td>
     </tr>
     `
       : ''

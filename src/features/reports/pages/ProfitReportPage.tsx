@@ -49,7 +49,6 @@ export function ProfitReportPage() {
   // Refresh
   const handleRefresh = async () => {
     await queryClient.invalidateQueries({ queryKey: ['reports'] })
-    toast.info('Đã làm mới dữ liệu báo cáo lợi nhuận')
   }
 
   // Export CSV

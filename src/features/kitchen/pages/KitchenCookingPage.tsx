@@ -61,11 +61,6 @@ export function KitchenCookingPage() {
       }
 
       await kitchenApi.updateOrderItemStatus(orderId, itemId, targetStatus)
-      toast.success(
-        targetStatus === 'READY'
-          ? 'Đã báo món nấu xong (READY)!'
-          : 'Đã nhận món vào chế biến (COOKING)!'
-      )
       await queryClient.invalidateQueries({ queryKey: ['kitchen', 'orders'] })
     } catch (err) {
       toast.error(getApiErrorMessage(err))
@@ -76,7 +71,6 @@ export function KitchenCookingPage() {
   const handleCookAll = async (orderId: number) => {
     try {
       await kitchenApi.cookAll(orderId)
-      toast.success(`Đã nhận nấu tất cả món cho đơn #${orderId}!`)
       await queryClient.invalidateQueries({ queryKey: ['kitchen', 'orders'] })
     } catch (err) {
       toast.error(getApiErrorMessage(err))
@@ -94,7 +88,6 @@ export function KitchenCookingPage() {
         return
       }
       await kitchenApi.readyAll(orderId)
-      toast.success(`Đã ra tất cả món đang nấu cho đơn #${orderId}!`)
       await queryClient.invalidateQueries({ queryKey: ['kitchen', 'orders'] })
     } catch (err) {
       toast.error(getApiErrorMessage(err))
