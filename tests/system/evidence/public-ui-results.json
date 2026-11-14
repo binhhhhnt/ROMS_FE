@@ -1,0 +1,318 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "D:\\roms\\ROMS_FE\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--grep",
+      "@public"
+    ],
+    "configFile": "D:\\roms\\ROMS_FE\\playwright.config.mjs",
+    "rootDir": "D:/roms/ROMS_FE/tests/system",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "D:/roms/ROMS_FE/test-results/system",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "D:/roms/ROMS_FE/tests/system",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.spec.mjs"
+        ],
+        "timeout": 90000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "D:\\roms\\ROMS_FE\\test-results\\system",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "",
+        "testDir": "D:\\roms\\ROMS_FE\\tests\\system",
+        "snapshotDir": "D:\\roms\\ROMS_FE\\tests\\system",
+        "testIgnore": [],
+        "testMatch": "**/*.spec.mjs",
+        "timeout": 90000,
+        "use": {
+          "baseURL": "http://127.0.0.1:5173",
+          "browserName": "chromium",
+          "channel": "chrome",
+          "trace": "off",
+          "screenshot": "only-on-failure",
+          "video": "off"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": ""
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "html",
+        {
+          "outputFolder": "playwright-report/system",
+          "open": "never"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/system/results.json"
+        }
+      ],
+      [
+        "junit",
+        {
+          "outputFile": "test-results/system/results.xml"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.65.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "auth.system.spec.mjs",
+      "file": "auth.system.spec.mjs",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "@public Biểu mẫu đăng nhập",
+          "file": "auth.system.spec.mjs",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "OW01 Hiển thị trang đăng nhập",
+              "ok": true,
+              "tags": [
+                "public"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1389,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T05:27:37.530Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "abb1b2b7ddc5c4192dcc-ad1788a1c5d5888c52ef",
+              "file": "auth.system.spec.mjs",
+              "line": 7,
+              "column": 3
+            },
+            {
+              "title": "OW02 Chặn dữ liệu sai trước khi gửi login",
+              "ok": true,
+              "tags": [
+                "public"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1430,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T05:27:39.321Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "abb1b2b7ddc5c4192dcc-417cc235cd11865b787d",
+              "file": "auth.system.spec.mjs",
+              "line": 18,
+              "column": 5
+            },
+            {
+              "title": "OW03 Chặn dữ liệu sai trước khi gửi login",
+              "ok": true,
+              "tags": [
+                "public"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1359,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T05:27:40.781Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "abb1b2b7ddc5c4192dcc-7feeacb46c938b40d7f0",
+              "file": "auth.system.spec.mjs",
+              "line": 18,
+              "column": 5
+            },
+            {
+              "title": "OW04 Ẩn/hiện không thay đổi mật khẩu",
+              "ok": true,
+              "tags": [
+                "public"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1388,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T05:27:42.162Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "abb1b2b7ddc5c4192dcc-abecefb4164b6cfc63e7",
+              "file": "auth.system.spec.mjs",
+              "line": 30,
+              "column": 3
+            },
+            {
+              "title": "OW05 Mở quên mật khẩu",
+              "ok": true,
+              "tags": [
+                "public"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1420,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T05:27:43.597Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "abb1b2b7ddc5c4192dcc-c597a2e552ca876e112e",
+              "file": "auth.system.spec.mjs",
+              "line": 41,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-14T05:27:36.910Z",
+    "duration": 8415.646,
+    "expected": 5,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

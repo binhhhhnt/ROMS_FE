@@ -4,6 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "test:system": "playwright test",
+    "test:system:api": "playwright test workflow.system.spec.mjs",
+    "test:system:public": "playwright test --grep @public",
+    "test:system:list": "playwright test --list",
+    "test:system:report": "playwright show-report playwright-report/system",
     "test:purchase-import": "node --test tests/purchaseImport.test.mjs",
     "test:ingredient-import": "node --test tests/ingredientImport.test.mjs",
     "dev": "vite",
@@ -31,6 +36,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.65.1",
     "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",

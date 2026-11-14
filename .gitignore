@@ -24,3 +24,8 @@ dist-ssr
 *.sw?
 
 *.env
+
+# System test artifacts may contain test data and screenshots.
+test-results/
+playwright-report/
+tests/system/*.reviewed.xlsx
