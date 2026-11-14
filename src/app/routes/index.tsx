@@ -2,7 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthLayout } from '@/app/layouts/AuthLayout'
 import { StaffLayout } from '@/app/layouts/StaffLayout'
 import { KitchenLayout } from '@/app/layouts/KitchenLayout'
-import { TabletLayout } from '@/app/layouts/TabletLayout'
+import { QrLayout } from '@/features/qr/layouts/QrLayout'
 import { AuthGuard, PublicOnlyGuard, RoleGuard } from '@/app/routes/guards'
 
 import { LoginPage } from '@/features/auth/pages/LoginPage'
@@ -15,12 +15,11 @@ import { MenuExcelImportPage } from '@/features/menu/pages/MenuExcelImportPage'
 import { MenuItemListPage } from '@/features/menu/pages/MenuItemListPage'
 import { MenuItemCreatePage } from '@/features/menu/pages/MenuItemCreatePage'
 import { MenuItemDetailPage } from '@/features/menu/pages/MenuItemDetailPage'
-import { TabletMenuPage } from '@/features/menu/pages/TabletMenuPage'
-import { TabletMenuItemDetailPage } from '@/features/menu/pages/TabletMenuItemDetailPage'
-import { TabletCartPage } from '@/features/ordering/pages/TabletCartPage'
-import { TabletCheckoutPage } from '@/features/ordering/pages/TabletCheckoutPage'
-import { TabletOrderSuccessPage } from '@/features/ordering/pages/TabletOrderSuccessPage'
-import { TabletOrderTrackingPage } from '@/features/ordering/pages/TabletOrderTrackingPage'
+import { QrMenuPage } from '@/features/qr/pages/QrMenuPage'
+import { QrCartPage } from '@/features/qr/pages/QrCartPage'
+import { QrOrderTrackingPage } from '@/features/qr/pages/QrOrderTrackingPage'
+import { StaffQrOrdersPage } from '@/features/qr/pages/StaffQrOrdersPage'
+import { OwnerQrTablesPage } from '@/features/qr/pages/OwnerQrTablesPage'
 import { StaffOrdersPage } from '@/features/ordering/pages/StaffOrdersPage'
 import { StaffOrderDetailPage } from '@/features/ordering/pages/StaffOrderDetailPage'
 import { KitchenCookingPage } from '@/features/kitchen/pages/KitchenCookingPage'
@@ -48,8 +47,7 @@ import { TablesOverviewPage } from '@/features/tables/pages/TablesOverviewPage'
 import { TableDetailPage } from '@/features/tables/pages/TableDetailPage'
 import { SessionDetailPage } from '@/features/tables/pages/SessionDetailPage'
 import { SessionHistoryPage } from '@/features/tables/pages/SessionHistoryPage'
-import { TabletWelcomePage } from '@/features/tables/pages/TabletWelcomePage'
-import { AiAssistantPage } from '@/features/tables/pages/AiAssistantPage'
+import { SessionCheckoutPage } from '@/features/billing/pages/SessionCheckoutPage'
 import { RestaurantSettingsPage } from '@/features/settings/pages/RestaurantSettingsPage'
 
 export function AppRoutes() {
@@ -62,6 +60,14 @@ export function AppRoutes() {
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
         </Route>
+      </Route>
+
+      {/* Public QR Ordering Routes (Mobile-First) */}
+      <Route path="/qr/:qrToken" element={<QrLayout />}>
+        <Route index element={<Navigate to="menu" replace />} />
+        <Route path="menu" element={<QrMenuPage />} />
+        <Route path="cart" element={<QrCartPage />} />
+        <Route path="orders" element={<QrOrderTrackingPage />} />
       </Route>
 
       {/* Access Denied Route */}
@@ -94,6 +100,7 @@ export function AppRoutes() {
               <Route path="/owner/reports/profit" element={<ProfitReportPage />} />
               <Route path="/owner/reports/operations" element={<OperationsReportPage />} />
               <Route path="/owner/settings" element={<RestaurantSettingsPage />} />
+              <Route path="/owner/qr-tables" element={<OwnerQrTablesPage />} />
               <Route path="/owner/recipes" element={<RecipesPage />} />
             </Route>
 
@@ -116,14 +123,16 @@ export function AppRoutes() {
               <Route path="/staff/tables/:tableId" element={<TableDetailPage />} />
               <Route path="/sessions/:sessionId" element={<SessionDetailPage />} />
               <Route path="/staff/sessions/:sessionId" element={<SessionDetailPage />} />
+              <Route path="/sessions/:sessionId/checkout" element={<SessionCheckoutPage />} />
+              <Route path="/staff/sessions/:sessionId/checkout" element={<SessionCheckoutPage />} />
               <Route path="/sessions/history" element={<SessionHistoryPage />} />
               <Route path="/staff/sessions/history" element={<SessionHistoryPage />} />
               <Route path="/sessions/:sessionId/history" element={<SessionHistoryPage />} />
               <Route path="/staff/orders" element={<StaffOrdersPage />} />
+              <Route path="/staff/qr-orders" element={<StaffQrOrdersPage />} />
               <Route path="/staff/orders/:orderId" element={<StaffOrderDetailPage />} />
               <Route path="/orders" element={<StaffOrdersPage />} />
               <Route path="/orders/:orderId" element={<StaffOrderDetailPage />} />
-              <Route path="/ai-assistant" element={<AiAssistantPage />} />
             </Route>
 
             {/* Common Authenticated Routes */}
@@ -146,24 +155,6 @@ export function AppRoutes() {
             <Route path="/kitchen/ready" element={<KitchenReadyPage />} />
             <Route path="/kitchen/menu-availability" element={<KitchenMenuAvailabilityPage />} />
             <Route path="/kitchen/recipes" element={<RecipesPage />} />
-          </Route>
-        </Route>
-
-        {/* Tablet Layout */}
-        <Route
-          element={<RoleGuard allowedRoles={['TABLE_ACCOUNT', 'OWNER']} />}
-        >
-          <Route element={<TabletLayout />}>
-            <Route path="/tablet" element={<Navigate to="/tablet/welcome" replace />} />
-            <Route path="/tablet/welcome" element={<TabletWelcomePage />} />
-            <Route path="/tablet/cart" element={<TabletCartPage />} />
-            <Route path="/tablet/checkout" element={<TabletCheckoutPage />} />
-            <Route path="/tablet/order-success" element={<TabletOrderSuccessPage />} />
-            <Route path="/tablet/orders" element={<TabletOrderTrackingPage />} />
-            <Route path="/tablet/menu" element={<TabletMenuPage />} />
-            <Route path="/tablet/menu/:itemId" element={<TabletMenuItemDetailPage />} />
-            <Route path="/tablet/ai-assistant" element={<AiAssistantPage />} />
-            <Route path="/tablet/assistant" element={<AiAssistantPage />} />
           </Route>
         </Route>
       </Route>

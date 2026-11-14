@@ -129,7 +129,7 @@ export function TableAccountModal({
       if (isEditMode && userToEdit) {
         await userApi.updateUser(userToEdit.id, {
           fullName: values.fullName.trim(),
-          role: 'TABLE_ACCOUNT',
+          role: 'SERVICE_STAFF',
           tableId: Number(values.tableId),
         })
         toast.success(`Cập nhật thông tin tài khoản bàn "${userToEdit.username}" thành công!`)
@@ -138,7 +138,7 @@ export function TableAccountModal({
           username: (values.username || '').trim(),
           password: values.password || '',
           fullName: values.fullName.trim(),
-          role: 'TABLE_ACCOUNT',
+          role: 'SERVICE_STAFF',
           tableId: Number(values.tableId),
         })
         toast.success(`Tạo mới tài khoản bàn "${values.username}" thành công!`)

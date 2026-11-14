@@ -52,7 +52,7 @@ export function UserManagementPage() {
     page: 0,
     size: 200,
     search: '',
-    role: 'TABLE_ACCOUNT',
+    role: '',
     isActive: '',
   })
 
@@ -97,15 +97,9 @@ export function UserManagementPage() {
         userApi
           .getUserById(uId)
           .then((u) => {
-            if (u.role === 'TABLE_ACCOUNT') {
-              setActiveTab('tablet')
-              setEditingTableUser(u)
-              setIsTableModalOpen(true)
-            } else {
-              setActiveTab('staff')
-              setEditingStaffUser(u)
-              setIsStaffModalOpen(true)
-            }
+            setActiveTab('staff')
+            setEditingStaffUser(u)
+            setIsStaffModalOpen(true)
           })
           .catch((err) => {
             toast.error(getApiErrorMessage(err) || 'Không tìm thấy tài khoản người dùng')
@@ -120,10 +114,7 @@ export function UserManagementPage() {
       userApi.updateUserStatus(id, newStatus),
     onSuccess: (updatedUser) => {
       queryClient.invalidateQueries({ queryKey: ['usersList'] })
-      const typeLabel =
-        updatedUser.role === 'TABLE_ACCOUNT'
-          ? `Tài khoản máy tính bảng Bàn ${updatedUser.tableCode || updatedUser.username}`
-          : `Tài khoản nhân viên "${updatedUser.fullName || updatedUser.username}"`
+      const typeLabel = `Tài khoản nhân viên "${updatedUser.fullName || updatedUser.username}"`
       toast.success(
         `${typeLabel} đã ${updatedUser.isActive ? 'được kích hoạt' : 'bị khóa / vô hiệu hóa'
         } thành công!`
@@ -134,14 +125,8 @@ export function UserManagementPage() {
     },
   })
 
-  // Filter content: if staff tab and no role selected, exclude TABLE_ACCOUNT
   const rawUsers = data?.content || []
-  const users =
-    activeTab === 'staff'
-      ? staffFilters.role
-        ? rawUsers
-        : rawUsers.filter((u) => u.role !== 'TABLE_ACCOUNT')
-      : rawUsers
+  const users = rawUsers
 
 
   const handleOpenCreate = () => {
@@ -155,13 +140,8 @@ export function UserManagementPage() {
   }
 
   const handleOpenEdit = (user: UserItem) => {
-    if (user.role === 'TABLE_ACCOUNT') {
-      setEditingTableUser(user)
-      setIsTableModalOpen(true)
-    } else {
-      setEditingStaffUser(user)
-      setIsStaffModalOpen(true)
-    }
+    setEditingStaffUser(user)
+    setIsStaffModalOpen(true)
   }
 
   const handleOpenPasswordReset = (user: UserItem) => {
@@ -195,8 +175,6 @@ export function UserManagementPage() {
         return 'cooking'
       case 'INVENTORY_STAFF':
         return 'secondary'
-      case 'TABLE_ACCOUNT':
-        return 'outline'
       default:
         return 'outline'
     }
@@ -212,8 +190,6 @@ export function UserManagementPage() {
         return 'Nhân viên bếp'
       case 'INVENTORY_STAFF':
         return 'Nhân viên kho'
-      case 'TABLE_ACCOUNT':
-        return 'Máy tính bảng (Bàn)'
       default:
         return role
     }
@@ -698,12 +674,8 @@ export function UserManagementPage() {
         isLoading={toggleStatusMutation.isPending}
         title={
           statusConfirmUser?.isActive
-            ? statusConfirmUser.role === 'TABLE_ACCOUNT'
-              ? 'Xác nhận khóa tài khoản máy tính bảng'
-              : 'Xác nhận khóa tài khoản nhân viên'
-            : statusConfirmUser?.role === 'TABLE_ACCOUNT'
-              ? 'Xác nhận mở khóa tài khoản máy tính bảng'
-              : 'Xác nhận mở khóa tài khoản nhân viên'
+            ? 'Xác nhận khóa tài khoản nhân viên'
+            : 'Xác nhận mở khóa tài khoản nhân viên'
         }
         description={
           statusConfirmUser ? (
@@ -715,9 +687,7 @@ export function UserManagementPage() {
                 </span>{' '}
                 tài khoản{' '}
                 <span className="font-semibold text-text">
-                  {statusConfirmUser.role === 'TABLE_ACCOUNT'
-                    ? `máy tính bảng Bàn ${statusConfirmUser.tableCode || statusConfirmUser.username} (@${statusConfirmUser.username})`
-                    : `nhân viên "${statusConfirmUser.fullName || statusConfirmUser.username}" (@${statusConfirmUser.username})`}
+                  {`nhân viên "${statusConfirmUser.fullName || statusConfirmUser.username}" (@${statusConfirmUser.username})`}
                 </span>
                 ?
               </p>

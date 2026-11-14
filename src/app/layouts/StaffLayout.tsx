@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Outlet, Link, NavLink, useNavigate, useMatch, useLocation } from 'react-router-dom'
 import { useAuthStore } from '@/app/store/authStore'
 import { authApi } from '@/features/auth/api/authApi'
@@ -19,7 +19,6 @@ import {
   UserCog,
   Users,
   Layers,
-  Sparkles,
   Sliders,
   Tag,
   ReceiptText,
@@ -27,12 +26,14 @@ import {
   PanelLeftOpen,
   Menu,
   X,
+  QrCode,
   type LucideIcon,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/shared/utils/cn'
 import { StaffCallPanel } from '@/features/tables/components/StaffCallPanel'
 import { ReadyDishesPanel } from '@/features/tables/components/ReadyDishesPanel'
+import { QrOrderNotificationPanel } from '@/features/qr/components/QrOrderNotificationPanel'
 
 interface SidebarNavItem {
   to: string
@@ -65,6 +66,21 @@ export function StaffLayout() {
 
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
+  const [activePanel, setActivePanel] = useState<'qr' | 'ready' | 'calls' | null>(null)
+
+  const closeAllPanels = useCallback(() => setActivePanel(null), [])
+  const toggleQrPanel = useCallback(
+    () => setActivePanel((prev) => (prev === 'qr' ? null : 'qr')),
+    []
+  )
+  const toggleReadyPanel = useCallback(
+    () => setActivePanel((prev) => (prev === 'ready' ? null : 'ready')),
+    []
+  )
+  const toggleCallsPanel = useCallback(
+    () => setActivePanel((prev) => (prev === 'calls' ? null : 'calls')),
+    []
+  )
 
   // Close mobile drawer when route changes
   useEffect(() => {
@@ -104,12 +120,13 @@ export function StaffLayout() {
       isActiveOverride: isReportsPage,
     },
     { to: '/owner/settings', label: 'Cài đặt & Thuế', icon: Sliders, visible: isOwner },
+    { to: '/owner/qr-tables', label: 'Quản lý QR bàn', icon: QrCode, visible: isOwner },
 
     // SERVICE_STAFF & OWNER Links
     { to: '/tables', label: 'Sơ đồ bàn', icon: Layers, visible: isServiceOrOwner },
+    { to: '/staff/qr-orders', label: 'Xác nhận đơn QR', icon: QrCode, visible: isServiceOrOwner },
     { to: '/staff/orders', label: 'Danh sách Order', icon: ClipboardList, visible: isServiceOrOwner },
     { to: '/sessions/history', label: 'Lịch sử phiên bàn', icon: History, visible: isServiceOrOwner },
-    { to: '/ai-assistant', label: 'Trợ lý AI Gemini', icon: Sparkles, visible: isServiceOrOwner },
 
     // INVENTORY_STAFF & OWNER Links
     { to: '/inventory/ingredients', label: 'Nguyên liệu & Tồn kho', icon: Boxes, visible: isInventoryOrOwner },
@@ -201,8 +218,21 @@ export function StaffLayout() {
         <div className="flex items-center gap-2 sm:gap-4">
           {(user?.role === 'SERVICE_STAFF' || user?.role === 'OWNER') && (
             <>
-              <ReadyDishesPanel />
-              <StaffCallPanel />
+              <QrOrderNotificationPanel
+                isOpen={activePanel === 'qr'}
+                onToggle={toggleQrPanel}
+                onClose={closeAllPanels}
+              />
+              <ReadyDishesPanel
+                isOpen={activePanel === 'ready'}
+                onToggle={toggleReadyPanel}
+                onClose={closeAllPanels}
+              />
+              <StaffCallPanel
+                isOpen={activePanel === 'calls'}
+                onToggle={toggleCallsPanel}
+                onClose={closeAllPanels}
+              />
             </>
           )}
           <Link

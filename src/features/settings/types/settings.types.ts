@@ -18,6 +18,8 @@ export interface RestaurantSettingResponse {
   ready_ticket_printer_name?: string | null
   readyTicketPaperSize?: 'A5' | 'K80' | 'K58'
   ready_ticket_paper_size?: 'A5' | 'K80' | 'K58'
+  qrOrderingEnabled?: boolean
+  qr_ordering_enabled?: boolean
   createdAt?: string
   updatedAt?: string
   updated_at?: string
@@ -42,6 +44,8 @@ export interface UpdateSettingRequest {
   ready_ticket_printer_name?: string | null
   readyTicketPaperSize?: 'A5' | 'K80' | 'K58'
   ready_ticket_paper_size?: 'A5' | 'K80' | 'K58'
+  qrOrderingEnabled?: boolean
+  qr_ordering_enabled?: boolean
 }
 
 export interface TaxCategoryResponse {

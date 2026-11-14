@@ -55,7 +55,7 @@ export function StaffUserModal({
         password: '',
         fullName: userToEdit.fullName,
         email: userToEdit.email || '',
-        role: userToEdit.role === 'TABLE_ACCOUNT' ? 'SERVICE_STAFF' : userToEdit.role,
+        role: userToEdit.role,
       })
     } else {
       reset({

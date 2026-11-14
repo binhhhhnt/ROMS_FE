@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useQuery } from '@tanstack/react-query'
-import { X, User, Lock, Mail, Shield, Smartphone, Save, Eye, EyeOff } from 'lucide-react'
+import { X, User, Lock, Mail, Shield, Save, Eye, EyeOff } from 'lucide-react'
 import { toast } from 'sonner'
 
 import {
@@ -27,13 +26,6 @@ export function UserModal({ isOpen, onClose, onSuccess, userToEdit }: UserModalP
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [customError, setCustomError] = useState<string | null>(null)
-
-  // Load active tables for TABLE_ACCOUNT selection
-  const { data: tables = [] } = useQuery({
-    queryKey: ['activeTablesForUserSelect'],
-    queryFn: () => userApi.getTables(),
-    enabled: isOpen,
-  })
 
   const {
     register,
@@ -79,11 +71,8 @@ export function UserModal({ isOpen, onClose, onSuccess, userToEdit }: UserModalP
     }
   }, [userToEdit, reset, isOpen])
 
-  // Clear tableId if role is not TABLE_ACCOUNT
   useEffect(() => {
-    if (selectedRole !== 'TABLE_ACCOUNT') {
-      setValue('tableId', null)
-    }
+    setValue('tableId', null)
   }, [selectedRole, setValue])
 
   if (!isOpen) return null
@@ -103,11 +92,6 @@ export function UserModal({ isOpen, onClose, onSuccess, userToEdit }: UserModalP
       }
     }
 
-    if (values.role === 'TABLE_ACCOUNT' && (!values.tableId || values.tableId <= 0)) {
-      setCustomError('Tài khoản Tablet bắt buộc phải liên kết với một bàn ăn')
-      return
-    }
-
     setIsSubmitting(true)
     try {
       if (isEditMode && userToEdit) {
@@ -115,7 +99,7 @@ export function UserModal({ isOpen, onClose, onSuccess, userToEdit }: UserModalP
           fullName: values.fullName.trim(),
           email: values.email?.trim() || undefined,
           role: values.role,
-          tableId: values.role === 'TABLE_ACCOUNT' && values.tableId ? Number(values.tableId) : null,
+          tableId: null,
         })
         toast.success(`Cập nhật tài khoản "${userToEdit.username}" thành công!`)
       } else {
@@ -125,7 +109,7 @@ export function UserModal({ isOpen, onClose, onSuccess, userToEdit }: UserModalP
           fullName: values.fullName.trim(),
           email: values.email?.trim() || undefined,
           role: values.role,
-          tableId: values.role === 'TABLE_ACCOUNT' && values.tableId ? Number(values.tableId) : null,
+          tableId: null,
         })
         toast.success(`Tạo mới tài khoản "${values.username}" thành công!`)
       }
@@ -279,35 +263,9 @@ export function UserModal({ isOpen, onClose, onSuccess, userToEdit }: UserModalP
               <option value="SERVICE_STAFF">SERVICE_STAFF (Nhân viên phục vụ bàn)</option>
               <option value="KITCHEN_STAFF">KITCHEN_STAFF (Nhân viên bếp / KDS)</option>
               <option value="INVENTORY_STAFF">INVENTORY_STAFF (Nhân viên quản lý kho)</option>
-              <option value="TABLE_ACCOUNT">TABLE_ACCOUNT (Thiết bị Tablet tại bàn)</option>
               <option value="OWNER">OWNER (Quản trị viên / Chủ nhà hàng)</option>
             </select>
           </div>
-
-          {/* Linked Table (Required if TABLE_ACCOUNT) */}
-          {selectedRole === 'TABLE_ACCOUNT' && (
-            <div className="flex flex-col gap-1.5 p-3.5 bg-surface/40 border border-accent/30 rounded-xl animate-in fade-in-50 duration-200">
-              <label htmlFor="tableId" className="text-xs font-semibold text-accent flex items-center gap-1.5">
-                <Smartphone className="w-3.5 h-3.5" />
-                <span>Liên kết Bàn ăn (Bắt buộc cho Tablet)</span>
-              </label>
-              <select
-                {...register('tableId', {
-                  setValueAs: (v) => (v === '' || isNaN(Number(v)) ? null : Number(v)),
-                })}
-              >
-                <option value="">-- Chọn bàn ăn gán với thiết bị này --</option>
-                {tables.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    Bàn {t.tableCode} (Sức chứa: {t.capacity} khách {t.area ? `- Khu ${t.area}` : ''})
-                  </option>
-                ))}
-              </select>
-              {errors.tableId && (
-                <span className="text-xs text-status-cancelled">{errors.tableId.message}</span>
-              )}
-            </div>
-          )}
 
           {/* Modal Actions */}
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-border mt-2">

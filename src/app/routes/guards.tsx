@@ -39,9 +39,6 @@ export function PublicOnlyGuard() {
   }
 
   if (isAuthenticated && user) {
-    if (user.role === 'TABLE_ACCOUNT') {
-      return <Navigate to="/tablet/welcome" replace />
-    }
     if (user.role === 'KITCHEN_STAFF') {
       return <Navigate to="/kitchen/cooking" replace />
     }

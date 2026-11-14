@@ -1,5 +1,5 @@
 import { Bell, BellRing, Check, X } from 'lucide-react'
-import { useState, useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 import { useStaffCallStore, type StaffCallRequest } from '../store/staffCallStore'
 import { staffCallApi } from '../api/staffCallApi'
@@ -7,8 +7,17 @@ import { subscribeToTopic } from '@/shared/lib/stomp'
 import { Button } from '@/shared/components/ui/button'
 import { cn } from '@/shared/utils/cn'
 
-export function StaffCallPanel() {
-  const [isOpen, setIsOpen] = useState(false)
+interface StaffCallPanelProps {
+  isOpen: boolean
+  onToggle: () => void
+  onClose: () => void
+}
+
+export function StaffCallPanel({
+  isOpen,
+  onToggle,
+  onClose,
+}: StaffCallPanelProps) {
   const { pendingCalls, addCall, removeCall } = useStaffCallStore()
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
@@ -25,7 +34,6 @@ export function StaffCallPanel() {
       (data) => {
         if (!data || !data.requestId) return
         addCall(data)
-        setIsOpen(true) // Tự động mở panel để nhân viên dễ thấy
         audioRef.current?.play().catch(() => {
           // Bỏ qua lỗi nếu trình duyệt chặn autoplay trước tương tác
         })
@@ -66,7 +74,7 @@ export function StaffCallPanel() {
       {/* Nút chuông thông báo trên Header */}
       <button
         type="button"
-        onClick={() => setIsOpen((prev) => !prev)}
+        onClick={onToggle}
         className={cn(
           'relative p-2 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
           badgeCount > 0
@@ -94,7 +102,7 @@ export function StaffCallPanel() {
         <>
           <div
             className="fixed inset-0 z-40"
-            onClick={() => setIsOpen(false)}
+            onClick={onClose}
             aria-hidden="true"
           />
           <div className="absolute right-0 top-full mt-2 w-80 bg-card border border-border rounded-xl shadow-2xl z-50 overflow-hidden animate-in fade-in-50 duration-200">
@@ -108,7 +116,7 @@ export function StaffCallPanel() {
               </div>
               <button
                 type="button"
-                onClick={() => setIsOpen(false)}
+                onClick={onClose}
                 className="text-muted hover:text-text p-1 rounded transition-colors"
                 title="Đóng"
               >

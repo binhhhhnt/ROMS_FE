@@ -25,6 +25,8 @@ export const settingsApi = {
       billPaperSize: raw?.billPaperSize ?? raw?.bill_paper_size ?? 'K80',
       readyTicketPrinterName: raw?.readyTicketPrinterName ?? raw?.ready_ticket_printer_name ?? null,
       readyTicketPaperSize: raw?.readyTicketPaperSize ?? raw?.ready_ticket_paper_size ?? 'K80',
+      qrOrderingEnabled: raw?.qrOrderingEnabled ?? raw?.qr_ordering_enabled ?? true,
+      qr_ordering_enabled: raw?.qrOrderingEnabled ?? raw?.qr_ordering_enabled ?? true,
       createdAt: raw?.createdAt ?? raw?.created_at ?? '',
       updatedAt: raw?.updatedAt ?? raw?.updated_at ?? '',
     }
@@ -44,6 +46,8 @@ export const settingsApi = {
       bill_paper_size: data.billPaperSize ?? data.bill_paper_size,
       ready_ticket_printer_name: data.readyTicketPrinterName ?? data.ready_ticket_printer_name,
       ready_ticket_paper_size: data.readyTicketPaperSize ?? data.ready_ticket_paper_size,
+      qr_ordering_enabled: data.qrOrderingEnabled ?? data.qr_ordering_enabled,
+      qrOrderingEnabled: data.qrOrderingEnabled ?? data.qr_ordering_enabled,
     }
     const res = await apiClient.put<ApiResponse<any>>('/api/settings', payload)
     const raw = res.data.data
@@ -61,6 +65,8 @@ export const settingsApi = {
       billPaperSize: raw?.billPaperSize ?? raw?.bill_paper_size ?? payload.bill_paper_size,
       readyTicketPrinterName: raw?.readyTicketPrinterName ?? raw?.ready_ticket_printer_name ?? payload.ready_ticket_printer_name,
       readyTicketPaperSize: raw?.readyTicketPaperSize ?? raw?.ready_ticket_paper_size ?? payload.ready_ticket_paper_size,
+      qrOrderingEnabled: raw?.qrOrderingEnabled ?? raw?.qr_ordering_enabled ?? payload.qr_ordering_enabled ?? true,
+      qr_ordering_enabled: raw?.qrOrderingEnabled ?? raw?.qr_ordering_enabled ?? payload.qr_ordering_enabled ?? true,
       createdAt: raw?.createdAt ?? raw?.created_at ?? '',
       updatedAt: raw?.updatedAt ?? raw?.updated_at ?? '',
     }

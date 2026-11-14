@@ -3,7 +3,6 @@ export type UserRole =
   | 'SERVICE_STAFF'
   | 'KITCHEN_STAFF'
   | 'INVENTORY_STAFF'
-  | 'TABLE_ACCOUNT'
 
 export interface UserProfile {
   id: number

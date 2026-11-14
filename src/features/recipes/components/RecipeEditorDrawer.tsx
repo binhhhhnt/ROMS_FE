@@ -21,6 +21,7 @@ import {
   UtensilsCrossed,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { getApiErrorMessage } from '@/shared/lib/axios'
 import type { AxiosError } from 'axios'
 import type { ApiResponse } from '@/shared/types/api.types'
 
@@ -102,8 +103,7 @@ export function RecipeEditorDrawer({
       refreshRecipe()
     },
     onError: (err: AxiosError<ApiResponse<unknown>>) => {
-      const msg = err.response?.data?.message || 'Không thể thêm nguyên liệu'
-      toast.error(msg)
+      toast.error(getApiErrorMessage(err))
     },
   })
 
@@ -118,8 +118,7 @@ export function RecipeEditorDrawer({
       refreshRecipe()
     },
     onError: (err: AxiosError<ApiResponse<unknown>>) => {
-      const msg = err.response?.data?.message || 'Không thể cập nhật định lượng'
-      toast.error(msg)
+      toast.error(getApiErrorMessage(err))
     },
   })
 
@@ -132,8 +131,7 @@ export function RecipeEditorDrawer({
       refreshRecipe()
     },
     onError: (err: AxiosError<ApiResponse<unknown>>) => {
-      const msg = err.response?.data?.message || 'Không thể xóa nguyên liệu'
-      toast.error(msg)
+      toast.error(getApiErrorMessage(err))
     },
   })
 

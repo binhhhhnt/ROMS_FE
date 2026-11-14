@@ -5,7 +5,6 @@ export const userRoleEnum = z.enum([
   'SERVICE_STAFF',
   'KITCHEN_STAFF',
   'INVENTORY_STAFF',
-  'TABLE_ACCOUNT',
 ])
 
 export const staffRoleEnum = z.enum([

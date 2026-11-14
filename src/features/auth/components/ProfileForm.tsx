@@ -112,8 +112,6 @@ export function ProfileForm() {
         return 'cooking'
       case 'INVENTORY_STAFF':
         return 'secondary'
-      case 'TABLE_ACCOUNT':
-        return 'completed'
       default:
         return 'outline'
     }

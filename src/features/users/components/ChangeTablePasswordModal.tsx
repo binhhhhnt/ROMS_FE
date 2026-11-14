@@ -64,7 +64,7 @@ export function ChangeTablePasswordModal({
     try {
       await userApi.updateUser(account.id, {
         fullName: account.fullName,
-        role: 'TABLE_ACCOUNT',
+        role: account.role,
         tableId: account.tableId ? Number(account.tableId) : null,
         password: values.password.trim(),
       })

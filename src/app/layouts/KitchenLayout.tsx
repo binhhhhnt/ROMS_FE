@@ -33,7 +33,7 @@ export function KitchenLayout() {
       // ignore
     } finally {
       clearAuth()
-      toast.success('Đã đăng xuất khỏi màn hình bếp')
+      toast.success('Đã đăng xuất thành công')
       navigate('/login')
     }
   }

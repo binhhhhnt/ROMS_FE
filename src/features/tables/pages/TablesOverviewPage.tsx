@@ -23,7 +23,6 @@ import type { TableItem } from '@/features/tables/types/table.types'
 import { TableCard } from '@/features/tables/components/TableCard'
 import { TableModal } from '@/features/tables/components/TableModal'
 import { TransferTableModal } from '@/features/tables/components/TransferTableModal'
-import { TableCheckoutModal } from '@/features/billing/components/TableCheckoutModal'
 import { useAuthStore } from '@/app/store/authStore'
 import { getApiErrorMessage } from '@/shared/lib/axios'
 import { ConfirmDialog } from '@/shared/components/ui/confirm-dialog'
@@ -52,7 +51,13 @@ export function TablesOverviewPage({ initialActiveOnly = true }: TablesOverviewP
   const [transferringTable, setTransferringTable] = useState<TableItem | null>(null)
   const [closeSessionTarget, setCloseSessionTarget] = useState<TableItem | null>(null)
   const [statusTargetTable, setStatusTargetTable] = useState<TableItem | null>(null)
-  const [checkoutTable, setCheckoutTable] = useState<TableItem | null>(null)
+
+  const navigateToCheckout = (table: TableItem) => {
+    if (!table.activeSessionId) return
+    navigate(`/sessions/${table.activeSessionId}/checkout`, {
+      state: { from: '/tables', tableCode: table.tableCode },
+    })
+  }
 
   // Fetch tables
   const {
@@ -204,7 +209,7 @@ export function TablesOverviewPage({ initialActiveOnly = true }: TablesOverviewP
       )
 
       if (hasCompleted) {
-        setCheckoutTable(table)
+        navigateToCheckout(table)
         return
       }
 
@@ -421,7 +426,7 @@ export function TablesOverviewPage({ initialActiveOnly = true }: TablesOverviewP
               }}
               onToggleStatus={handleToggleStatus}
               onViewDetail={(t) => navigate(`/tables/${t.id}`)}
-              onCheckout={(t) => setCheckoutTable(t)}
+              onCheckout={navigateToCheckout}
             />
           ))}
         </div>
@@ -511,7 +516,7 @@ export function TablesOverviewPage({ initialActiveOnly = true }: TablesOverviewP
                             <Button
                               variant="primary"
                               size="sm"
-                              onClick={() => setCheckoutTable(t)}
+                              onClick={() => navigateToCheckout(t)}
                               className="h-8 px-3 text-xs bg-primary hover:bg-primary-hover text-white font-semibold"
                             >
                               Thanh toán
@@ -601,20 +606,6 @@ export function TablesOverviewPage({ initialActiveOnly = true }: TablesOverviewP
         cancelText="Hủy bỏ"
         variant={statusTargetTable?.isActive ? 'danger' : 'primary'}
       />
-
-      {/* Table Checkout & Payment Modal */}
-      {checkoutTable && checkoutTable.activeSessionId && (
-        <TableCheckoutModal
-          isOpen={!!checkoutTable}
-          onClose={() => setCheckoutTable(null)}
-          sessionId={checkoutTable.activeSessionId}
-          tableCode={checkoutTable.tableCode}
-          onCheckoutSuccess={() => {
-            setCheckoutTable(null)
-            refetch()
-          }}
-        />
-      )}
     </div>
   )
 }
