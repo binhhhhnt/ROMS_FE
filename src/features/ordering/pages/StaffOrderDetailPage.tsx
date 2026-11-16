@@ -449,14 +449,8 @@ export function StaffOrderDetailPage() {
                       disabled={servingItemId === item.id}
                       className="bg-status-ready hover:bg-emerald-600 font-bold text-xs text-white shadow-xs h-8 px-3"
                     >
-                      {servingItemId === item.id ? (
-                        'Đang lưu...'
-                      ) : (
-                        <>
-                          <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
-                          Đã bưng ra bàn
-                        </>
-                      )}
+                      <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+                      Đã bưng ra bàn
                     </Button>
                   ) : (
                     <div className="flex items-center gap-2">

@@ -182,7 +182,7 @@ export function KitchenCookingOrderCard({
                       className="h-10 px-4 bg-status-cooking/10 hover:bg-status-cooking/20 active:bg-status-cooking/30 text-status-cooking font-bold text-xs rounded-xl border border-status-cooking/30 cursor-pointer disabled:opacity-60 transition-colors shadow-xs"
                       title="Bắt đầu nấu món này"
                     >
-                      {updatingItemId === item.id ? 'Đang lưu...' : 'Nấu'}
+                      Nấu
                     </button>
                   ) : (
                     <button
@@ -199,7 +199,7 @@ export function KitchenCookingOrderCard({
                       className="h-10 px-4 bg-status-ready hover:bg-emerald-600 active:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs cursor-pointer transition-colors disabled:opacity-60"
                       title="Báo món đã nấu xong và chuyển ra quầy"
                     >
-                      {updatingItemId === item.id ? 'Đang lưu...' : 'Ra món'}
+                      Ra món
                     </button>
                   )}
                 </div>
@@ -219,11 +219,7 @@ export function KitchenCookingOrderCard({
               disabled={isFinishingAll}
               className="w-full h-11 bg-status-cooking hover:bg-orange-600 active:bg-orange-700 text-white font-bold text-sm rounded-xl flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer disabled:opacity-60"
             >
-              {isFinishingAll ? (
-                <span>Đang lưu...</span>
-              ) : (
-                <span>Nấu tất cả</span>
-              )}
+              <span>Nấu tất cả</span>
             </button>
           ) : (
             <button
@@ -232,11 +228,7 @@ export function KitchenCookingOrderCard({
               disabled={isFinishingAll}
               className="w-full h-11 bg-status-ready hover:bg-emerald-600 active:bg-emerald-700 text-white font-bold text-sm rounded-xl flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer disabled:opacity-60"
             >
-              {isFinishingAll ? (
-                <span>Đang lưu...</span>
-              ) : (
-                <span>Ra tất cả</span>
-              )}
+              <span>Ra tất cả</span>
             </button>
           )
         ) : (

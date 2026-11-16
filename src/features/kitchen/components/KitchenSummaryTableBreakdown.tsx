@@ -150,7 +150,7 @@ export function KitchenSummaryTableBreakdown({
                       className="h-10 px-4 bg-status-cooking/10 hover:bg-status-cooking/20 active:bg-status-cooking/30 text-status-cooking font-bold text-xs rounded-xl border border-status-cooking/30 cursor-pointer disabled:opacity-60 transition-colors shadow-xs"
                       title="Nhận nấu cho bàn này"
                     >
-                      {updatingItemId === item.itemId ? 'Đang lưu...' : 'Nấu'}
+                      Nấu
                     </button>
                   ) : (
                     <button
@@ -168,7 +168,7 @@ export function KitchenSummaryTableBreakdown({
                       title="Ra món cho bàn này"
                     >
                       <CheckCircle2 className="w-3.5 h-3.5" />
-                      <span>{updatingItemId === item.itemId ? 'Đang lưu...' : 'Ra món'}</span>
+                      <span>Ra món</span>
                     </button>
                   )}
                 </div>

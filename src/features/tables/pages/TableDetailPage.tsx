@@ -829,14 +829,8 @@ export function TableDetailPage() {
                                         disabled={servingItemId === item.id}
                                         className="bg-status-ready hover:bg-emerald-600 font-bold text-xs shadow-xs text-white h-8 px-3"
                                       >
-                                        {servingItemId === item.id ? (
-                                          'Đang lưu...'
-                                        ) : (
-                                          <>
-                                            <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
-                                            Đã bưng ra bàn
-                                          </>
-                                        )}
+                                        <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+                                        Đã bưng ra bàn
                                       </Button>
                                     ) : item.status === 'COMPLETED' ? (
                                       <span className="px-2.5 py-1 rounded-md bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-semibold text-[11px] border border-emerald-500/20">

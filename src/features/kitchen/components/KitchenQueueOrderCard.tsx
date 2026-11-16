@@ -137,7 +137,7 @@ export function KitchenQueueOrderCard({
                   className="h-9 px-4 bg-primary hover:bg-primary-hover active:bg-primary text-white font-bold text-xs rounded-xl shadow-xs cursor-pointer transition-colors disabled:opacity-60 flex items-center gap-1.5"
                 >
                   <Flame className="w-3.5 h-3.5" />
-                  {acceptingItemId === item.id ? 'Đang lưu...' : 'Nấu'}
+                  Nấu
                 </button>
               </div>
             </div>
@@ -154,11 +154,7 @@ export function KitchenQueueOrderCard({
           className="w-full h-11 bg-primary hover:bg-primary-hover active:bg-primary text-white font-bold text-sm rounded-xl flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer disabled:opacity-60"
         >
           <Flame className="w-4 h-4" />
-          {isAcceptingAll ? (
-            <span>Đang lưu...</span>
-          ) : (
-            <span>Nấu tất cả ({pendingItems.length} món)</span>
-          )}
+          <span>Nấu tất cả ({pendingItems.length} món)</span>
         </button>
       </div>
     </div>
