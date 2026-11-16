@@ -228,9 +228,9 @@ export function StaffOrderModal({
         </div>
 
         {/* Modal Body: Left (Menu selection) & Right (Cart preview) */}
-        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+        <div className="flex-1 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden">
           {/* Left Column: Menu Items Catalog */}
-          <div className="flex-1 flex flex-col p-4 sm:p-5 overflow-hidden border-b lg:border-b-0 lg:border-r border-border">
+          <div className="flex-1 min-h-[300px] lg:min-h-0 flex flex-col p-4 sm:p-5 overflow-hidden border-b lg:border-b-0 lg:border-r border-border">
             {/* Table Selector (if not preselected) */}
             {!initialSessionId && (
               <div className="mb-4">

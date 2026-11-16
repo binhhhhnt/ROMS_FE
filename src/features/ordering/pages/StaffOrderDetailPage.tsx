@@ -222,7 +222,7 @@ export function StaffOrderDetailPage() {
   return (
     <div className="max-w-4xl mx-auto flex flex-col gap-5 pb-12">
       {/* Tầng 1: Top Navigation */}
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <Link to="/staff/orders" className="inline-block">
           <Button type="button" variant="outline" size="sm" className="h-9 px-3 text-xs font-medium gap-1.5">
             <ArrowLeft className="w-4 h-4 shrink-0" />

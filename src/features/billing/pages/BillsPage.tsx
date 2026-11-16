@@ -189,7 +189,7 @@ export function BillsPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+            <table className="w-full min-w-[700px] text-left text-xs">
               <thead className="bg-surface/60 font-medium text-muted border-b border-border">
                 <tr>
                   <th className="py-3 px-4 whitespace-nowrap">Mã Hóa đơn</th>

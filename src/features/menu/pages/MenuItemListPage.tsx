@@ -174,7 +174,7 @@ export function MenuItemListPage() {
               className="overflow-x-auto rounded-lg border border-border bg-card"
               aria-busy={query.isFetching}
             >
-              <table className="w-full text-left text-sm">
+              <table className="w-full min-w-[740px] text-left text-sm">
                 <caption className="sr-only">
                   Danh sách món theo danh mục và trạng thái
                 </caption>

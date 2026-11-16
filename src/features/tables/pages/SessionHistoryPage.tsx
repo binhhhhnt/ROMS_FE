@@ -56,7 +56,7 @@ export function SessionHistoryPage() {
       <div className="flex items-center gap-3 p-3.5 bg-card border border-border rounded-lg">
         <Filter className="w-4 h-4 text-muted shrink-0" />
         <select
-          className="flex h-10 w-56 rounded-md border border-border bg-card px-3 py-2 text-xs text-text focus:outline-hidden focus:ring-2 focus:ring-accent"
+          className="flex h-10 w-full sm:w-56 rounded-md border border-border bg-card px-3 py-2 text-xs text-text focus:outline-hidden focus:ring-2 focus:ring-accent"
           value={statusFilter}
           onChange={(e) => {
             setStatusFilter((e.target.value as ServiceSessionStatus) || '')
@@ -72,7 +72,7 @@ export function SessionHistoryPage() {
       {/* Tầng 3: Sessions Table */}
       <div className="bg-card border border-border rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
+          <table className="w-full min-w-[680px] text-left text-xs border-collapse">
             <thead>
               <tr className="border-b border-border bg-surface/60 text-muted font-medium">
                 <th className="py-3 px-4 whitespace-nowrap">Mã phiên</th>

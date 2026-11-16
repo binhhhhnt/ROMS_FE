@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { Clock, ChevronRight } from 'lucide-react'
 import { Badge } from '@/shared/components/ui/badge'
 import { Button } from '@/shared/components/ui/button'
@@ -27,6 +26,8 @@ export interface ConsolidatedDish {
 interface KitchenSummaryDishCardProps {
   dish: ConsolidatedDish
   isSelected: boolean
+  isProcessing: boolean
+  hasUpdatingItems: boolean
   onSelect: () => void
   onCookAll: (dish: ConsolidatedDish) => Promise<void>
   onReadyAll: (dish: ConsolidatedDish) => Promise<void>
@@ -35,12 +36,12 @@ interface KitchenSummaryDishCardProps {
 export function KitchenSummaryDishCard({
   dish,
   isSelected,
+  isProcessing,
+  hasUpdatingItems,
   onSelect,
   onCookAll,
   onReadyAll,
 }: KitchenSummaryDishCardProps) {
-  const [isProcessing, setIsProcessing] = useState(false)
-
   // Calculate elapsed time from the oldest pending/cooking order
   const elapsedMinutes = Math.max(
     0,
@@ -50,22 +51,12 @@ export function KitchenSummaryDishCard({
 
   const handleCookAllClick = async (e: React.MouseEvent) => {
     e.stopPropagation()
-    setIsProcessing(true)
-    try {
-      await onCookAll(dish)
-    } finally {
-      setIsProcessing(false)
-    }
+    await onCookAll(dish)
   }
 
   const handleReadyAllClick = async (e: React.MouseEvent) => {
     e.stopPropagation()
-    setIsProcessing(true)
-    try {
-      await onReadyAll(dish)
-    } finally {
-      setIsProcessing(false)
-    }
+    await onReadyAll(dish)
   }
 
   return (
@@ -131,7 +122,7 @@ export function KitchenSummaryDishCard({
           variant="cooking"
           size="sm"
           onClick={handleCookAllClick}
-          disabled={dish.pendingQuantity === 0 || isProcessing}
+          disabled={dish.pendingQuantity === 0 || isProcessing || hasUpdatingItems}
           className="flex-1 h-9 px-3 text-xs font-semibold"
           title={dish.pendingQuantity > 0 ? 'Nhận nấu tất cả các suất đang chờ' : 'Không có suất nào đang chờ nấu'}
         >
@@ -143,7 +134,7 @@ export function KitchenSummaryDishCard({
           variant="ready"
           size="sm"
           onClick={handleReadyAllClick}
-          disabled={dish.cookingQuantity === 0 || isProcessing}
+          disabled={dish.cookingQuantity === 0 || isProcessing || hasUpdatingItems}
           className="flex-1 h-9 px-3 text-xs font-semibold"
           title={dish.cookingQuantity > 0 ? `Ra ${dish.cookingQuantity} suất đang nấu ra quầy` : 'Chưa có suất nào đang nấu để ra món'}
         >

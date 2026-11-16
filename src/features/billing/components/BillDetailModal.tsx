@@ -114,8 +114,8 @@ export function BillDetailModal({ isOpen, onClose, bill }: BillDetailModalProps)
             <h3 className="text-sm font-semibold text-text mb-2">
               Danh sách món ({bill.items?.length || 0})
             </h3>
-            <div className="border border-border rounded-lg overflow-hidden">
-              <table className="w-full text-left text-xs">
+            <div className="border border-border rounded-lg overflow-x-auto">
+              <table className="w-full min-w-[460px] text-left text-xs">
                 <thead className="bg-surface/60 text-muted font-medium border-b border-border">
                   <tr>
                     <th className="py-2.5 px-3 w-10 text-center">#</th>

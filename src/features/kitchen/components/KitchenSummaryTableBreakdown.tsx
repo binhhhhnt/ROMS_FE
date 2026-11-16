@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { UtensilsCrossed, Clock } from 'lucide-react'
 import type { OrderItemStatus } from '@/features/ordering/types/ordering.types'
 import { Button } from '@/shared/components/ui/button'
@@ -6,6 +5,8 @@ import type { ConsolidatedDish, ConsolidatedTableItem } from './KitchenSummaryDi
 
 interface KitchenSummaryTableBreakdownProps {
   dish: ConsolidatedDish | null
+  updatingItemIds: Set<number>
+  isDishBatchProcessing: boolean
   onUpdateItemStatus: (
     orderId: number,
     itemId: number,
@@ -15,9 +16,10 @@ interface KitchenSummaryTableBreakdownProps {
 
 export function KitchenSummaryTableBreakdown({
   dish,
+  updatingItemIds,
+  isDishBatchProcessing,
   onUpdateItemStatus,
 }: KitchenSummaryTableBreakdownProps) {
-  const [updatingItemId, setUpdatingItemId] = useState<number | null>(null)
 
   if (!dish) {
     return (
@@ -123,15 +125,8 @@ export function KitchenSummaryTableBreakdown({
                     type="button"
                     variant="cooking"
                     size="sm"
-                    onClick={async () => {
-                      setUpdatingItemId(item.itemId)
-                      try {
-                        await onUpdateItemStatus(item.orderId, item.itemId, 'COOKING')
-                      } finally {
-                        setUpdatingItemId(null)
-                      }
-                    }}
-                    disabled={updatingItemId === item.itemId}
+                    onClick={() => onUpdateItemStatus(item.orderId, item.itemId, 'COOKING')}
+                    disabled={isDishBatchProcessing || updatingItemIds.has(item.itemId)}
                     className="h-9 px-3.5 text-xs font-semibold"
                     title="Nhận nấu cho bàn này"
                   >
@@ -142,15 +137,8 @@ export function KitchenSummaryTableBreakdown({
                     type="button"
                     variant="ready"
                     size="sm"
-                    onClick={async () => {
-                      setUpdatingItemId(item.itemId)
-                      try {
-                        await onUpdateItemStatus(item.orderId, item.itemId, 'READY')
-                      } finally {
-                        setUpdatingItemId(null)
-                      }
-                    }}
-                    disabled={updatingItemId === item.itemId}
+                    onClick={() => onUpdateItemStatus(item.orderId, item.itemId, 'READY')}
+                    disabled={isDishBatchProcessing || updatingItemIds.has(item.itemId)}
                     className="h-9 px-3.5 text-xs font-semibold"
                     title="Ra món cho bàn này"
                   >

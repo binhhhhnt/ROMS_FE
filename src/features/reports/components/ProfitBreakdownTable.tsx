@@ -113,7 +113,7 @@ export function ProfitBreakdownTable({ trends, isLoading = false }: ProfitBreakd
 
         {!isLoading && processedData.length > 0 && (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
+            <table className="w-full min-w-[620px] text-left border-collapse text-xs">
               <thead>
                 <tr className="bg-surface/30 border-b border-border text-text font-semibold">
                   <th

@@ -250,7 +250,7 @@ export function RecipesPage() {
       {/* Menu Items Table */}
       <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-xs">
+          <table className="w-full min-w-[720px] text-xs">
             <thead className="bg-surface/50 border-b border-border text-muted-foreground font-medium">
               <tr>
                 <th className="px-4 py-3 text-left w-16">ID</th>

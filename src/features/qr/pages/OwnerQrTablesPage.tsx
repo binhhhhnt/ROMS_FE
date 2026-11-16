@@ -255,7 +255,7 @@ export function OwnerQrTablesPage() {
 
           {/* QR Preview & PDF Export */}
           <div className="lg:col-span-7 bg-card border border-border rounded-xl p-4 space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="font-bold text-sm text-text">Xem trước mẫu QR</h2>
               <Button
                 size="sm"

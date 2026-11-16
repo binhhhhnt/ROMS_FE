@@ -306,7 +306,7 @@ export function RestaurantSettingsPage() {
                     </div>
 
                     <div className="overflow-x-auto">
-                      <table className="w-full text-xs text-left">
+                      <table className="w-full min-w-[500px] text-xs text-left">
                         <thead>
                           <tr className="border-b border-border text-text-secondary">
                             <th className="py-2 pr-3 font-medium">Cấu hình</th>

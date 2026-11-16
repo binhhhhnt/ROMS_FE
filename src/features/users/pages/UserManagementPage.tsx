@@ -374,7 +374,7 @@ export function UserManagementPage() {
       {activeTab === 'staff' && (
         <div className="bg-card border border-border rounded-lg overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
+            <table className="w-full min-w-[700px] text-left text-xs border-collapse">
               <thead>
                 <tr className="border-b border-border bg-surface/60 text-muted font-medium">
                   <th className="py-3 px-4 whitespace-nowrap">Tài khoản &amp; Họ tên</th>
@@ -479,7 +479,7 @@ export function UserManagementPage() {
       {activeTab === 'tablet' && (
         <div className="bg-card border border-border rounded-lg overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
+            <table className="w-full min-w-[760px] text-left text-xs border-collapse">
               <thead>
                 <tr className="border-b border-border bg-surface/60 text-muted font-medium">
                   <th className="py-3 px-4 whitespace-nowrap">Tài khoản Tablet</th>

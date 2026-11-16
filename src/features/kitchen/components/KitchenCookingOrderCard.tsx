@@ -20,8 +20,24 @@ export function KitchenCookingOrderCard({
   onReadyAll,
   onCookAll,
 }: KitchenCookingOrderCardProps) {
-  const [updatingItemId, setUpdatingItemId] = useState<number | null>(null)
+  const [updatingItemIds, setUpdatingItemIds] = useState<Set<number>>(new Set())
   const [isFinishingAll, setIsFinishingAll] = useState(false)
+
+  const handleUpdateItem = async (
+    itemId: number,
+    targetStatus: OrderItemStatus
+  ) => {
+    setUpdatingItemIds((prev) => new Set(prev).add(itemId))
+    try {
+      await onUpdateItemStatus(order.id, itemId, targetStatus)
+    } finally {
+      setUpdatingItemIds((prev) => {
+        const next = new Set(prev)
+        next.delete(itemId)
+        return next
+      })
+    }
+  }
 
   // Calculate elapsed cooking time
   const elapsedMinutes = Math.max(
@@ -156,15 +172,8 @@ export function KitchenCookingOrderCard({
                     type="button"
                     variant="cooking"
                     size="sm"
-                    onClick={async () => {
-                      setUpdatingItemId(item.id)
-                      try {
-                        await onUpdateItemStatus(order.id, item.id, 'COOKING')
-                      } finally {
-                        setUpdatingItemId(null)
-                      }
-                    }}
-                    disabled={updatingItemId === item.id}
+                    onClick={() => handleUpdateItem(item.id, 'COOKING')}
+                    disabled={isFinishingAll || updatingItemIds.has(item.id)}
                     className="h-9 px-3.5 text-xs font-semibold"
                     title="Bắt đầu nấu món này"
                   >
@@ -175,15 +184,8 @@ export function KitchenCookingOrderCard({
                     type="button"
                     variant="ready"
                     size="sm"
-                    onClick={async () => {
-                      setUpdatingItemId(item.id)
-                      try {
-                        await onUpdateItemStatus(order.id, item.id, 'READY')
-                      } finally {
-                        setUpdatingItemId(null)
-                      }
-                    }}
-                    disabled={updatingItemId === item.id}
+                    onClick={() => handleUpdateItem(item.id, 'READY')}
+                    disabled={isFinishingAll || updatingItemIds.has(item.id)}
                     className="h-9 px-3.5 text-xs font-semibold"
                     title="Báo món đã nấu xong và chuyển ra quầy"
                   >
@@ -204,7 +206,7 @@ export function KitchenCookingOrderCard({
               type="button"
               variant="cooking"
               onClick={handleCookAllItems}
-              disabled={isFinishingAll}
+              disabled={isFinishingAll || updatingItemIds.size > 0}
               className="w-full h-11 text-sm font-semibold"
             >
               Nấu tất cả
@@ -214,7 +216,7 @@ export function KitchenCookingOrderCard({
               type="button"
               variant="ready"
               onClick={handleFinishAllItems}
-              disabled={isFinishingAll}
+              disabled={isFinishingAll || updatingItemIds.size > 0}
               className="w-full h-11 text-sm font-semibold"
             >
               Ra tất cả

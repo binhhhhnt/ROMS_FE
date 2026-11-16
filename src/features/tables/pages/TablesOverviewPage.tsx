@@ -370,7 +370,7 @@ export function TablesOverviewPage({ initialActiveOnly = true }: TablesOverviewP
         </div>
 
         {/* View Mode Toggle */}
-        <div className="flex items-center justify-end gap-1.5">
+        <div className="flex items-center justify-start sm:justify-end gap-1.5">
           <Button
             variant={viewMode === 'grid' ? 'primary' : 'outline'}
             size="sm"
@@ -428,7 +428,7 @@ export function TablesOverviewPage({ initialActiveOnly = true }: TablesOverviewP
       ) : (
         <div className="bg-card border border-border rounded-lg overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
+            <table className="w-full min-w-[680px] text-left text-xs border-collapse">
               <thead>
                 <tr className="border-b border-border bg-surface/60 text-muted font-medium">
                   <th className="py-3 px-4 whitespace-nowrap">Mã bàn</th>

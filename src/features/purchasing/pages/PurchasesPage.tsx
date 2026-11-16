@@ -249,7 +249,7 @@ export function PurchasesPage() {
       {/* Tầng 3: Purchases Data Table */}
       <div className="bg-card border border-border rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-xs">
+          <table className="w-full min-w-[740px] text-xs">
             <thead className="bg-surface/60 border-b border-border text-muted font-medium">
               <tr>
                 <th className="px-4 py-3 text-left w-20 whitespace-nowrap">Mã phiếu</th>

@@ -23,6 +23,7 @@ import {
 } from '@/features/billing/utils/receiptPrinter'
 import { Button } from '@/shared/components/ui/button'
 import { getApiErrorMessage } from '@/shared/lib/axios'
+import { getApiErrorCode } from '@/shared/lib/errorMessages'
 import type { PaymentItemDto } from '@/features/billing/types/bill.types'
 
 type PaymentTab = 'CASH' | 'BANK_TRANSFER' | 'SPLIT'
@@ -186,8 +187,7 @@ export function SessionCheckoutPage() {
       navigate('/tables', { replace: true })
     },
     onError: (err: unknown) => {
-      const data = (err as { response?: { data?: { errorCode?: string; code?: string } } })?.response?.data
-      const apiCode = data?.errorCode || data?.code
+      const apiCode = getApiErrorCode(err)
       if (apiCode === 'PAYMENT_AMOUNT_MISMATCH') {
         queryClient.invalidateQueries({ queryKey: ['billPreview', parsedSessionId] })
         toast.error('Hóa đơn vừa có thay đổi (thêm món hoặc kiểm đồ). Đã tải lại số tiền mới nhất, vui lòng kiểm tra lại!')

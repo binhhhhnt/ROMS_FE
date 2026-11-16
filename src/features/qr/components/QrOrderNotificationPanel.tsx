@@ -81,7 +81,7 @@ export function QrOrderNotificationPanel({
             onClick={onClose}
             aria-hidden="true"
           />
-          <div className="absolute right-0 mt-2 w-80 bg-card border border-border rounded-xl shadow-xl z-50 overflow-hidden text-text">
+          <div className="fixed inset-x-3 top-16 mt-2 sm:absolute sm:inset-x-auto sm:top-full sm:right-0 sm:mt-2 sm:w-80 bg-card border border-border rounded-xl shadow-xl z-50 overflow-hidden text-text">
             <div className="px-4 py-3 border-b border-border flex items-center justify-between bg-surface/40">
               <span className="font-bold text-sm">
                 Đơn QR chờ xác nhận ({count})
