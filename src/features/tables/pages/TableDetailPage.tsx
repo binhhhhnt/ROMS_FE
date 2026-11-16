@@ -62,6 +62,8 @@ export function TableDetailPage() {
     queryKey: ['tableDetail', id],
     queryFn: () => tableApi.getTableById(id),
     enabled: !!id,
+    staleTime: 0,
+    refetchOnMount: 'always',
   })
 
   // Fetch all tables to get empty ones for transfer
@@ -77,6 +79,8 @@ export function TableDetailPage() {
     queryKey: ['sessionDetail', activeSessionId],
     queryFn: () => tableApi.getSessionById(activeSessionId!),
     enabled: !!activeSessionId,
+    staleTime: 0,
+    refetchOnMount: 'always',
   })
 
   // Fetch orders for active session
@@ -89,6 +93,8 @@ export function TableDetailPage() {
     queryFn: () =>
       activeSessionId ? orderApi.getOrders(activeSessionId) : Promise.resolve([]),
     enabled: !!activeSessionId,
+    staleTime: 0,
+    refetchOnMount: 'always',
   })
 
   // Realtime STOMP Subscription

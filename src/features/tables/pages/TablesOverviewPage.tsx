@@ -69,6 +69,8 @@ export function TablesOverviewPage({ initialActiveOnly = true }: TablesOverviewP
     queryKey: ['tablesOverview'],
     queryFn: () => tableApi.getTables({ size: 100 }),
     refetchInterval: 10000, // Poll every 10s for real-time table state
+    staleTime: 0,
+    refetchOnMount: 'always',
   })
 
   // Fetch areas

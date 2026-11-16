@@ -67,6 +67,8 @@ export function SessionCheckoutPage() {
     queryKey: ['billPreview', parsedSessionId],
     queryFn: () => billApi.getBillPreview(parsedSessionId),
     enabled: Number.isFinite(parsedSessionId) && parsedSessionId > 0,
+    staleTime: 0,
+    refetchOnMount: 'always',
   })
 
   const activePromo = useMemo(() => {

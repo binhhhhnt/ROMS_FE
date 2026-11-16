@@ -36,18 +36,26 @@ export function StaffOrderDetailPage() {
     queryKey: ['orders', 'staff', parsedOrderId],
     queryFn: () => orderApi.getOrderById(parsedOrderId),
     enabled: !isNaN(parsedOrderId) && parsedOrderId > 0,
+    staleTime: 0,
+    refetchOnMount: 'always',
   })
 
   // Realtime updates via STOMP
   useEffect(() => {
-    const unsubSession = subscribeToTopic('/topic/session/1/orders', () => {
+    const unsubKitchen = subscribeToTopic('/topic/kitchen/orders', () => {
       refetch()
     })
+    const unsubSession = order?.sessionId
+      ? subscribeToTopic(`/topic/session/${order.sessionId}/orders`, () => {
+          refetch()
+        })
+      : undefined
 
     return () => {
-      unsubSession()
+      unsubKitchen()
+      unsubSession?.()
     }
-  }, [refetch])
+  }, [refetch, order?.sessionId])
 
   const [servingItemId, setServingItemId] = useState<number | null>(null)
   const [isServingAll, setIsServingAll] = useState(false)

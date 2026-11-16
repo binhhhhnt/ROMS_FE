@@ -35,17 +35,22 @@ export function StaffOrdersPage() {
   } = useQuery({
     queryKey: ['orders', 'staff'],
     queryFn: () => orderApi.getOrders(),
+    staleTime: 0,
+    refetchOnMount: 'always',
   })
 
   // Realtime STOMP Subscription
   useEffect(() => {
-    // Listen to session orders updates (authorized for SERVICE_STAFF)
-    const unsubSession = subscribeToTopic('/topic/session/1/orders', () => {
+    const unsubKitchen = subscribeToTopic('/topic/kitchen/orders', () => {
+      refetch()
+    })
+    const unsubReady = subscribeToTopic('/topic/service/ready-dishes', () => {
       refetch()
     })
 
     return () => {
-      unsubSession()
+      unsubKitchen()
+      unsubReady()
     }
   }, [refetch])
 
