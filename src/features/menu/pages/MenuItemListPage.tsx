@@ -85,10 +85,10 @@ export function MenuItemListPage() {
             size="sm"
             disabled={isDownloadingTemplate}
             onClick={handleDownloadTemplate}
-            className="gap-1.5 text-xs font-semibold"
+            className="gap-1.5 text-xs font-semibold h-9"
           >
             <FileCheck className="h-3.5 w-3.5 text-accent" />
-            {isDownloadingTemplate ? 'Đang tải...' : 'Tải file mẫu'}
+            Tải file mẫu
           </Button>
 
           <Button
@@ -96,10 +96,10 @@ export function MenuItemListPage() {
             size="sm"
             disabled={isExportingExcel}
             onClick={handleExportExcel}
-            className="gap-1.5 text-xs font-semibold"
+            className="gap-1.5 text-xs font-semibold h-9"
           >
             <FileSpreadsheet className="h-3.5 w-3.5 text-primary" />
-            {isExportingExcel ? 'Đang xuất...' : 'Xuất Excel'}
+            Xuất Excel
           </Button>
 
           <Button
@@ -171,14 +171,14 @@ export function MenuItemListPage() {
             </div>
           ) : (
             <div
-              className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm"
+              className="overflow-x-auto rounded-lg border border-border bg-card"
               aria-busy={query.isFetching}
             >
               <table className="w-full text-left text-sm">
                 <caption className="sr-only">
                   Danh sách món theo danh mục và trạng thái
                 </caption>
-                <thead className="bg-surface/30 text-xs text-muted">
+                <thead className="bg-surface/60 border-b border-border text-xs text-muted font-medium">
                   <tr>
                     <th scope="col" className="px-5 py-4">Món ăn</th>
                     <th scope="col" className="px-5 py-4">Danh mục</th>
@@ -210,7 +210,7 @@ export function MenuItemListPage() {
                                 <Badge variant="secondary">Nổi bật</Badge>
                               )}
                               {(item.isDirectSale || item.is_direct_sale) && (
-                                <Badge variant="outline" className="border-sky-500 text-sky-600 bg-sky-50 dark:bg-sky-950/40 text-[10px]">
+                                <Badge variant="cooking" className="text-[11px]">
                                   Bán trực tiếp
                                 </Badge>
                               )}
@@ -232,11 +232,10 @@ export function MenuItemListPage() {
                       </td>
                       <td className="px-5 py-4">
                         <div className="flex items-center justify-end gap-2 whitespace-nowrap">
-                          <Link
-                            to={`/owner/menu-items/${item.id}`}
-                            className="inline-flex min-h-10 items-center rounded-md px-3 text-sm font-medium text-primary hover:bg-surface/40"
-                          >
-                            Chỉnh sửa
+                          <Link to={`/owner/menu-items/${item.id}`}>
+                            <Button variant="outline" size="sm" className="h-9 px-3 text-xs">
+                              Chỉnh sửa
+                            </Button>
                           </Link>
                           <CatalogDeleteButton
                             kind="dish"

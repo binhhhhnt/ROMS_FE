@@ -2,6 +2,7 @@ export type StockMovementType =
   | 'PURCHASE'
   | 'ORDER_CONSUMPTION'
   | 'INVENTORY_ADJUSTMENT'
+  | 'ORDER_RETURN'
 
 export interface StockMovementResponse {
   id: number

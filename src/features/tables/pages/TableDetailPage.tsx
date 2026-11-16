@@ -3,22 +3,15 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   ArrowLeft,
-  Users,
-  MapPin,
   Clock,
   Play,
   ArrowRightLeft,
   CheckCircle,
-  History,
-  Layers,
   AlertCircle,
-  BellRing,
-  Utensils,
   CheckCircle2,
   Receipt,
   Plus,
   PackageOpen,
-  Trash2,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -386,553 +379,506 @@ export function TableDetailPage() {
   const transfers = transferHistory?.content || []
 
   return (
-    <div className="flex flex-col gap-6 max-w-5xl mx-auto text-left">
-      {/* Back button */}
+    <div className="flex flex-col gap-5 max-w-5xl mx-auto text-left pb-12">
+      {/* Tầng 1: Top Navigation */}
       <div>
-        <Link
-          to="/tables"
-          className="inline-flex items-center gap-1.5 text-xs text-muted hover:text-text font-medium transition-colors"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          Quay lại Sơ đồ bàn
+        <Link to="/tables" className="inline-block">
+          <Button type="button" variant="outline" size="sm" className="h-9 px-3 text-xs font-medium gap-1.5">
+            <ArrowLeft className="w-4 h-4 shrink-0" />
+            Quay lại Sơ đồ bàn
+          </Button>
         </Link>
       </div>
 
-      {/* Main Table Info Card */}
-      <div className="bg-card border border-border shadow-xl rounded-2xl p-6 sm:p-8">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-border">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-surface flex items-center justify-center text-primary shadow-inner font-black text-xl">
-              {table.tableCode}
+      {/* Tầng 2: Main Table & Session Card (Single Container, Flat) */}
+      <div className="bg-card border border-border rounded-lg overflow-hidden">
+        <div className="px-4 py-4 sm:px-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <h1 className="text-xl font-bold text-text">
+                Bàn {table.tableCode}
+              </h1>
+              {isOccupied ? (
+                <Badge variant="cooking">
+                  <span className="w-2 h-2 rounded-full bg-status-cooking shrink-0" />
+                  Đang có khách
+                </Badge>
+              ) : isEmpty ? (
+                <Badge variant="ready">
+                  <span className="w-2 h-2 rounded-full bg-status-ready shrink-0" />
+                  Bàn trống
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="text-muted">
+                  <span className="w-2 h-2 rounded-full bg-muted shrink-0" />
+                  Tạm ngừng phục vụ
+                </Badge>
+              )}
             </div>
-            <div>
-              <div className="flex items-center gap-2.5">
-                <h1 className="text-2xl font-black text-text tracking-tight uppercase">
-                  Bàn {table.tableCode}
-                </h1>
-                {table.area && (
-                  <span className="inline-flex items-center gap-1 text-xs text-muted bg-surface px-2.5 py-0.5 rounded-full border border-border">
-                    <MapPin className="w-3 h-3 text-accent" />
-                    {table.area}
-                  </span>
-                )}
-              </div>
-              <p className="text-xs text-muted mt-1 flex items-center gap-2">
-                <Users className="w-3.5 h-3.5" />
-                Sức chứa: <strong>{table.capacity} khách</strong>
-              </p>
-            </div>
-          </div>
-
-          <div>
-            {isOccupied ? (
-              <Badge variant="cooking" className="text-sm px-3 py-1">
-                Đang có khách
-              </Badge>
-            ) : isEmpty ? (
-              <Badge variant="completed" className="text-sm px-3 py-1">
-                Bàn trống
-              </Badge>
-            ) : (
-              <Badge variant="secondary" className="text-sm px-3 py-1">
-                Tạm ngừng phục vụ
-              </Badge>
-            )}
+            <p className="text-xs text-muted mt-1">
+              {table.area ? `${table.area} • ` : ''}Sức chứa {table.capacity} khách
+            </p>
           </div>
         </div>
 
-        {/* Active Session Info or Open Action */}
-        <div className="mt-6">
-          {isEmpty && (
-            <div className="p-6 bg-surface/40 border border-border rounded-xl text-center flex flex-col items-center gap-3">
-              <Layers className="w-10 h-10 text-muted/50" />
-              <div>
-                <h3 className="text-sm font-bold text-text">Bàn hiện đang trống</h3>
-                <p className="text-xs text-muted mt-0.5">
-                  Mở phiên phục vụ để bắt đầu ghi nhận gọi món cho khách tại bàn này.
-                </p>
+        {/* Empty State */}
+        {isEmpty && (
+          <div className="p-6 text-center flex flex-col items-center gap-3">
+            <div>
+              <h3 className="text-sm font-semibold text-text">Bàn hiện đang trống</h3>
+              <p className="text-xs text-muted mt-0.5">
+                Mở phiên phục vụ để bắt đầu ghi nhận gọi món cho khách tại bàn này.
+              </p>
+            </div>
+            <Button
+              variant="primary"
+              onClick={() => openSessionMutation.mutate()}
+              isLoading={openSessionMutation.isPending}
+              className="h-11 px-5 text-sm font-semibold"
+            >
+              <Play className="w-4 h-4 mr-1.5 fill-current" />
+              Mở phiên phục vụ ngay
+            </Button>
+          </div>
+        )}
+
+        {/* Occupied Session Strip + Actions */}
+        {isOccupied && (
+          <div className="px-4 py-3.5 sm:px-5 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <span className="text-sm font-semibold text-text font-mono">
+                  Phiên #{sessionDetail?.id || activeSessionId}
+                </span>
+                <span className="inline-flex items-center gap-1 text-xs text-muted">
+                  <Clock className="w-3.5 h-3.5 shrink-0" />
+                  Mở lúc{' '}
+                  {sessionDetail?.openedAt
+                    ? new Date(sessionDetail.openedAt).toLocaleTimeString('vi-VN', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })
+                    : 'Vừa xong'}
+                </span>
+                {sessionDetail?.openedByName && (
+                  <span className="text-xs text-muted">
+                    • {sessionDetail.openedByName}
+                  </span>
+                )}
               </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
               <Button
                 variant="primary"
-                size="md"
-                onClick={() => openSessionMutation.mutate()}
-                isLoading={openSessionMutation.isPending}
-                className="mt-2 text-xs font-semibold shadow-md"
+                size="sm"
+                onClick={() => setIsOrderModalOpen(true)}
+                className="h-9 px-3.5 text-xs font-semibold"
               >
-                <Play className="w-4 h-4 mr-1.5 fill-current" />
-                Mở phiên phục vụ ngay
+                <Plus className="w-3.5 h-3.5 mr-1" />
+                Đặt món
               </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsReturnModalOpen(true)}
+                className="h-9 px-3 text-xs"
+              >
+                <PackageOpen className="w-3.5 h-3.5 mr-1" />
+                Kiểm đồ
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsTransferModalOpen(true)}
+                className="h-9 px-3 text-xs"
+              >
+                <ArrowRightLeft className="w-3.5 h-3.5 mr-1" />
+                Chuyển bàn
+              </Button>
+
+              {hasBillableOrders ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleOpenCheckout}
+                  className="h-9 px-3 text-xs font-semibold text-primary border-primary/40 hover:bg-muted-bg"
+                >
+                  <Receipt className="w-3.5 h-3.5 mr-1" />
+                  Thanh toán
+                </Button>
+              ) : (
+                <Button
+                  variant="destructiveOutline"
+                  size="sm"
+                  onClick={handleOpenCloseConfirm}
+                  isLoading={closeSessionMutation.isPending}
+                  className="h-9 px-3 text-xs"
+                >
+                  <CheckCircle className="w-3.5 h-3.5 mr-1" />
+                  Đóng phiên
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Tầng 3: Nội dung phiên đang phục vụ */}
+      {isOccupied && (
+        <div className="flex flex-col gap-5">
+          {/* Ready Dishes Banner */}
+          {allReadyItems.length > 0 && (
+            <div className="bg-card border border-border border-l-4 border-l-status-ready rounded-lg p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <div className="font-semibold text-sm text-text">
+                  Có {allReadyItems.reduce((s, i) => s + i.quantity, 0)} suất món đã nấu xong
+                </div>
+                <p className="text-xs text-muted mt-0.5">
+                  Sẵn sàng bưng ra phục vụ Bàn {table.tableCode}.
+                </p>
+              </div>
+
+              {allReadyItems.length > 1 && (
+                <Button
+                  variant="primary"
+                  onClick={handleCompleteAllReady}
+                  disabled={isServingAll}
+                  className="h-11 px-4 text-sm font-semibold shrink-0"
+                >
+                  <CheckCircle2 className="w-4 h-4 mr-1.5" />
+                  Bưng tất cả ({allReadyItems.length} món)
+                </Button>
+              )}
             </div>
           )}
 
-          {isOccupied && (
-            <div className="flex flex-col gap-6">
-              {/* Session Meta Card with Actions */}
-              <div className="p-5 bg-surface/50 border border-border rounded-xl flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                <div className="flex flex-col gap-1">
-                  <span className="text-[11px] text-muted uppercase font-semibold">
-                    Thông tin phiên phục vụ hiện tại
-                  </span>
-                  <span className="text-base font-bold text-primary">
-                    Phiên #{sessionDetail?.id || activeSessionId}
-                  </span>
-                  <div className="flex items-center gap-3 text-xs text-muted mt-1">
-                    <span className="inline-flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5" />
-                      Mở lúc:{' '}
-                      <strong>
-                        {sessionDetail?.openedAt
-                          ? new Date(sessionDetail.openedAt).toLocaleTimeString(
-                            'vi-VN',
-                            {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            }
-                          )
-                          : 'Vừa xong'}
-                      </strong>
-                    </span>
-                    {sessionDetail?.openedByName && (
-                      <span>
-                        Người mở: <strong>{sessionDetail.openedByName}</strong>
-                      </span>
-                    )}
-                  </div>
+          {/* Returned Items Summary Card */}
+          {aggregatedReturnedItems.length > 0 && (
+            <div className="bg-card border border-border rounded-lg overflow-hidden">
+              <div className="px-4 py-3 sm:px-5 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <h4 className="font-semibold text-sm text-text">
+                    Hàng đã trả lại kho ({aggregatedReturnedItems.reduce((sum, item) => sum + item.totalReturned, 0)} món)
+                  </h4>
+                  <p className="text-xs text-muted mt-0.5">
+                    Đã hoàn kho và trừ trực tiếp vào hóa đơn bàn.
+                  </p>
                 </div>
-
-                {/* Session Action Buttons */}
-                <div className="flex flex-wrap items-center gap-2">
-                  {/* Nút Đặt món luôn hiển thị khi session active */}
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={() => setIsOrderModalOpen(true)}
-                    className="text-xs font-semibold shadow-xs"
-                  >
-                    <Plus className="w-3.5 h-3.5 mr-1" />
-                    Đặt món
-                  </Button>
-
-                  {/* Nút Kiểm đồ gộp toàn phiên */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsReturnModalOpen(true)}
-                    className="text-xs"
-                  >
-                    <PackageOpen className="w-3.5 h-3.5 mr-1 text-primary" />
-                    Kiểm đồ
-                  </Button>
-
-                  {/* Nút Chuyển bàn */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsTransferModalOpen(true)}
-                    className="text-xs"
-                  >
-                    <ArrowRightLeft className="w-3.5 h-3.5 mr-1 text-accent" />
-                    Chuyển bàn
-                  </Button>
-
-                  {/* Bàn có món phát sinh tiền -> Chỉ hiện nút Thanh toán */}
-                  {hasBillableOrders ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleOpenCheckout}
-                      className="text-xs"
-                    >
-                      <Receipt className="w-3.5 h-3.5 mr-1 text-accent" />
-                      Thanh toán
-                    </Button>
-                  ) : (
-                    /* Bàn không có món nào (hoặc đã hủy hết) -> Chỉ hiện nút Đóng phiên */
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleOpenCloseConfirm}
-                      isLoading={closeSessionMutation.isPending}
-                      className="text-xs text-status-cancelled hover:bg-status-cancelled/10 border-status-cancelled/30"
-                    >
-                      <CheckCircle className="w-3.5 h-3.5 mr-1" />
-                      Đóng phiên
-                    </Button>
-                  )}
+                <div className="text-left sm:text-right shrink-0 tabular-nums">
+                  <span className="text-xs text-muted block">Tổng giảm trừ</span>
+                  <span className="text-sm font-bold font-mono text-status-cancelled">
+                    -{formatPrice(aggregatedReturnedItems.reduce((sum, item) => sum + item.totalDeduction, 0))}
+                  </span>
                 </div>
               </div>
 
-              {/* Ready Dishes Alert Banner */}
-              {allReadyItems.length > 0 && (
-                <div className="bg-emerald-500/10 border-2 border-emerald-500/40 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm animate-in fade-in">
-                  <div className="flex items-center gap-3.5">
-                    <div className="w-11 h-11 rounded-xl bg-status-ready text-white flex items-center justify-center font-black text-xl shrink-0 shadow-xs">
-                      <BellRing className="w-6 h-6 animate-bounce" />
-                    </div>
-                    <div>
-                      <h4 className="font-extrabold text-base text-status-ready">
-                        Có {allReadyItems.reduce((s, i) => s + i.quantity, 0)} suất món đã nấu xong!
-                      </h4>
-                      <p className="text-xs text-muted mt-0.5">
-                        Bếp đã đặt thức ăn ra quầy. Nhân viên hãy bưng ra phục vụ bàn {table.tableCode}.
-                      </p>
-                    </div>
-                  </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-surface/60 text-muted font-medium border-b border-border">
+                    <tr>
+                      <th className="py-2.5 px-4 sm:px-5">Tên món</th>
+                      <th className="py-2.5 px-3 text-center">SL trả</th>
+                      <th className="py-2.5 px-3 text-right">Đơn giá</th>
+                      <th className="py-2.5 px-4 sm:px-5 text-right">Giảm trừ</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border tabular-nums">
+                    {aggregatedReturnedItems.map((item) => (
+                      <tr key={item.menuItemId}>
+                        <td className="py-2.5 px-4 sm:px-5 font-medium text-text">
+                          {item.menuItemName}
+                        </td>
+                        <td className="py-2.5 px-3 text-center font-mono font-semibold text-status-cancelled">
+                          -{item.totalReturned}
+                        </td>
+                        <td className="py-2.5 px-3 text-right text-muted font-mono">
+                          {formatPrice(item.unitPrice)}
+                        </td>
+                        <td className="py-2.5 px-4 sm:px-5 text-right font-mono font-semibold text-status-cancelled">
+                          -{formatPrice(item.totalDeduction)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
 
-                  {allReadyItems.length > 1 && (
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={handleCompleteAllReady}
-                      disabled={isServingAll}
-                      className="bg-status-ready hover:bg-emerald-600 font-bold text-xs shrink-0 text-white shadow-xs"
-                    >
-                      {isServingAll ? 'Đang cập nhật...' : `Bưng tất cả (${allReadyItems.length} món)`}
-                    </Button>
-                  )}
-                </div>
-              )}
+          {/* Orders & Dishes Progress Section */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-text">
+                Danh sách đơn gọi món ({sessionOrders.length})
+              </h2>
+            </div>
 
-              {/* Khung thông tin các đồ bị trả (chỉ hiện khi có đồ bị trả) */}
-              {aggregatedReturnedItems.length > 0 && (
-                <div className="bg-card border border-border rounded-xl p-4 sm:p-5 flex flex-col gap-3 shadow-2xs">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-border">
-                    <div className="flex items-center gap-2.5">
-                      <PackageOpen className="w-4 h-4 text-primary" />
-                      <div>
-                        <h4 className="font-bold text-sm text-text flex items-center gap-2">
-                          Thông tin hàng trả lại kho (Đã kiểm đồ)
-                          <span className="text-xs px-2 py-0.5 rounded-md bg-surface border border-border text-text font-semibold">
-                            {aggregatedReturnedItems.reduce((sum, item) => sum + item.totalReturned, 0)} món
-                          </span>
-                        </h4>
-                        <p className="text-xs text-muted mt-0.5">
-                          Các sản phẩm khách không dùng hết đã được hoàn kho và trừ trực tiếp vào hóa đơn bàn.
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="text-left sm:text-right">
-                      <span className="text-xs text-muted block">Tổng tiền giảm trừ:</span>
-                      <span className="text-sm font-bold text-status-cancelled">
-                        -{formatPrice(aggregatedReturnedItems.reduce((sum, item) => sum + item.totalDeduction, 0))}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Bảng đơn giản - nền card chuẩn, viền border trung tính */}
-                  <div className="overflow-x-auto rounded-lg border border-border">
-                    <table className="w-full text-left text-xs">
-                      <thead className="bg-surface/50 text-muted font-semibold border-b border-border">
-                        <tr>
-                          <th className="py-2.5 px-3">Đồ đã trả</th>
-                          <th className="py-2.5 px-3 text-center">Số lượng trả</th>
-                          <th className="py-2.5 px-3 text-right">Đơn giá</th>
-                          <th className="py-2.5 px-3 text-right">Số tiền trừ</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-border">
-                        {aggregatedReturnedItems.map((item) => (
-                          <tr key={item.menuItemId} className="hover:bg-surface/30 transition-colors">
-                            <td className="py-2.5 px-3 font-semibold text-status-cancelled">
-                              {item.menuItemName}
-                            </td>
-                            <td className="py-2.5 px-3 text-center font-bold text-status-cancelled">
-                              -{item.totalReturned}
-                            </td>
-                            <td className="py-2.5 px-3 text-right text-muted">
-                              {formatPrice(item.unitPrice)}
-                            </td>
-                            <td className="py-2.5 px-3 text-right font-bold text-status-cancelled">
-                              -{formatPrice(item.totalDeduction)}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-
-              {/* Orders & Dishes Progress Section */}
+            {isOrdersLoading ? (
+              <div className="py-8 text-center text-xs text-muted bg-card border border-border rounded-lg">
+                Đang tải danh sách món ăn của bàn...
+              </div>
+            ) : sessionOrders.length === 0 ? (
+              <div className="text-center py-8 bg-card border border-dashed border-border rounded-lg text-xs text-muted">
+                Chưa có đơn gọi món nào trong phiên phục vụ này.
+              </div>
+            ) : (
               <div className="space-y-4">
-                <div className="flex items-center justify-between border-b border-border pb-3">
-                  <h3 className="text-sm font-bold text-text uppercase tracking-wider flex items-center gap-2">
-                    <Utensils className="w-4 h-4 text-accent" />
-                    Danh sách đơn gọi món &amp; Tiến độ phục vụ
-                  </h3>
-                  <span className="text-xs font-semibold text-muted">
-                    {sessionOrders.length} lượt gọi món
-                  </span>
-                </div>
+                {sessionOrders.map((order) => {
+                  const isOrderPending = order.status === 'PENDING'
 
-                {isOrdersLoading ? (
-                  <div className="py-8 text-center text-xs text-muted">
-                    <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-                    Đang tải danh sách món ăn của bàn...
-                  </div>
-                ) : sessionOrders.length === 0 ? (
-                  <div className="text-center py-8 bg-surface/30 border border-dashed border-border rounded-xl text-xs text-muted">
-                    Chưa có đơn gọi món nào trong phiên phục vụ này.
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {sessionOrders.map((order) => {
-                      const isOrderPending = order.status === 'PENDING'
+                  return (
+                    <div
+                      key={order.id}
+                      className="border border-border rounded-lg overflow-hidden bg-card"
+                    >
+                      {/* Order Header (Hàng cha: nền bg-surface/60 tách biệt với cả nền trang lẫn OrderItem) */}
+                      <div className="bg-surface/60 px-4 py-3 sm:px-5 border-b border-border flex flex-wrap items-center justify-between gap-3 text-xs">
+                        <div className="flex flex-wrap items-center gap-2.5 min-w-0">
+                          <span className="font-bold text-sm text-text font-mono">
+                            Đơn #{order.id}
+                          </span>
 
-                      return (
-                        <div
-                          key={order.id}
-                          className="border border-border rounded-xl overflow-hidden bg-card shadow-2xs"
-                        >
-                          {/* Order Header */}
-                          <div className="bg-surface/50 px-4 py-3 border-b border-border flex flex-wrap items-center justify-between gap-3 text-xs">
-                            <div className="flex flex-wrap items-center gap-2.5">
-                              <span className="font-black text-sm text-text">
-                                Đơn #{order.id}
-                              </span>
+                          {order.status === 'PENDING' && (
+                            <Badge variant="pending">
+                              <span className="w-2 h-2 rounded-full bg-status-pending shrink-0" />
+                              Chờ tiếp nhận
+                            </Badge>
+                          )}
+                          {order.status === 'COOKING' && (
+                            <Badge variant="cooking">
+                              <span className="w-2 h-2 rounded-full bg-status-cooking shrink-0" />
+                              Đang nấu
+                            </Badge>
+                          )}
+                          {order.status === 'COMPLETED' && (
+                            <Badge variant="completed">
+                              <span className="w-2 h-2 rounded-full bg-status-completed shrink-0" />
+                              Hoàn thành
+                            </Badge>
+                          )}
+                          {order.status === 'CANCELLED' && (
+                            <Badge variant="cancelled">
+                              <span className="w-2 h-2 rounded-full bg-status-cancelled shrink-0" />
+                              Đã hủy
+                            </Badge>
+                          )}
 
-                              {/* Order Status Badge */}
-                              {order.status === 'PENDING' && (
-                                <Badge variant="pending" className="text-[11px] py-0.5">
-                                  Chờ tiếp nhận
-                                </Badge>
-                              )}
-                              {order.status === 'COOKING' && (
-                                <Badge variant="cooking" className="text-[11px] py-0.5">
-                                  Đang chế biến
-                                </Badge>
-                              )}
-                              {order.status === 'COMPLETED' && (
-                                <Badge variant="completed" className="text-[11px] py-0.5">
-                                  Hoàn thành
-                                </Badge>
-                              )}
-                              {order.status === 'CANCELLED' && (
-                                <Badge variant="cancelled" className="text-[11px] py-0.5">
-                                  Đã hủy
-                                </Badge>
-                              )}
+                          <span className="text-muted">
+                            • {order.createdByName || 'Khách tại bàn'} •{' '}
+                            {new Date(order.createdAt).toLocaleTimeString('vi-VN', {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </span>
+                        </div>
 
-                              <span className="text-muted">
-                                ({order.createdByName ? `Tạo bởi: ${order.createdByName}` : 'Khách gọi từ Tablet'})
-                              </span>
-                              <span className="text-muted">
-                                {new Date(order.createdAt).toLocaleTimeString('vi-VN', {
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                })}
-                              </span>
-                            </div>
+                        <div className="flex items-center gap-3 shrink-0">
+                          <span className="font-bold font-mono text-sm text-text tabular-nums">
+                            {formatPrice(order.totalAmount)}
+                          </span>
 
-                            <div className="flex items-center gap-3">
-                              <div className="font-extrabold text-sm text-primary">
-                                {formatPrice(order.totalAmount)}
-                              </div>
+                          {isOrderPending && (
+                            <Button
+                              type="button"
+                              variant="destructiveOutline"
+                              size="sm"
+                              onClick={() =>
+                                setCancelTarget({
+                                  type: 'ORDER',
+                                  orderId: order.id,
+                                })
+                              }
+                              className="h-8 px-2.5 text-xs"
+                            >
+                              Hủy đơn hàng
+                            </Button>
+                          )}
+                        </div>
+                      </div>
 
-                              {/* Hủy đơn nếu còn PENDING */}
-                              {isOrderPending && (
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() =>
-                                    setCancelTarget({
-                                      type: 'ORDER',
-                                      orderId: order.id,
-                                    })
-                                  }
-                                  className="h-7 px-2.5 text-xs text-status-cancelled hover:bg-status-cancelled/10 border-status-cancelled/30"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5 mr-1" />
-                                  Hủy đơn
-                                </Button>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Items List */}
-                          <div className="divide-y divide-border">
-                            {order.items.map((item) => (
-                              <div
-                                key={item.id}
-                                className={`p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs ${item.status === 'READY'
-                                  ? 'bg-status-ready/10'
-                                  : item.status === 'CANCELLED'
-                                    ? 'opacity-60 bg-surface/20'
-                                    : 'hover:bg-surface/20'
-                                  }`}
-                              >
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2">
-                                    <span className="font-bold text-text text-sm">
-                                      {item.menuItemName}
-                                    </span>
-                                    <span className="px-2 py-0.5 rounded bg-surface border border-border font-black text-primary text-xs">
-                                      x{item.quantity}
-                                    </span>
+                      {/* Items List (Hàng con: nền trắng bg-card, thụt nhẹ trên desktop) */}
+                      <div className="divide-y divide-border bg-card">
+                        {order.items.map((item) => {
+                          const isCancelled = item.status === 'CANCELLED'
+                          return (
+                            <div
+                              key={item.id}
+                              className={`px-4 py-3.5 sm:pl-7 sm:pr-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${isCancelled ? 'opacity-60' : ''
+                                }`}
+                            >
+                              {/* Trái: Số lượng (anchor) + Tên món + Ghi chú */}
+                              <div className="min-w-0 flex-1 flex items-start gap-3">
+                                <span className="font-mono font-bold text-base text-text shrink-0 w-9 pt-0.5 tabular-nums">
+                                  {item.quantity}x
+                                </span>
+                                <div className="min-w-0 flex-1">
+                                  <div
+                                    className={`font-semibold text-sm text-text ${isCancelled ? 'line-through text-muted' : ''
+                                      }`}
+                                  >
+                                    {item.menuItemName}
                                   </div>
                                   {item.note && (
-                                    <p className="text-[11px] text-amber-800 mt-1 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-300 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-900/50 inline-block">
-                                      Ghi chú: {item.note}
+                                    <p className="text-xs text-text mt-1">
+                                      <span className="font-semibold">Ghi chú:</span> {item.note}
                                     </p>
                                   )}
                                 </div>
+                              </div>
 
-                                <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
-                                  <div className="text-right">
-                                    <span className="font-semibold text-text">
-                                      {formatPrice(
-                                        item.subtotal || item.unitPrice * item.quantity
-                                      )}
-                                    </span>
-                                  </div>
+                              {/* Phải: Giá + Trạng thái/Thao tác */}
+                              <div className="shrink-0 flex items-center justify-between sm:justify-end gap-4 pl-12 sm:pl-0">
+                                <span className="font-semibold font-mono text-sm text-text tabular-nums shrink-0">
+                                  {formatPrice(item.subtotal || item.unitPrice * item.quantity)}
+                                </span>
 
-                                  {/* Status & Actions per item */}
-                                  <div className="min-w-[140px] flex justify-end items-center gap-2">
-                                    {item.status === 'PENDING' ? (
-                                      <div className="flex items-center gap-2">
-                                        <span className="px-2 py-1 rounded-md bg-surface text-muted font-semibold text-[11px] border border-border">
-                                          Chờ tiếp nhận
-                                        </span>
-                                        <Button
-                                          type="button"
-                                          variant="outline"
-                                          size="sm"
-                                          onClick={() =>
-                                            setCancelTarget({
-                                              type: 'ITEM',
-                                              orderId: order.id,
-                                              itemId: item.id,
-                                              itemName: item.menuItemName,
-                                              maxQuantity: item.quantity,
-                                            })
-                                          }
-                                          className="h-7 px-2 text-xs text-status-cancelled hover:bg-status-cancelled/10 border-status-cancelled/30"
-                                        >
-                                          <Trash2 className="w-3 h-3 mr-1" />
-                                          Hủy món
-                                        </Button>
-                                      </div>
-                                    ) : item.status === 'READY' ? (
+                                <div className="shrink-0 flex items-center gap-2">
+                                  {item.status === 'PENDING' ? (
+                                    <>
+                                      <Badge variant="pending">
+                                        <span className="w-2 h-2 rounded-full bg-status-pending shrink-0" />
+                                        Chờ nấu
+                                      </Badge>
                                       <Button
                                         type="button"
-                                        variant="primary"
+                                        variant="destructiveOutline"
                                         size="sm"
                                         onClick={() =>
-                                          handleCompleteItem(
-                                            order.id,
-                                            item.id,
-                                            item.menuItemName
-                                          )
+                                          setCancelTarget({
+                                            type: 'ITEM',
+                                            orderId: order.id,
+                                            itemId: item.id,
+                                            itemName: item.menuItemName,
+                                            maxQuantity: item.quantity,
+                                          })
                                         }
-                                        disabled={servingItemId === item.id}
-                                        className="bg-status-ready hover:bg-emerald-600 font-bold text-xs shadow-xs text-white h-8 px-3"
+                                        className="h-9 px-2.5 text-xs"
                                       >
-                                        <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
-                                        Đã bưng ra bàn
+                                        Hủy món
                                       </Button>
-                                    ) : item.status === 'COMPLETED' ? (
-                                      <span className="px-2.5 py-1 rounded-md bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-semibold text-[11px] border border-emerald-500/20">
-                                        Đã phục vụ
-                                      </span>
-                                    ) : item.status === 'COOKING' ? (
-                                      <span className="px-2.5 py-1 rounded-md bg-amber-500/15 text-amber-700 dark:text-amber-400 font-semibold text-[11px] border border-amber-500/20">
-                                        Bếp đang nấu
-                                      </span>
-                                    ) : item.status === 'CANCELLED' ? (
-                                      <span className="px-2.5 py-1 rounded-md bg-red-500/15 text-red-700 dark:text-red-400 font-semibold text-[11px] border border-red-500/20">
-                                        Đã hủy
-                                      </span>
-                                    ) : null}
-                                  </div>
+                                    </>
+                                  ) : item.status === 'READY' ? (
+                                    <Button
+                                      type="button"
+                                      variant="primary"
+                                      size="sm"
+                                      onClick={() =>
+                                        handleCompleteItem(
+                                          order.id,
+                                          item.id,
+                                          item.menuItemName
+                                        )
+                                      }
+                                      disabled={servingItemId === item.id}
+                                      className="h-9 px-3.5 text-xs font-semibold"
+                                    >
+                                      <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+                                      Đã bưng ra bàn
+                                    </Button>
+                                  ) : item.status === 'COMPLETED' ? (
+                                    <Badge variant="completed">Đã phục vụ</Badge>
+                                  ) : item.status === 'COOKING' ? (
+                                    <Badge variant="cooking">
+                                      <span className="w-2 h-2 rounded-full bg-status-cooking shrink-0" />
+                                      Đang nấu
+                                    </Badge>
+                                  ) : item.status === 'CANCELLED' ? (
+                                    <Badge variant="cancelled">Đã hủy</Badge>
+                                  ) : null}
                                 </div>
                               </div>
-                            ))}
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                )}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Transfer History Table */}
+          {transfers.length > 0 && (
+            <div className="bg-card border border-border rounded-lg overflow-hidden">
+              <div className="px-4 py-3 sm:px-5 border-b border-border">
+                <h3 className="text-sm font-semibold text-text">
+                  Lịch sử chuyển bàn ({transfers.length})
+                </h3>
               </div>
 
-              {/* Transfer History Table (Chỉ hiển thị khi có phát sinh chuyển bàn) */}
-              {transfers.length > 0 && (
-                <div className="mt-2">
-                  <h3 className="text-xs font-bold text-text uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                    <History className="w-4 h-4 text-accent" />
-                    Lịch sử chuyển bàn trong phiên này ({transfers.length})
-                  </h3>
-
-                  <div className="border border-border rounded-xl overflow-hidden">
-                    <table className="w-full text-left text-xs">
-                      <thead className="bg-surface/50 border-b border-border text-muted font-semibold">
-                        <tr>
-                          <th className="py-2.5 px-3">Thời gian</th>
-                          <th className="py-2.5 px-3">Từ bàn</th>
-                          <th className="py-2.5 px-3">Đến bàn</th>
-                          <th className="py-2.5 px-3">Nhân viên thực hiện</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-border">
-                        {transfers.map((item) => (
-                          <tr key={item.id} className="hover:bg-surface/30">
-                            <td className="py-2.5 px-3 text-muted">
-                              {new Date(
-                                item.transferredAt
-                              ).toLocaleTimeString('vi-VN')}
-                            </td>
-                            <td className="py-2.5 px-3 font-semibold text-text">
-                              Bàn {item.fromTableCode}
-                            </td>
-                            <td className="py-2.5 px-3 font-semibold text-primary">
-                              Bàn {item.toTableCode}
-                            </td>
-                            <td className="py-2.5 px-3 text-muted">
-                              {item.transferredByName || 'Hệ thống'}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-surface/60 border-b border-border text-muted font-medium">
+                    <tr>
+                      <th className="py-2.5 px-4 sm:px-5">Thời gian</th>
+                      <th className="py-2.5 px-3">Từ bàn</th>
+                      <th className="py-2.5 px-3">Đến bàn</th>
+                      <th className="py-2.5 px-4 sm:px-5">Nhân viên</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {transfers.map((item) => (
+                      <tr key={item.id}>
+                        <td className="py-2.5 px-4 sm:px-5 text-muted font-mono">
+                          {new Date(item.transferredAt).toLocaleTimeString('vi-VN')}
+                        </td>
+                        <td className="py-2.5 px-3 font-medium text-text">
+                          Bàn {item.fromTableCode}
+                        </td>
+                        <td className="py-2.5 px-3 font-semibold text-primary">
+                          Bàn {item.toTableCode}
+                        </td>
+                        <td className="py-2.5 px-4 sm:px-5 text-muted">
+                          {item.transferredByName || 'Hệ thống'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </div>
-      </div>
+      )
+      }
 
       {/* Staff Order Modal */}
-      {activeSessionId && table && (
-        <StaffOrderModal
-          isOpen={isOrderModalOpen}
-          onClose={() => setIsOrderModalOpen(false)}
-          initialSessionId={activeSessionId}
-          initialTableCode={table.tableCode}
-          onSuccess={() => {
-            refetchOrders()
-            refetch()
-            queryClient.invalidateQueries({ queryKey: ['tablesOverview'] })
-          }}
-        />
-      )}
+      {
+        activeSessionId && table && (
+          <StaffOrderModal
+            isOpen={isOrderModalOpen}
+            onClose={() => setIsOrderModalOpen(false)}
+            initialSessionId={activeSessionId}
+            initialTableCode={table.tableCode}
+            onSuccess={() => {
+              refetchOrders()
+              refetch()
+              queryClient.invalidateQueries({ queryKey: ['tablesOverview'] })
+            }}
+          />
+        )
+      }
 
       {/* Aggregated Item Return Modal */}
-      {activeSessionId && (
-        <TableItemReturnModal
-          isOpen={isReturnModalOpen}
-          onClose={() => setIsReturnModalOpen(false)}
-          sessionId={activeSessionId}
-          tableCode={table?.tableCode}
-          onSuccess={() => {
-            refetchOrders()
-            refetch()
-            queryClient.invalidateQueries({ queryKey: ['tablesOverview'] })
-          }}
-        />
-      )}
+      {
+        activeSessionId && (
+          <TableItemReturnModal
+            isOpen={isReturnModalOpen}
+            onClose={() => setIsReturnModalOpen(false)}
+            sessionId={activeSessionId}
+            tableCode={table?.tableCode}
+            onSuccess={() => {
+              refetchOrders()
+              refetch()
+              queryClient.invalidateQueries({ queryKey: ['tablesOverview'] })
+            }}
+          />
+        )
+      }
 
       {/* Cancel Order or Item Modal */}
       <CancelItemModal
@@ -950,20 +896,22 @@ export function TableDetailPage() {
       />
 
       {/* Transfer Modal */}
-      {table && (
-        <TransferTableModal
-          isOpen={isTransferModalOpen}
-          onClose={() => setIsTransferModalOpen(false)}
-          onSuccess={() => {
-            refetch()
-            queryClient.invalidateQueries({
-              queryKey: ['sessionTransfers', activeSessionId],
-            })
-          }}
-          currentTable={table}
-          availableEmptyTables={allTablesData?.content || []}
-        />
-      )}
+      {
+        table && (
+          <TransferTableModal
+            isOpen={isTransferModalOpen}
+            onClose={() => setIsTransferModalOpen(false)}
+            onSuccess={() => {
+              refetch()
+              queryClient.invalidateQueries({
+                queryKey: ['sessionTransfers', activeSessionId],
+              })
+            }}
+            currentTable={table}
+            availableEmptyTables={allTablesData?.content || []}
+          />
+        )
+      }
 
       {/* Modern Center Modal Confirmation Dialog */}
       <ConfirmDialog

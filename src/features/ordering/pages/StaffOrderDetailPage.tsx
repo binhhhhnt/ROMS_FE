@@ -4,13 +4,8 @@ import { useQuery } from '@tanstack/react-query'
 import {
   ArrowLeft,
   Clock,
-  Utensils,
   RefreshCw,
-  BellRing,
   AlertCircle,
-  FileText,
-  User,
-  Info,
   CheckCircle2,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -140,14 +135,51 @@ export function StaffOrderDetailPage() {
     }).format(date)
   }
 
-  const getOrderStatusBadge = (status: OrderStatus) => {
+  const getOrderStatusIndicator = (status: OrderStatus) => {
+    const map: Record<
+      OrderStatus,
+      { label: string; dot: string; variant: 'pending' | 'cooking' | 'completed' | 'cancelled' }
+    > = {
+      PENDING: { label: 'Chờ tiếp nhận', dot: 'bg-status-pending', variant: 'pending' },
+      COOKING: { label: 'Đang nấu', dot: 'bg-status-cooking', variant: 'cooking' },
+      COMPLETED: { label: 'Đã hoàn thành', dot: 'bg-status-completed', variant: 'completed' },
+      CANCELLED: { label: 'Đã hủy', dot: 'bg-status-cancelled', variant: 'cancelled' },
+    }
+    const cfg = map[status]
+    if (!cfg) return <Badge variant="outline">{status}</Badge>
+    return (
+      <Badge variant={cfg.variant}>
+        <span className={`w-2 h-2 rounded-full shrink-0 ${cfg.dot}`} />
+        {cfg.label}
+      </Badge>
+    )
+  }
+
+  const getItemStatusIndicator = (status: OrderItemStatus) => {
     switch (status) {
       case 'PENDING':
-        return <Badge variant="pending">Chờ tiếp nhận</Badge>
+        return (
+          <Badge variant="pending">
+            <span className="w-2 h-2 rounded-full bg-status-pending shrink-0" />
+            Chờ nấu
+          </Badge>
+        )
       case 'COOKING':
-        return <Badge variant="cooking">Đang nấu</Badge>
+        return (
+          <Badge variant="cooking">
+            <span className="w-2 h-2 rounded-full bg-status-cooking shrink-0" />
+            Đang nấu
+          </Badge>
+        )
+      case 'READY':
+        return (
+          <Badge variant="ready">
+            <span className="w-2 h-2 rounded-full bg-status-ready shrink-0" />
+            Chờ bưng
+          </Badge>
+        )
       case 'COMPLETED':
-        return <Badge variant="completed">Đã hoàn thành</Badge>
+        return <Badge variant="completed">Đã phục vụ</Badge>
       case 'CANCELLED':
         return <Badge variant="cancelled">Đã hủy</Badge>
       default:
@@ -155,68 +187,28 @@ export function StaffOrderDetailPage() {
     }
   }
 
-  const getItemStatusBadge = (status: OrderItemStatus) => {
-    switch (status) {
-      case 'PENDING':
-        return (
-          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-status-pending/15 text-status-pending">
-            Chờ bếp tiếp nhận
-          </span>
-        )
-      case 'COOKING':
-        return (
-          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-status-cooking/15 text-status-cooking">
-            Đang chế biến
-          </span>
-        )
-      case 'READY':
-        return (
-          <span className="text-xs font-bold px-3 py-1 rounded-full bg-status-ready/20 text-status-ready flex items-center gap-1.5 animate-pulse">
-            <BellRing className="w-3.5 h-3.5 text-status-ready" />
-            Sẵn sàng bưng món
-          </span>
-        )
-      case 'COMPLETED':
-        return (
-          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-status-completed/15 text-status-completed">
-            Đã phục vụ xong
-          </span>
-        )
-      case 'CANCELLED':
-        return (
-          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-status-cancelled/15 text-status-cancelled">
-            Đã hủy món
-          </span>
-        )
-      default:
-        return <span className="text-xs text-muted">{status}</span>
-    }
-  }
-
   if (isLoading) {
     return (
-      <div className="max-w-4xl mx-auto flex flex-col gap-6">
-        <div className="h-6 w-32 bg-surface rounded animate-pulse" />
-        <div className="h-32 bg-card border border-border rounded-xl animate-pulse" />
-        <div className="h-64 bg-card border border-border rounded-xl animate-pulse" />
+      <div className="max-w-4xl mx-auto flex flex-col gap-5">
+        <div className="h-6 w-32 bg-card border border-border rounded animate-pulse" />
+        <div className="h-32 bg-card border border-border rounded-lg animate-pulse" />
+        <div className="h-64 bg-card border border-border rounded-lg animate-pulse" />
       </div>
     )
   }
 
   if (error || !order) {
     return (
-      <div className="max-w-md mx-auto my-12 text-center flex flex-col items-center gap-4 bg-card border border-border rounded-2xl p-8">
-        <div className="w-14 h-14 rounded-full bg-red-500/10 text-status-cancelled flex items-center justify-center">
-          <AlertCircle className="w-7 h-7" />
-        </div>
+      <div className="max-w-md mx-auto my-12 text-center flex flex-col items-center gap-4 bg-card border border-border rounded-lg p-8">
+        <AlertCircle className="w-8 h-8 text-status-cancelled" />
         <div>
-          <h2 className="text-lg font-bold text-text">Không tìm thấy đơn hàng</h2>
+          <h2 className="text-base font-bold text-text">Không tìm thấy đơn hàng</h2>
           <p className="text-xs text-muted mt-1">
             Mã đơn #{orderId} không tồn tại hoặc đã bị xóa khỏi hệ thống.
           </p>
         </div>
         <Link to="/staff/orders">
-          <Button variant="primary" size="sm">
+          <Button variant="primary" size="md">
             <ArrowLeft className="w-4 h-4 mr-1.5" />
             Về danh sách Order
           </Button>
@@ -228,15 +220,14 @@ export function StaffOrderDetailPage() {
   const readyItemsCount = order.items.filter((i) => i.status === 'READY').length
 
   return (
-    <div className="max-w-4xl mx-auto flex flex-col gap-6 pb-12">
-      {/* Top Navigation */}
-      <div className="flex items-center justify-between">
-        <Link
-          to="/staff/orders"
-          className="text-xs font-semibold text-muted hover:text-text flex items-center gap-1.5 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Quay lại danh sách Order
+    <div className="max-w-4xl mx-auto flex flex-col gap-5 pb-12">
+      {/* Tầng 1: Top Navigation */}
+      <div className="flex items-center justify-between gap-3">
+        <Link to="/staff/orders" className="inline-block">
+          <Button type="button" variant="outline" size="sm" className="h-9 px-3 text-xs font-medium gap-1.5">
+            <ArrowLeft className="w-4 h-4 shrink-0" />
+            Quay lại danh sách Order
+          </Button>
         </Link>
 
         <Button
@@ -245,256 +236,242 @@ export function StaffOrderDetailPage() {
           size="sm"
           onClick={() => refetch()}
           disabled={isRefetching}
-          className="text-xs h-8"
+          className="text-xs h-9 px-3 shrink-0"
         >
           <RefreshCw
             className={`w-3.5 h-3.5 mr-1.5 ${isRefetching ? 'animate-spin' : ''}`}
           />
-          {isRefetching ? 'Đang cập nhật...' : 'Cập nhật lại'}
+          Cập nhật lại
         </Button>
       </div>
 
-      {/* Ready Alert Notice */}
+      {/* Ready Action Banner (Minimalist: trắng + vạch nhấn xanh) */}
       {readyItemsCount > 0 && (
-        <div className="bg-emerald-500/15 border border-emerald-500/30 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-status-ready shadow-xs">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-status-ready/20 flex items-center justify-center shrink-0">
-              <BellRing className="w-5 h-5 animate-bounce" />
+        <div className="bg-card border border-border border-l-4 border-l-status-ready rounded-lg p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="font-semibold text-sm text-text">
+              Có {readyItemsCount} món đã nấu xong
             </div>
-            <div>
-              <div className="font-bold text-sm">
-                Có {readyItemsCount} món ăn đã chế biến xong!
-              </div>
-              <p className="text-xs text-status-ready/80 mt-0.5">
-                Bếp đã hoàn tất chuẩn bị. Vui lòng bưng món đến bàn{' '}
-                <strong>{order.tableCode ? `Bàn ${order.tableCode}` : `Bàn #${order.tableId}`}</strong> cho khách.
-              </p>
-            </div>
+            <p className="text-xs text-muted mt-0.5">
+              Sẵn sàng bưng ra{' '}
+              <span className="font-medium text-text">
+                {order.tableCode ? `Bàn ${order.tableCode}` : `Bàn #${order.tableId}`}
+              </span>
+              .
+            </p>
           </div>
-          <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
-            {readyItemsCount > 1 && (
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={handleCompleteAllReady}
-                disabled={isServingAll}
-                className="bg-status-ready hover:bg-emerald-600 font-bold text-xs text-white shadow-xs"
-              >
-                {isServingAll ? 'Đang cập nhật...' : `Bưng tất cả (${readyItemsCount} món)`}
-              </Button>
-            )}
-            <span className="hidden sm:inline-block text-xs bg-status-ready text-white px-3 py-1 rounded-full font-bold">
-              ƯU TIÊN PHỤC VỤ
-            </span>
-          </div>
+          {readyItemsCount > 1 && (
+            <Button
+              variant="primary"
+              onClick={handleCompleteAllReady}
+              disabled={isServingAll}
+              className="h-11 px-4 text-sm font-semibold shrink-0"
+            >
+              <CheckCircle2 className="w-4 h-4 mr-1.5" />
+              Bưng tất cả ({readyItemsCount} món)
+            </Button>
+          )}
         </div>
       )}
 
-      {/* Cancellation Notice if Order Cancelled */}
+      {/* Cancellation Notice */}
       {order.status === 'CANCELLED' && (
-        <div className="bg-red-500/10 border border-status-cancelled/30 rounded-xl p-4 flex items-start gap-3 text-status-cancelled">
-          <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-          <div className="text-xs">
-            <div className="font-bold text-sm">Đơn hàng này đã bị hủy</div>
-            <p className="mt-1">
-              Đơn hàng đã được xác nhận hủy bởi khách tại tablet.
+        <div className="bg-card border border-border border-l-4 border-l-status-cancelled rounded-lg p-4 flex items-start gap-3">
+          <AlertCircle className="w-4 h-4 text-status-cancelled shrink-0 mt-0.5" />
+          <div className="text-xs min-w-0 flex-1">
+            <div className="font-semibold text-sm text-status-cancelled">
+              Đơn hàng này đã bị hủy
+            </div>
+            <p className="text-muted mt-0.5">
+              Đơn hàng đã được xác nhận hủy.
               {order.terminationReason && (
-                <> Lý do ghi nhận: <strong>&ldquo;{order.terminationReason}&rdquo;</strong></>
+                <>
+                  {' '}
+                  Lý do: <span className="font-medium text-text">&ldquo;{order.terminationReason}&rdquo;</span>
+                </>
               )}
             </p>
           </div>
         </div>
       )}
 
-      {/* Main Order Header Card */}
-      <div className="bg-card border border-border rounded-xl p-5 shadow-xs flex flex-col gap-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
-          <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-xl bg-surface flex items-center justify-center text-primary font-extrabold text-base border border-border/80">
-              {order.tableCode || `T${order.tableId}`}
+      {/* Tầng 2: Main Order Header Card */}
+      <div className="bg-card border border-border rounded-lg">
+        <div className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <h1 className="text-xl font-bold text-text">
+                {order.tableCode ? `Bàn ${order.tableCode}` : `Bàn #${order.tableId}`}
+              </h1>
+              <span className="text-xs font-mono text-muted">
+                Đơn #{order.id}
+              </span>
+              {getOrderStatusIndicator(order.status)}
             </div>
-            <div>
-              <div className="flex items-center gap-2.5">
-                <h1 className="text-xl font-bold text-text">
-                  {order.tableCode ? `Bàn ${order.tableCode}` : `Bàn #${order.tableId}`}
-                </h1>
-                <span className="text-xs font-bold text-muted bg-surface px-2 py-0.5 rounded">
-                  Đơn #{order.id}
-                </span>
-              </div>
-              <div className="flex items-center gap-2 text-xs text-muted mt-1">
-                <Clock className="w-3.5 h-3.5 text-accent" />
-                <span>Đặt lúc: {formatTime(order.createdAt)}</span>
-              </div>
+            <div className="flex items-center gap-1.5 text-xs text-muted mt-1">
+              <Clock className="w-3.5 h-3.5 shrink-0" />
+              <span>Đặt lúc {formatTime(order.createdAt)}</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            {getOrderStatusBadge(order.status)}
-            {order.status === 'PENDING' && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setCancelTarget({ type: 'ORDER' })}
-                className="text-xs h-8 text-status-cancelled border-status-cancelled/30 hover:bg-status-cancelled hover:text-white"
-              >
-                Hủy đơn hàng
-              </Button>
-            )}
-          </div>
+          {order.status === 'PENDING' && (
+            <Button
+              type="button"
+              variant="destructiveOutline"
+              size="sm"
+              onClick={() => setCancelTarget({ type: 'ORDER' })}
+              className="text-xs h-9 px-3 shrink-0 self-start sm:self-auto"
+            >
+              Hủy đơn hàng
+            </Button>
+          )}
         </div>
 
-        {/* Order Meta Info Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-1 text-xs">
-          <div>
-            <span className="text-muted block">Phiên phục vụ (Session):</span>
-            <span className="font-semibold text-text mt-0.5 block">
+        {/* Order Meta Info Strip */}
+        <div className="px-4 py-3 sm:px-5 grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs">
+          <div className="min-w-0">
+            <span className="text-muted block">Phiên phục vụ</span>
+            <span className="font-medium text-text font-mono mt-0.5 block truncate">
               #{order.sessionId || 'Mặc định'}
             </span>
           </div>
 
-          <div>
-            <span className="text-muted block">Người tạo / Nguồn đơn:</span>
-            <span className="font-semibold text-text mt-0.5 flex items-center gap-1">
-              <User className="w-3.5 h-3.5 text-muted" />
+          <div className="min-w-0">
+            <span className="text-muted block">Nguồn đơn</span>
+            <span className="font-medium text-text mt-0.5 block truncate">
               {order.createdByName || 'Khách tại bàn (Tablet)'}
             </span>
           </div>
 
-          <div>
-            <span className="text-muted block">Cập nhật gần nhất:</span>
-            <span className="font-semibold text-text mt-0.5 block">
+          <div className="min-w-0 col-span-2 sm:col-span-1">
+            <span className="text-muted block">Cập nhật gần nhất</span>
+            <span className="font-medium text-text mt-0.5 block truncate">
               {formatTime(order.updatedAt || order.createdAt)}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Order Items Table Card */}
-      <div className="bg-card border border-border rounded-xl shadow-xs overflow-hidden">
-        <div className="bg-surface/40 p-4 border-b border-border flex items-center justify-between">
-          <h2 className="text-sm font-bold text-text flex items-center gap-2">
-            <Utensils className="w-4 h-4 text-accent" />
-            Danh sách món ăn ({order.items.length} món)
+      {/* Tầng 3: Order Items Card */}
+      <div className="bg-card border border-border rounded-lg overflow-hidden">
+        <div className="px-4 py-3 sm:px-5 border-b border-border flex items-center justify-between gap-2">
+          <h2 className="text-sm font-semibold text-text">
+            Danh sách món ({order.items.length})
           </h2>
-          <span className="text-xs text-muted">
-            Theo dõi trạng thái từ bếp
+          <span className="text-xs text-muted shrink-0">
+            Trạng thái theo bếp
           </span>
         </div>
 
-        <div className="divide-y divide-border/60">
-          {order.items.map((item, idx) => (
-            <div
-              key={item.id}
-              className={`p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors ${item.status === 'READY'
-                ? 'bg-emerald-500/5'
-                : item.status === 'CANCELLED'
-                  ? 'bg-surface/30 opacity-75'
-                  : 'hover:bg-surface/20'
+        <div className="divide-y divide-border">
+          {order.items.map((item) => {
+            const returnedQty = item.returnedQuantity ?? item.returned_quantity ?? 0
+            const isCancelled = item.status === 'CANCELLED'
+            return (
+              <div
+                key={item.id}
+                className={`px-4 py-3.5 sm:px-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                  isCancelled ? 'opacity-60' : ''
                 }`}
-            >
-              <div className="flex items-start gap-3">
-                <span className="text-xs font-bold text-muted w-5 pt-0.5">
-                  {idx + 1}.
-                </span>
-                <div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-bold text-sm text-text">
-                      {item.menuItemName}
-                    </span>
-                    <span className="text-xs font-extrabold text-accent">
-                      &times; {item.quantity}
-                    </span>
-                    {((item.returnedQuantity ?? item.returned_quantity ?? 0) > 0) && (
-                      <span className="text-xs text-muted font-medium bg-card border border-border px-2 py-0.5 rounded-md">
-                        Đã dùng: {item.quantity - (item.returnedQuantity ?? item.returned_quantity ?? 0)} (Đã trả: {item.returnedQuantity ?? item.returned_quantity})
+              >
+                {/* Cột trái: Số lượng (anchor) + Tên món + Ghi chú */}
+                <div className="min-w-0 flex-1 flex items-start gap-3">
+                  <span className="font-mono font-bold text-base text-text shrink-0 w-9 pt-0.5 tabular-nums">
+                    {item.quantity}x
+                  </span>
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                      <span
+                        className={`font-semibold text-sm text-text ${
+                          isCancelled ? 'line-through text-muted' : ''
+                        }`}
+                      >
+                        {item.menuItemName}
                       </span>
-                    )}
-                  </div>
-
-                  {item.note && (
-                    <p className="text-xs text-muted italic mt-1 flex items-center gap-1">
-                      <FileText className="w-3 h-3 text-muted shrink-0" />
-                      Ghi chú: {item.note}
-                    </p>
-                  )}
-
-                  {item.status === 'CANCELLED' && item.terminationReason && (
-                    <p className="text-xs text-status-cancelled mt-1 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3 shrink-0" />
-                      Lý do hủy: {item.terminationReason}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0 pl-8 sm:pl-0">
-                <div className="text-right">
-                  <div className="text-xs text-muted">
-                    {formatPrice(item.unitPrice)} / món
-                  </div>
-                  <div className="font-bold text-sm text-text">
-                    {formatPrice(item.subtotal || item.unitPrice * item.quantity)}
-                  </div>
-                </div>
-
-                <div className="min-w-[130px] flex items-center justify-end gap-2">
-                  {item.status === 'READY' ? (
-                    <Button
-                      type="button"
-                      variant="primary"
-                      size="sm"
-                      onClick={() => handleCompleteItem(item.id, item.menuItemName)}
-                      disabled={servingItemId === item.id}
-                      className="bg-status-ready hover:bg-emerald-600 font-bold text-xs text-white shadow-xs h-8 px-3"
-                    >
-                      <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
-                      Đã bưng ra bàn
-                    </Button>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      {getItemStatusBadge(item.status)}
-                      {item.status === 'PENDING' && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() =>
-                            setCancelTarget({
-                              type: 'ITEM',
-                              itemId: item.id,
-                              itemName: item.menuItemName,
-                              maxQuantity: item.quantity,
-                            })
-                          }
-                          className="text-xs h-7 text-status-cancelled hover:bg-status-cancelled/10 px-2"
-                        >
-                          Hủy món
-                        </Button>
+                      {returnedQty > 0 && (
+                        <span className="text-xs text-muted">
+                          (Đã dùng: {item.quantity - returnedQty}, trả: {returnedQty})
+                        </span>
                       )}
                     </div>
-                  )}
+
+                    {item.note && (
+                      <p className="text-xs text-text mt-1">
+                        <span className="font-semibold">Ghi chú:</span> {item.note}
+                      </p>
+                    )}
+
+                    {isCancelled && item.terminationReason && (
+                      <p className="text-xs text-status-cancelled mt-1">
+                        Lý do hủy: {item.terminationReason}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Cột phải: Giá + Trạng thái/Thao tác */}
+                <div className="shrink-0 flex items-center justify-between sm:justify-end gap-4 pl-12 sm:pl-0">
+                  <div className="text-left sm:text-right tabular-nums shrink-0">
+                    <div className="font-semibold text-sm text-text font-mono">
+                      {formatPrice(item.subtotal || item.unitPrice * item.quantity)}
+                    </div>
+                    <div className="text-xs text-muted">
+                      {formatPrice(item.unitPrice)} / món
+                    </div>
+                  </div>
+
+                  <div className="shrink-0 flex items-center gap-2">
+                    {item.status === 'READY' ? (
+                      <Button
+                        type="button"
+                        variant="primary"
+                        size="sm"
+                        onClick={() => handleCompleteItem(item.id, item.menuItemName)}
+                        disabled={servingItemId === item.id}
+                        className="h-9 px-3.5 text-xs font-semibold"
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+                        Đã bưng ra bàn
+                      </Button>
+                    ) : (
+                      <>
+                        {getItemStatusIndicator(item.status)}
+                        {item.status === 'PENDING' && (
+                          <Button
+                            type="button"
+                            variant="destructiveOutline"
+                            size="sm"
+                            onClick={() =>
+                              setCancelTarget({
+                                type: 'ITEM',
+                                itemId: item.id,
+                                itemName: item.menuItemName,
+                                maxQuantity: item.quantity,
+                              })
+                            }
+                            className="text-xs h-9 px-2.5"
+                          >
+                            Hủy món
+                          </Button>
+                        )}
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
 
         {/* Order Items Footer Summary */}
-        <div className="bg-surface/30 p-5 border-t border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-xs text-muted">
-            <Info className="w-4 h-4 text-accent shrink-0" />
-          </div>
-
-          <div className="flex items-center justify-between sm:justify-end gap-4">
-            <span className="text-xs font-semibold text-muted">
-              Tổng tiền đơn hàng:
-            </span>
-            <span className="text-xl font-extrabold text-primary flex items-center">
-              {formatPrice(order.totalAmount)}
-            </span>
-          </div>
+        <div className="px-4 py-4 sm:px-5 border-t border-border flex items-center justify-between gap-4">
+          <span className="text-xs text-muted">
+            Tổng cộng ({order.items.length} món)
+          </span>
+          <span className="text-lg font-bold font-mono text-text tabular-nums">
+            {formatPrice(order.totalAmount)}
+          </span>
         </div>
       </div>
 
@@ -508,7 +485,6 @@ export function StaffOrderDetailPage() {
         maxQuantity={cancelTarget?.type === 'ITEM' ? cancelTarget.maxQuantity : undefined}
         isLoading={isCancelling}
       />
-
     </div>
   )
 }

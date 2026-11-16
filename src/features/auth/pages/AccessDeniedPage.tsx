@@ -40,10 +40,8 @@ export function AccessDeniedPage() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="bg-card border border-border shadow-xl rounded-2xl p-8 max-w-md w-full text-center animate-in fade-in-50 duration-300">
-        <div className="w-16 h-16 rounded-2xl bg-status-cancelled/15 text-status-cancelled mx-auto flex items-center justify-center mb-5 shadow-inner">
-          <ShieldAlert className="w-8 h-8" />
-        </div>
+      <div className="bg-card border border-border rounded-lg p-8 max-w-md w-full text-center">
+        <ShieldAlert className="w-10 h-10 text-status-cancelled mx-auto mb-4" />
 
         <h1 className="text-xl font-bold text-text mb-2">Truy cập bị từ chối</h1>
 
@@ -59,7 +57,7 @@ export function AccessDeniedPage() {
             variant="primary"
             size="lg"
             onClick={handleGoHome}
-            className="w-full text-xs font-semibold shadow-md"
+            className="w-full h-11 text-xs font-semibold"
           >
             <Home className="w-4 h-4 mr-2" />
             Về màn hình làm việc chính
@@ -70,7 +68,7 @@ export function AccessDeniedPage() {
             variant="outline"
             size="sm"
             onClick={() => navigate(-1)}
-            className="w-full text-xs text-muted hover:text-text"
+            className="w-full h-9 text-xs"
           >
             <ArrowLeft className="w-3.5 h-3.5 mr-1.5" />
             Quay lại trang trước
@@ -79,10 +77,10 @@ export function AccessDeniedPage() {
           {user && (
             <Button
               type="button"
-              variant="ghost"
+              variant="destructiveOutline"
               size="sm"
               onClick={handleLogout}
-              className="w-full text-xs text-status-cancelled hover:bg-status-cancelled/10 mt-2"
+              className="w-full h-9 text-xs mt-1"
             >
               <LogOut className="w-3.5 h-3.5 mr-1.5" />
               Đăng xuất khỏi tài khoản

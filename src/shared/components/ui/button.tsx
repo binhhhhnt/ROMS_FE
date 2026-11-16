@@ -3,7 +3,15 @@ import { cn } from '@/shared/utils/cn'
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive'
+  variant?:
+    | 'primary'
+    | 'secondary'
+    | 'outline'
+    | 'ghost'
+    | 'destructive'
+    | 'destructiveOutline'
+    | 'cooking'
+    | 'ready'
   size?: 'sm' | 'md' | 'lg' | 'icon'
   isLoading?: boolean
 }
@@ -26,15 +34,21 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variants = {
       primary:
-        'bg-primary text-white hover:bg-primary-hover shadow-sm',
+        'bg-primary text-white border border-primary hover:bg-primary-hover',
       secondary:
-        'bg-surface text-text hover:bg-surface/80',
+        'bg-surface text-text border border-border hover:bg-surface/80',
       outline:
         'border border-border bg-card hover:bg-muted-bg text-text',
       ghost:
         'hover:bg-muted-bg text-text',
       destructive:
-        'bg-status-cancelled text-white hover:bg-status-cancelled/90 shadow-sm',
+        'bg-status-cancelled text-white border border-status-cancelled hover:bg-status-cancelled/90',
+      destructiveOutline:
+        'bg-card text-status-cancelled border border-status-cancelled/35 hover:bg-status-cancelled/10',
+      cooking:
+        'bg-blue-700 text-white border border-blue-700 hover:bg-blue-800',
+      ready:
+        'bg-emerald-700 text-white border border-emerald-700 hover:bg-emerald-800',
     }
 
     const sizes = {

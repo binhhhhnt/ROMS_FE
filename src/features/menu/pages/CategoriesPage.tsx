@@ -149,21 +149,22 @@ export function CategoriesPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6 text-left max-w-7xl mx-auto">
+    <div className="flex flex-col gap-5 text-left max-w-7xl mx-auto">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-text tracking-tight flex items-center gap-2.5">
-            <Layers className="w-6 h-6 text-primary" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-border">
+        <div className="min-w-0">
+          <h1 className="text-xl font-bold text-text tracking-tight">
             Quản lý Danh mục Món
           </h1>
-          <p className="text-xs text-muted mt-1">
+          <p className="text-xs text-muted mt-0.5">
             Phân loại thực đơn nhà hàng và quản lý thứ tự hiển thị danh mục trên tablet của thực khách.
           </p>
         </div>
         <Button
+          variant="primary"
+          size="sm"
           onClick={handleOpenCreate}
-          className="bg-primary hover:bg-primary-hover text-white shadow-xs flex items-center gap-2 self-start sm:self-auto font-semibold"
+          className="h-9 px-3.5 text-xs font-semibold flex items-center gap-1.5 self-start sm:self-auto shrink-0"
         >
           <Plus className="w-4 h-4" />
           <span>Thêm danh mục mới</span>
@@ -172,28 +173,24 @@ export function CategoriesPage() {
 
       {/* KPI Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="p-4 border border-border shadow-xs flex items-center justify-between">
+        <Card className="p-4 border border-border rounded-lg flex items-center justify-between">
           <div>
-            <span className="text-xs text-muted font-medium">TỔNG SỐ DANH MỤC</span>
-            <div className="text-2xl font-black font-mono text-primary mt-1">
+            <span className="text-xs text-muted font-medium">Tổng số danh mục</span>
+            <div className="text-2xl font-bold tabular-nums text-primary mt-0.5">
               {stats.total}
             </div>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-            <Layers className="w-5 h-5" />
-          </div>
+          <Layers className="w-5 h-5 text-muted/50 shrink-0" />
         </Card>
 
-        <Card className="p-4 border border-border shadow-xs flex items-center justify-between">
+        <Card className="p-4 border border-border rounded-lg flex items-center justify-between">
           <div>
-            <span className="text-xs text-muted font-medium">ĐANG HIỂN THỊ</span>
-            <div className="text-2xl font-black font-mono text-status-ready mt-1">
+            <span className="text-xs text-muted font-medium">Đang hiển thị</span>
+            <div className="text-2xl font-bold tabular-nums text-status-ready mt-0.5">
               {stats.active}
             </div>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-status-ready/15 text-status-ready flex items-center justify-center shrink-0">
-            <CheckCircle2 className="w-5 h-5" />
-          </div>
+          <CheckCircle2 className="w-5 h-5 text-status-ready/60 shrink-0" />
         </Card>
 
         <Card className="p-4 border border-border shadow-xs flex items-center justify-between">

@@ -4,12 +4,10 @@ import { ResetPasswordForm } from '@/features/auth/components/ResetPasswordForm'
 export function ResetPasswordPage() {
   return (
     <div className="w-full max-w-[460px] mx-auto">
-      <div className="bg-card border border-border shadow-xl rounded-xl p-6 sm:p-8 transition-all">
+      <div className="bg-card border border-border rounded-lg p-6 sm:p-8">
         {/* Header */}
         <div className="flex flex-col items-center text-center">
-          <div className="w-14 h-14 rounded-2xl bg-surface flex items-center justify-center mb-4 text-primary shadow-inner">
-            <ShieldCheck className="w-7 h-7 text-primary" />
-          </div>
+          <ShieldCheck className="w-7 h-7 text-primary mb-3" />
 
           <div className="flex items-center gap-2 mb-1">
             <span className="text-2xl font-black tracking-tight text-primary uppercase">

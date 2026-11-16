@@ -63,7 +63,6 @@ export interface ReturnOrderItemsRequest {
     orderItemId: number
     returnQuantity: number
   }[]
-  note?: string
 }
 
 export interface OrderResponse {

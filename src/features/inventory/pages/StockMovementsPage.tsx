@@ -147,6 +147,7 @@ export function StockMovementsPage() {
             <option value="PURCHASE">Nhập mua hàng</option>
             <option value="ORDER_CONSUMPTION">Xuất chế biến</option>
             <option value="INVENTORY_ADJUSTMENT">Điều chỉnh kiểm kê</option>
+            <option value="ORDER_RETURN">Hoàn trả kiểm đồ</option>
           </select>
 
           {hasActiveFilters && (

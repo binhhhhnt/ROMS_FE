@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { KitchenOrderResponse } from '@/features/kitchen/types/kitchen.types'
 import type { OrderItemResponse } from '@/features/ordering/types/ordering.types'
-import { Flame } from 'lucide-react'
+import { Button } from '@/shared/components/ui/button'
 
 interface KitchenQueueOrderCardProps {
   order: KitchenOrderResponse
@@ -57,105 +57,96 @@ export function KitchenQueueOrderCard({
 
   return (
     <div
-      className={`bg-card border rounded-2xl shadow-xs overflow-hidden flex flex-col transition-all ${
-        isLongWait
-          ? 'border-status-pending ring-1 ring-status-pending/40'
-          : 'border-border'
+      className={`bg-card border border-border rounded-lg overflow-hidden flex flex-col ${
+        isLongWait ? 'border-t-4 border-t-status-pending' : ''
       }`}
     >
-      {/* Card Header: Big Table & Wait Time */}
-      <div className="bg-surface/50 p-4 border-b border-border flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-surface border border-border flex items-center justify-center text-primary font-black text-xl">
-            {order.tableCode || `T${order.tableId}`}
+      {/* Card Header (Hàng cha: bg-surface/60 tách biệt với danh sách món) */}
+      <div className="bg-surface/60 px-4 py-3 border-b border-border flex items-center justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-bold text-base text-text">
+              {order.tableCode ? `Bàn ${order.tableCode}` : `Bàn #${order.tableId}`}
+            </span>
+            <span className="text-xs font-mono text-muted">
+              #{order.id}
+            </span>
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-lg text-text">
-                {order.tableCode ? `Bàn ${order.tableCode}` : `Bàn #${order.tableId}`}
-              </span>
-              <span className="text-xs font-semibold text-muted bg-surface px-2 py-0.5 rounded">
-                #{order.id}
-              </span>
-            </div>
-            <div className="text-xs text-muted mt-0.5">
-              Gửi lúc {formatTime(order.createdAt)}
-            </div>
+          <div className="text-xs text-muted mt-0.5">
+            Gửi lúc {formatTime(order.createdAt)}
           </div>
         </div>
 
         {/* Wait Time Badge */}
-        <div
-          className={`px-3 py-1.5 rounded-lg text-xs font-bold ${
+        <span
+          className={`px-2.5 py-0.5 rounded-md text-xs font-medium border shrink-0 ${
             isLongWait
-              ? 'bg-status-pending/20 text-status-pending border border-status-pending/40'
-              : 'bg-surface text-muted border border-border'
+              ? 'bg-status-pending/15 text-amber-700 dark:text-amber-400 border-status-pending/35'
+              : 'bg-card text-muted border-border'
           }`}
         >
           {waitMinutes === 0 ? 'Vừa tới' : `Chờ ${waitMinutes} phút`}
-        </div>
+        </span>
       </div>
 
-      {/* Dishes List */}
-      <div className="p-4 flex-1 flex flex-col gap-2">
-        <div className="text-xs font-bold text-muted uppercase tracking-wider mb-1 flex items-center justify-between">
-          <span>{pendingItems.length} món đang chờ</span>
-          <span className="text-primary font-bold">
-            Tổng {pendingItems.reduce((sum, i) => sum + i.quantity, 0)} suất
-          </span>
-        </div>
+      {/* Sub-header */}
+      <div className="px-4 py-2 border-b border-border bg-card flex items-center justify-between text-xs text-muted">
+        <span>{pendingItems.length} món đang chờ</span>
+        <span className="font-semibold text-text tabular-nums">
+          Tổng {pendingItems.reduce((sum, i) => sum + i.quantity, 0)} suất
+        </span>
+      </div>
 
-        <div className="space-y-2.5 pt-1">
-          {pendingItems.map((item) => (
-            <div
-              key={item.id}
-              className="flex items-center justify-between gap-3 p-3 rounded-xl bg-surface/30 border border-border"
-            >
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-text text-base block leading-snug">
-                    {item.menuItemName}
-                  </span>
-                  <span className="w-8 h-8 rounded-lg bg-surface border border-border text-primary flex items-center justify-center font-black text-sm shrink-0">
-                    x{item.quantity}
-                  </span>
-                </div>
-
+      {/* Dishes List (Hàng con: nền trắng, divide-y, không lồng card) */}
+      <div className="divide-y divide-border bg-card flex-1">
+        {pendingItems.map((item) => (
+          <div
+            key={item.id}
+            className="px-4 py-3 flex items-center justify-between gap-3"
+          >
+            <div className="min-w-0 flex-1 flex items-start gap-3">
+              <span className="font-mono font-bold text-base text-text shrink-0 w-9 pt-0.5 tabular-nums">
+                {item.quantity}x
+              </span>
+              <div className="min-w-0 flex-1">
+                <span className="font-semibold text-sm text-text block leading-snug">
+                  {item.menuItemName}
+                </span>
                 {item.note && (
-                  <p className="text-xs font-semibold text-amber-800 mt-1 bg-amber-50 px-2.5 py-1 rounded border border-amber-200">
-                    Ghi chú: {item.note}
+                  <p className="text-xs text-text mt-1">
+                    <span className="font-semibold">Ghi chú:</span> {item.note}
                   </p>
                 )}
               </div>
-
-              {/* Action Button: Nấu */}
-              <div className="shrink-0">
-                <button
-                  type="button"
-                  onClick={() => handleAcceptItem(item.id)}
-                  disabled={acceptingItemId === item.id || isAcceptingAll}
-                  className="h-9 px-4 bg-primary hover:bg-primary-hover active:bg-primary text-white font-bold text-xs rounded-xl shadow-xs cursor-pointer transition-colors disabled:opacity-60 flex items-center gap-1.5"
-                >
-                  <Flame className="w-3.5 h-3.5" />
-                  Nấu
-                </button>
-              </div>
             </div>
-          ))}
-        </div>
+
+            <div className="shrink-0">
+              <Button
+                type="button"
+                variant="cooking"
+                size="sm"
+                onClick={() => handleAcceptItem(item.id)}
+                disabled={acceptingItemId === item.id || isAcceptingAll}
+                className="h-9 px-3.5 text-xs font-semibold"
+              >
+                Nấu
+              </Button>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Card Action Footer: Nấu tất cả */}
-      <div className="bg-surface/40 p-4 border-t border-border mt-auto">
-        <button
+      <div className="bg-card px-4 py-3 border-t border-border mt-auto">
+        <Button
           type="button"
+          variant="cooking"
           onClick={handleAcceptAll}
           disabled={isAcceptingAll || acceptingItemId !== null}
-          className="w-full h-11 bg-primary hover:bg-primary-hover active:bg-primary text-white font-bold text-sm rounded-xl flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer disabled:opacity-60"
+          className="w-full h-11 text-sm font-semibold"
         >
-          <Flame className="w-4 h-4" />
-          <span>Nấu tất cả ({pendingItems.length} món)</span>
-        </button>
+          Nấu tất cả ({pendingItems.length} món)
+        </Button>
       </div>
     </div>
   )

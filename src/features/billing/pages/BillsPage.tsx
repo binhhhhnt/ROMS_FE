@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import {
-  Receipt,
   Search,
   RotateCcw,
   Eye,
@@ -10,13 +9,12 @@ import {
   Copy,
   ChevronLeft,
   ChevronRight,
-  CreditCard,
-  Banknote,
   Tag,
   FileText,
 } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
+import { Badge } from '@/shared/components/ui/badge'
 import { billApi } from '@/features/billing/api/billApi'
 import { printReceiptViaBrowser } from '@/features/billing/utils/receiptPrinter'
 import { BillDetailModal } from '@/features/billing/components/BillDetailModal'
@@ -108,54 +106,50 @@ export function BillsPage() {
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-200">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-2.5">
-          <div className="p-2.5 rounded-xl bg-accent/10 text-accent">
-            <Receipt className="w-6 h-6 text-accent" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-text">Lịch Sử Hóa Đơn</h1>
-            <p className="text-sm text-text-secondary">
-              Tra cứu danh sách hóa đơn bán hàng, xem chi tiết món snapshot và in lại hóa đơn
-            </p>
-          </div>
+    <div className="space-y-5">
+      {/* Tầng 1: Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-3 border-b border-border">
+        <div className="min-w-0">
+          <h1 className="text-xl font-bold tracking-tight text-text">Lịch sử hóa đơn</h1>
+          <p className="text-xs text-muted mt-0.5">
+            Tra cứu danh sách hóa đơn bán hàng, xem chi tiết món và in lại hóa đơn
+          </p>
         </div>
 
         <Button
           variant="outline"
+          size="sm"
           onClick={() => refetch()}
-          className="flex items-center gap-2 self-start sm:self-auto"
+          className="h-9 px-3 text-xs self-start sm:self-auto shrink-0"
         >
-          <RotateCcw className="w-4 h-4 text-accent" />
+          <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
           Làm mới
         </Button>
       </div>
 
-      {/* Filter Bar */}
-      <div className="bg-card border border-border rounded-xl p-4 shadow-sm flex flex-col sm:flex-row gap-3 items-center justify-between">
+      {/* Tầng 2: Filter Bar */}
+      <div className="bg-card border border-border rounded-lg p-3.5 flex flex-col sm:flex-row gap-2.5 items-center justify-between">
         <form onSubmit={handleSearchSubmit} className="flex-1 w-full flex items-center gap-2">
           <div className="relative flex-1">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
             <Input
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Tìm kiếm theo mã HĐ (VD: BILL-20261107-0001) hoặc tên/mã bàn..."
-              className="pl-9 h-10 bg-background"
+              placeholder="Tìm theo mã HĐ (VD: BILL-20261107-0001) hoặc mã bàn..."
+              className="pl-9 h-9 text-xs"
             />
           </div>
-          <Button type="submit" variant="secondary" className="h-10">
+          <Button type="submit" variant="primary" size="sm" className="h-9 px-4 text-xs">
             Tìm
           </Button>
         </form>
 
         {search && (
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
             onClick={handleResetFilters}
-            className="text-xs text-text-secondary hover:text-text h-10 px-2.5"
+            className="text-xs h-9 px-3 shrink-0"
           >
             <RotateCcw className="w-3.5 h-3.5 mr-1" />
             Xóa tìm kiếm
@@ -163,28 +157,26 @@ export function BillsPage() {
         )}
       </div>
 
-      {/* Bills Table */}
-      <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
+      {/* Tầng 3: Bills Table */}
+      <div className="bg-card border border-border rounded-lg overflow-hidden">
         {isLoading ? (
-          <div className="p-12 text-center text-text-secondary">
-            <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <div className="p-12 text-center text-muted text-xs">
+            <div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-2" />
             Đang tải danh sách hóa đơn...
           </div>
         ) : isError ? (
-          <div className="p-12 text-center text-error">
-            <p className="font-semibold mb-2">Đã xảy ra lỗi khi tải dữ liệu</p>
-            <p className="text-xs text-text-secondary mb-4">{getApiErrorMessage(error)}</p>
+          <div className="p-12 text-center text-status-cancelled">
+            <p className="font-semibold text-sm mb-1">Đã xảy ra lỗi khi tải dữ liệu</p>
+            <p className="text-xs text-muted mb-4">{getApiErrorMessage(error)}</p>
             <Button variant="outline" size="sm" onClick={() => refetch()}>
               Thử lại
             </Button>
           </div>
         ) : !pageData?.content || pageData.content.length === 0 ? (
           <div className="p-12 text-center">
-            <div className="w-14 h-14 rounded-full bg-accent/10 text-accent flex items-center justify-center mx-auto mb-3">
-              <FileText className="w-7 h-7" />
-            </div>
-            <h3 className="text-base font-semibold text-text mb-1">Chưa có hóa đơn nào</h3>
-            <p className="text-xs text-text-secondary max-w-sm mx-auto mb-4">
+            <FileText className="w-8 h-8 text-muted/60 mx-auto mb-2" />
+            <h3 className="text-sm font-semibold text-text mb-1">Chưa có hóa đơn nào</h3>
+            <p className="text-xs text-muted max-w-sm mx-auto mb-4">
               {search
                 ? 'Không tìm thấy hóa đơn nào phù hợp với từ khóa tìm kiếm.'
                 : 'Các hóa đơn sau khi thu ngân hoàn tất thanh toán sẽ được lưu trữ tại đây.'}
@@ -197,18 +189,18 @@ export function BillsPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-surface/60 text-xs font-semibold text-text-secondary uppercase border-b border-border">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-surface/60 font-medium text-muted border-b border-border">
                 <tr>
-                  <th className="py-3 px-4">Mã Hóa đơn</th>
-                  <th className="py-3 px-4">Bàn</th>
-                  <th className="py-3 px-4">Thời gian</th>
-                  <th className="py-3 px-4 text-right">Tiền món</th>
-                  <th className="py-3 px-4 text-right">Khuyến mãi</th>
-                  <th className="py-3 px-4 text-right">TỔNG THANH TOÁN</th>
-                  <th className="py-3 px-4 text-center">Phương thức</th>
-                  <th className="py-3 px-4">Thu ngân</th>
-                  <th className="py-3 px-4 text-right">Thao tác</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Mã Hóa đơn</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Bàn</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Thời gian</th>
+                  <th className="py-3 px-4 text-right whitespace-nowrap">Tiền món</th>
+                  <th className="py-3 px-4 text-right whitespace-nowrap">Khuyến mãi</th>
+                  <th className="py-3 px-4 text-right whitespace-nowrap">Tổng thanh toán</th>
+                  <th className="py-3 px-4 text-center whitespace-nowrap">Phương thức</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Thu ngân</th>
+                  <th className="py-3 px-4 text-right whitespace-nowrap">Thao tác</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -220,16 +212,16 @@ export function BillsPage() {
                   return (
                     <tr
                       key={bill.id}
-                      className="hover:bg-surface/30 transition-colors group"
+                      className="hover:bg-muted-bg/40 transition-colors"
                     >
                       {/* Bill Code */}
-                      <td className="py-3.5 px-4">
-                        <div className="inline-flex items-center gap-1.5 font-mono font-bold text-xs text-primary bg-primary/5 px-2 py-1 rounded border border-primary/20">
-                          {bill.billCode}
+                      <td className="py-3 px-4 whitespace-nowrap">
+                        <div className="inline-flex items-center gap-1.5 font-mono font-semibold text-xs text-primary">
+                          <span>{bill.billCode}</span>
                           <button
                             onClick={() => copyCode(bill.billCode)}
                             title="Sao chép mã"
-                            className="hover:text-accent transition-colors p-0.5"
+                            className="text-muted hover:text-text transition-colors p-0.5 cursor-pointer"
                           >
                             <Copy className="w-3.5 h-3.5" />
                           </button>
@@ -237,95 +229,82 @@ export function BillsPage() {
                       </td>
 
                       {/* Bàn */}
-                      <td className="py-3.5 px-4">
-                        <span className="font-semibold text-text px-2 py-0.5 rounded bg-surface border border-border text-xs">
-                          {bill.tableCode}
-                        </span>
+                      <td className="py-3 px-4 font-semibold text-text whitespace-nowrap">
+                        {bill.tableCode}
                       </td>
 
                       {/* Thời gian */}
-                      <td className="py-3.5 px-4 text-xs text-text-secondary">
+                      <td className="py-3 px-4 text-muted tabular-nums whitespace-nowrap">
                         {formatDateTime(bill.closedAt || bill.createdAt)}
                       </td>
 
                       {/* Tiền món */}
-                      <td className="py-3.5 px-4 text-right text-xs font-medium text-text-secondary">
+                      <td className="py-3 px-4 text-right text-muted tabular-nums whitespace-nowrap">
                         {formatVnd(bill.amountBeforeDiscount)}
                       </td>
 
                       {/* Giảm giá */}
-                      <td className="py-3.5 px-4 text-right text-xs">
+                      <td className="py-3 px-4 text-right whitespace-nowrap">
                         {bill.discountAmount > 0 ? (
-                          <div className="inline-flex flex-col items-end">
-                            <span className="font-bold text-accent">-{formatVnd(bill.discountAmount)}</span>
+                          <div className="inline-flex flex-col items-end tabular-nums">
+                            <span className="font-semibold text-status-completed">-{formatVnd(bill.discountAmount)}</span>
                             {bill.promotionCode && (
-                              <span className="text-[10px] font-mono text-text-secondary flex items-center gap-0.5">
+                              <span className="text-[11px] font-mono text-muted inline-flex items-center gap-0.5">
                                 <Tag className="w-2.5 h-2.5" /> {bill.promotionCode}
                               </span>
                             )}
                           </div>
                         ) : (
-                          <span className="text-text-secondary/50">-</span>
+                          <span className="text-muted">—</span>
                         )}
                       </td>
 
                       {/* TỔNG THANH TOÁN */}
-                      <td className="py-3.5 px-4 text-right">
-                        <span className="font-bold text-sm text-primary">
+                      <td className="py-3 px-4 text-right whitespace-nowrap">
+                        <span className="font-bold text-sm text-text tabular-nums">
                           {formatVnd(bill.totalAmount)}
                         </span>
                       </td>
 
                       {/* Phương thức TT */}
-                      <td className="py-3.5 px-4 text-center">
+                      <td className="py-3 px-4 text-center whitespace-nowrap">
                         <div className="inline-flex items-center gap-1">
-                          {hasCash && (
-                            <span
-                              className="inline-flex items-center gap-0.5 text-[11px] font-semibold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300"
-                              title="Tiền mặt"
-                            >
-                              <Banknote className="w-3 h-3" /> TM
-                            </span>
-                          )}
-                          {hasBank && (
-                            <span
-                              className="inline-flex items-center gap-0.5 text-[11px] font-semibold px-2 py-0.5 rounded bg-sky-100 text-sky-800 dark:bg-sky-950/50 dark:text-sky-300"
-                              title="Chuyển khoản ngân hàng"
-                            >
-                              <CreditCard className="w-3 h-3" /> CK
-                            </span>
-                          )}
-                          {!hasCash && !hasBank && (
-                            <span className="text-xs text-text-secondary">-</span>
-                          )}
+                          {hasCash && <Badge variant="ready">Tiền mặt</Badge>}
+                          {hasBank && <Badge variant="cooking">CK</Badge>}
+                          {!hasCash && !hasBank && <span className="text-muted">—</span>}
                         </div>
                       </td>
 
                       {/* Thu ngân */}
-                      <td className="py-3.5 px-4 text-xs font-medium text-text">
+                      <td className="py-3 px-4 font-medium text-text whitespace-nowrap">
                         {bill.createdByName || 'Thu ngân'}
                       </td>
 
                       {/* Thao tác */}
-                      <td className="py-3.5 px-4 text-right">
+                      <td className="py-3 px-4 text-right whitespace-nowrap">
                         <div className="inline-flex items-center gap-1.5">
-                          {/* Chi tiết */}
-                          <button
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
                             onClick={() => setSelectedBill(bill)}
+                            className="h-8 px-2.5 text-xs"
                             title="Xem chi tiết hóa đơn"
-                            className="p-1.5 rounded-lg text-text-secondary hover:text-accent hover:bg-accent/10 transition-colors"
                           >
-                            <Eye className="w-4 h-4" />
-                          </button>
+                            <Eye className="w-3.5 h-3.5 mr-1" />
+                            Xem
+                          </Button>
 
-                          {/* In lại */}
-                          <button
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
                             onClick={() => handleQuickPrint(bill)}
+                            className="h-8 px-2.5 text-xs"
                             title="In lại hóa đơn"
-                            className="p-1.5 rounded-lg text-text-secondary hover:text-primary hover:bg-primary/10 transition-colors"
                           >
-                            <Printer className="w-4 h-4" />
-                          </button>
+                            <Printer className="w-3.5 h-3.5" />
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -338,13 +317,12 @@ export function BillsPage() {
 
         {/* Pagination */}
         {pageData && pageData.totalPages > 1 && (
-          <div className="flex items-center justify-between px-6 py-3 border-t border-border bg-surface/30">
-            <span className="text-xs text-text-secondary">
-              Hiển thị trang <span className="font-semibold text-text">{page + 1}</span> /{' '}
-              <span className="font-semibold text-text">{pageData.totalPages}</span> (Tổng số{' '}
-              {pageData.totalElements} hóa đơn)
+          <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-card text-xs">
+            <span className="text-muted">
+              Trang <strong className="text-text tabular-nums">{page + 1}</strong> /{' '}
+              <strong className="text-text tabular-nums">{pageData.totalPages}</strong> ({pageData.totalElements} hóa đơn)
             </span>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <Button
                 variant="outline"
                 size="sm"

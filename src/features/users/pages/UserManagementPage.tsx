@@ -12,7 +12,6 @@ import {
   RefreshCw,
   Tablet,
   KeyRound,
-  ShieldCheck,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -196,16 +195,15 @@ export function UserManagementPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-border">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-text flex items-center gap-2.5">
-            <ShieldCheck className="w-6 h-6 text-primary" />
-            Quản lý tài khoản & Phân quyền
+    <div className="space-y-5">
+      {/* Tầng 1: Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-3 border-b border-border">
+        <div className="min-w-0">
+          <h1 className="text-xl font-bold tracking-tight text-text">
+            Quản lý tài khoản &amp; Phân quyền
           </h1>
-          <p className="text-xs text-muted mt-1">
-            Quản lý độc lập tài khoản nhân viên nhà hàng và tài khoản máy tính bảng đặt tại từng bàn ăn.
+          <p className="text-xs text-muted mt-0.5">
+            Quản lý tài khoản nhân viên nhà hàng và tài khoản máy tính bảng tại từng bàn ăn.
           </p>
         </div>
 
@@ -215,7 +213,7 @@ export function UserManagementPage() {
             size="sm"
             onClick={() => refetch()}
             disabled={isFetching}
-            className="text-xs"
+            className="h-9 px-3 text-xs"
           >
             <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${isFetching ? 'animate-spin' : ''}`} />
             Làm mới
@@ -224,7 +222,7 @@ export function UserManagementPage() {
             variant="primary"
             size="sm"
             onClick={handleOpenCreate}
-            className="text-xs shadow-md font-semibold"
+            className="h-9 px-3.5 text-xs font-semibold"
           >
             <UserPlus className="w-4 h-4 mr-1.5" />
             {activeTab === 'staff' ? 'Thêm nhân viên' : 'Thêm tài khoản bàn'}
@@ -237,32 +235,33 @@ export function UserManagementPage() {
         <button
           type="button"
           onClick={() => setActiveTab('staff')}
-          className={`flex items-center gap-2 py-3 px-5 text-sm font-semibold transition-all border-b-2 -mb-px rounded-t-lg ${activeTab === 'staff'
-              ? 'border-primary text-primary bg-primary/5'
-              : 'border-transparent text-muted hover:text-text hover:bg-surface/50'
-            }`}
+          className={`flex items-center gap-2 py-2.5 px-4 text-xs font-semibold transition-colors border-b-2 -mb-px cursor-pointer ${
+            activeTab === 'staff'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted hover:text-text'
+          }`}
         >
           <Users className="w-4 h-4" />
-          <span>Tài khoản người dùng (Nhân viên)</span>
+          <span>Tài khoản nhân viên</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab('tablet')}
-          className={`flex items-center gap-2 py-3 px-5 text-sm font-semibold transition-all border-b-2 -mb-px rounded-t-lg ${activeTab === 'tablet'
-              ? 'border-accent text-accent bg-accent/5'
-              : 'border-transparent text-muted hover:text-text hover:bg-surface/50'
-            }`}
+          className={`flex items-center gap-2 py-2.5 px-4 text-xs font-semibold transition-colors border-b-2 -mb-px cursor-pointer ${
+            activeTab === 'tablet'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted hover:text-text'
+          }`}
         >
           <Tablet className="w-4 h-4" />
-          <span>Tài khoản bàn (Máy tính bảng)</span>
+          <span>Tài khoản bàn (Tablet)</span>
         </button>
       </div>
 
       {/* Filter Toolbar for STAFF TAB */}
       {activeTab === 'staff' && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 bg-card border border-border rounded-xl shadow-xs">
-          {/* Search */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 bg-card border border-border rounded-lg">
           <div className="relative">
             <Input
               placeholder="Tìm theo tên hoặc username..."
@@ -274,11 +273,10 @@ export function UserManagementPage() {
             />
           </div>
 
-          {/* Filter Role (Staff only) */}
           <div className="flex items-center gap-2">
             <Filter className="w-4 h-4 text-muted shrink-0" />
             <select
-              className="flex h-10 w-full rounded-lg border border-border bg-card px-3 py-2 text-xs text-text shadow-xs focus:outline-hidden focus:ring-2 focus:ring-accent"
+              className="flex h-10 w-full rounded-md border border-border bg-card px-3 py-2 text-xs text-text focus:outline-hidden focus:ring-2 focus:ring-accent"
               value={staffFilters.role || ''}
               onChange={(e) =>
                 setStaffFilters((prev) => ({
@@ -296,10 +294,9 @@ export function UserManagementPage() {
             </select>
           </div>
 
-          {/* Filter Status */}
           <div>
             <select
-              className="flex h-10 w-full rounded-lg border border-border bg-card px-3 py-2 text-xs text-text shadow-xs focus:outline-hidden focus:ring-2 focus:ring-accent"
+              className="flex h-10 w-full rounded-md border border-border bg-card px-3 py-2 text-xs text-text focus:outline-hidden focus:ring-2 focus:ring-accent"
               value={
                 typeof staffFilters.isActive === 'boolean'
                   ? staffFilters.isActive
@@ -330,8 +327,7 @@ export function UserManagementPage() {
 
       {/* Filter Toolbar for TABLET TAB */}
       {activeTab === 'tablet' && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 bg-card border border-border rounded-xl shadow-xs">
-          {/* Search */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 bg-card border border-border rounded-lg">
           <div className="relative">
             <Input
               placeholder="Tìm theo tên tablet, username hoặc mã bàn..."
@@ -343,10 +339,9 @@ export function UserManagementPage() {
             />
           </div>
 
-          {/* Filter Status */}
           <div>
             <select
-              className="flex h-10 w-full rounded-lg border border-border bg-card px-3 py-2 text-xs text-text shadow-xs focus:outline-hidden focus:ring-2 focus:ring-accent"
+              className="flex h-10 w-full rounded-md border border-border bg-card px-3 py-2 text-xs text-text focus:outline-hidden focus:ring-2 focus:ring-accent"
               value={
                 typeof tabletFilters.isActive === 'boolean'
                   ? tabletFilters.isActive
@@ -375,19 +370,19 @@ export function UserManagementPage() {
         </div>
       )}
 
-      {/* TAB 1: USERS TABLE (NHÂN VIÊN - KHÔNG CÓ LIÊN KẾT BÀN) */}
+      {/* TAB 1: USERS TABLE */}
       {activeTab === 'staff' && (
-        <div className="bg-card border border-border shadow-md rounded-xl overflow-hidden">
+        <div className="bg-card border border-border rounded-lg overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-border bg-surface/50 text-muted uppercase tracking-wider font-semibold">
-                  <th className="py-3 px-4">Tài khoản & Họ tên</th>
-                  <th className="py-3 px-4">Địa chỉ Email</th>
-                  <th className="py-3 px-4">Vai trò hệ thống</th>
-                  <th className="py-3 px-4">Trạng thái</th>
-                  <th className="py-3 px-4">Ngày tạo</th>
-                  <th className="py-3 px-4 text-right">Thao tác</th>
+                <tr className="border-b border-border bg-surface/60 text-muted font-medium">
+                  <th className="py-3 px-4 whitespace-nowrap">Tài khoản &amp; Họ tên</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Email</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Vai trò</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Trạng thái</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Ngày tạo</th>
+                  <th className="py-3 px-4 text-right whitespace-nowrap">Thao tác</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -406,76 +401,69 @@ export function UserManagementPage() {
                   </tr>
                 ) : (
                   users.map((item) => (
-                    <tr key={item.id} className="hover:bg-surface/30 transition-colors">
-                      <td className="py-3.5 px-4">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 rounded-lg bg-surface text-primary font-bold flex items-center justify-center shrink-0 border border-border">
-                            {item.username.slice(0, 2).toUpperCase()}
-                          </div>
-                          <div>
-                            <span className="font-semibold text-text block">
-                              {item.fullName || item.username}
-                            </span>
-                            <span className="text-[11px] text-muted font-mono">
-                              @{item.username}
-                            </span>
-                          </div>
-                        </div>
+                    <tr key={item.id} className="hover:bg-muted-bg/40 transition-colors">
+                      <td className="py-3 px-4 whitespace-nowrap">
+                        <span className="font-semibold text-sm text-text block">
+                          {item.fullName || item.username}
+                        </span>
+                        <span className="text-xs text-muted font-mono">
+                          @{item.username}
+                        </span>
                       </td>
 
-                      <td className="py-3.5 px-4 text-text font-medium">
-                        {item.email || <span className="text-muted/50 italic">Chưa có email</span>}
+                      <td className="py-3 px-4 text-text font-medium whitespace-nowrap">
+                        {item.email || <span className="text-muted">Chưa có email</span>}
                       </td>
 
-                      <td className="py-3.5 px-4">
+                      <td className="py-3 px-4 whitespace-nowrap">
                         <Badge variant={roleBadgeVariant(item.role)}>
                           {roleLabel(item.role)}
                         </Badge>
                       </td>
 
-                      <td className="py-3.5 px-4">
+                      <td className="py-3 px-4 whitespace-nowrap">
                         {item.isActive ? (
-                          <span className="inline-flex items-center gap-1 text-status-completed font-medium">
-                            <span className="w-1.5 h-1.5 rounded-full bg-status-completed" />
+                          <Badge variant="completed">
+                            <span className="w-1.5 h-1.5 rounded-full bg-status-completed shrink-0" />
                             Hoạt động
-                          </span>
+                          </Badge>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-muted font-medium">
-                            <span className="w-1.5 h-1.5 rounded-full bg-muted" />
+                          <Badge variant="outline" className="text-muted">
                             Đã khóa
-                          </span>
+                          </Badge>
                         )}
                       </td>
 
-                      <td className="py-3.5 px-4 text-muted">
+                      <td className="py-3 px-4 text-muted tabular-nums whitespace-nowrap">
                         {new Date(item.createdAt).toLocaleDateString('vi-VN')}
                       </td>
 
-                      <td className="py-3.5 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <button
+                      <td className="py-3 px-4 text-right whitespace-nowrap">
+                        <div className="inline-flex items-center gap-1.5">
+                          <Button
                             type="button"
+                            variant="outline"
+                            size="sm"
                             onClick={() => handleOpenEdit(item)}
-                            className="p-1.5 text-muted hover:text-primary hover:bg-surface rounded-md transition-colors"
+                            className="h-8 px-2"
                             title="Chỉnh sửa thông tin"
                           >
-                            <Edit2 className="w-4 h-4" />
-                          </button>
-                          <button
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </Button>
+                          <Button
                             type="button"
+                            variant={item.isActive ? 'destructiveOutline' : 'outline'}
+                            size="sm"
                             onClick={() => handleToggleStatus(item)}
-                            className={`p-1.5 rounded-md transition-colors ${item.isActive
-                                ? 'text-muted hover:text-status-cancelled hover:bg-status-cancelled/10'
-                                : 'text-status-completed hover:bg-status-completed/10'
-                              }`}
+                            className="h-8 px-2"
                             title={item.isActive ? 'Vô hiệu hóa tài khoản' : 'Kích hoạt tài khoản'}
                           >
                             {item.isActive ? (
-                              <Lock className="w-4 h-4" />
+                              <Lock className="w-3.5 h-3.5" />
                             ) : (
-                              <Unlock className="w-4 h-4" />
+                              <Unlock className="w-3.5 h-3.5" />
                             )}
-                          </button>
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -487,27 +475,27 @@ export function UserManagementPage() {
         </div>
       )}
 
-      {/* TAB 2: TABLET ACCOUNTS TABLE (TÀI KHOẢN BÀN - KHÔNG CÓ CỘT EMAIL, CÓ ĐỔI MK) */}
+      {/* TAB 2: TABLET ACCOUNTS TABLE */}
       {activeTab === 'tablet' && (
-        <div className="bg-card border border-border shadow-md rounded-xl overflow-hidden">
+        <div className="bg-card border border-border rounded-lg overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-border bg-surface/50 text-muted uppercase tracking-wider font-semibold">
-                  <th className="py-3 px-4">Tài khoản Tablet</th>
-                  <th className="py-3 px-4">Tên định danh thiết bị</th>
-                  <th className="py-3 px-4">Bàn ăn liên kết</th>
-                  <th className="py-3 px-4">Trạng thái bàn</th>
-                  <th className="py-3 px-4">Trạng thái tài khoản</th>
-                  <th className="py-3 px-4">Ngày tạo</th>
-                  <th className="py-3 px-4 text-right">Thao tác</th>
+                <tr className="border-b border-border bg-surface/60 text-muted font-medium">
+                  <th className="py-3 px-4 whitespace-nowrap">Tài khoản Tablet</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Tên thiết bị</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Bàn liên kết</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Trạng thái bàn</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Trạng thái TK</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Ngày tạo</th>
+                  <th className="py-3 px-4 text-right whitespace-nowrap">Thao tác</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {isLoading ? (
                   <tr>
                     <td colSpan={7} className="py-12 text-center text-muted">
-                      <div className="w-7 h-7 border-2 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                      <div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-2" />
                       Đang tải danh sách tài khoản bàn...
                     </td>
                   </tr>
@@ -519,107 +507,101 @@ export function UserManagementPage() {
                   </tr>
                 ) : (
                   users.map((item) => (
-                    <tr key={item.id} className="hover:bg-surface/30 transition-colors">
-                      <td className="py-3.5 px-4">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 rounded-lg bg-accent/10 text-accent font-bold flex items-center justify-center shrink-0 border border-accent/20">
-                            <Tablet className="w-4 h-4" />
-                          </div>
-                          <div>
-                            <span className="font-semibold text-text font-mono block">
-                              @{item.username}
-                            </span>
-                            <span className="text-[11px] text-muted">Mã thiết bị</span>
-                          </div>
-                        </div>
+                    <tr key={item.id} className="hover:bg-muted-bg/40 transition-colors">
+                      <td className="py-3 px-4 whitespace-nowrap">
+                        <span className="font-semibold text-sm text-text font-mono block">
+                          @{item.username}
+                        </span>
                       </td>
 
-                      <td className="py-3.5 px-4 font-semibold text-text">
+                      <td className="py-3 px-4 font-semibold text-text whitespace-nowrap">
                         {item.fullName || item.username}
                       </td>
 
-                      <td className="py-3.5 px-4">
+                      <td className="py-3 px-4 whitespace-nowrap">
                         {item.tableCode ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-accent/10 border border-accent/30 text-xs font-semibold text-accent">
-                            <Tablet className="w-3.5 h-3.5" />
-                            Bàn {item.tableCode}
-                          </span>
+                          <Badge variant="outline">Bàn {item.tableCode}</Badge>
                         ) : (
-                          <span className="text-muted/50 italic">Chưa gắn bàn</span>
+                          <span className="text-muted">Chưa gắn bàn</span>
                         )}
                       </td>
 
-                      {/* Cột trạng thái bàn: nếu không có phiên để trắng, có phiên hoạt động thì ghi đang có phiên */}
-                      <td className="py-3.5 px-4">
+                      <td className="py-3 px-4 whitespace-nowrap">
                         {item.hasActiveSession ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-status-cooking/10 text-status-cooking border border-status-cooking/20">
-                            <span className="w-1.5 h-1.5 rounded-full bg-status-cooking animate-pulse" />
+                          <Badge variant="cooking">
+                            <span className="w-1.5 h-1.5 rounded-full bg-status-cooking shrink-0" />
                             Đang có phiên
-                          </span>
-                        ) : null}
-                      </td>
-
-                      <td className="py-3.5 px-4">
-                        {item.isActive ? (
-                          <span className="inline-flex items-center gap-1 text-status-completed font-medium">
-                            <span className="w-1.5 h-1.5 rounded-full bg-status-completed" />
-                            Hoạt động
-                          </span>
+                          </Badge>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-muted font-medium">
-                            <span className="w-1.5 h-1.5 rounded-full bg-muted" />
-                            Đã khóa
-                          </span>
+                          <span className="text-muted">—</span>
                         )}
                       </td>
 
-                      <td className="py-3.5 px-4 text-muted">
+                      <td className="py-3 px-4 whitespace-nowrap">
+                        {item.isActive ? (
+                          <Badge variant="completed">
+                            <span className="w-1.5 h-1.5 rounded-full bg-status-completed shrink-0" />
+                            Hoạt động
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-muted">
+                            Đã khóa
+                          </Badge>
+                        )}
+                      </td>
+
+                      <td className="py-3 px-4 text-muted tabular-nums whitespace-nowrap">
                         {new Date(item.createdAt).toLocaleDateString('vi-VN')}
                       </td>
 
-                      <td className="py-3.5 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          {/* Nút Đổi mật khẩu cho Tablet */}
-                          <button
+                      <td className="py-3 px-4 text-right whitespace-nowrap">
+                        <div className="inline-flex items-center gap-1.5">
+                          <Button
                             type="button"
+                            variant="outline"
+                            size="sm"
                             onClick={() => handleOpenPasswordReset(item)}
-                            className="p-1.5 text-muted hover:text-accent hover:bg-accent/10 rounded-md transition-colors"
+                            className="h-8 px-2"
                             title="Đổi mật khẩu máy tính bảng"
                           >
-                            <KeyRound className="w-4 h-4 text-accent" />
-                          </button>
+                            <KeyRound className="w-3.5 h-3.5" />
+                          </Button>
 
-                          {/* Nút Chỉnh sửa thông tin */}
-                          <button
+                          <Button
                             type="button"
+                            variant="outline"
+                            size="sm"
                             onClick={() => handleOpenEdit(item)}
-                            className="p-1.5 text-muted hover:text-primary hover:bg-surface rounded-md transition-colors"
+                            className="h-8 px-2"
                             title="Chỉnh sửa tài khoản & bàn liên kết"
                           >
-                            <Edit2 className="w-4 h-4" />
-                          </button>
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </Button>
 
-                          {/* Nút Khóa / Mở khóa: Chỉ hiển thị nút khóa khi tài khoản bàn có thể khóa (canDeactivate === true) */}
                           {item.isActive ? (
                             item.canDeactivate ? (
-                              <button
+                              <Button
                                 type="button"
+                                variant="destructiveOutline"
+                                size="sm"
                                 onClick={() => handleToggleStatus(item)}
-                                className="p-1.5 rounded-md transition-colors text-muted hover:text-status-cancelled hover:bg-status-cancelled/10"
+                                className="h-8 px-2"
                                 title="Vô hiệu hóa tài khoản bàn"
                               >
-                                <Lock className="w-4 h-4" />
-                              </button>
+                                <Lock className="w-3.5 h-3.5" />
+                              </Button>
                             ) : null
                           ) : (
-                            <button
+                            <Button
                               type="button"
+                              variant="outline"
+                              size="sm"
                               onClick={() => handleToggleStatus(item)}
-                              className="p-1.5 rounded-md transition-colors text-status-completed hover:bg-status-completed/10"
+                              className="h-8 px-2 text-status-completed"
                               title="Kích hoạt tài khoản bàn"
                             >
-                              <Unlock className="w-4 h-4" />
-                            </button>
+                              <Unlock className="w-3.5 h-3.5" />
+                            </Button>
                           )}
                         </div>
                       </td>
