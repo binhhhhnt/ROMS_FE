@@ -1,12 +1,11 @@
 import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { QrCode, ArrowRight, X } from 'lucide-react'
+import { QrCode, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { qrApi } from '../api/qrApi'
 import type { QrOrderRequestResponse } from '../types/qr.types'
 import { subscribeToTopic } from '@/shared/lib/stomp'
-import { Button } from '@/shared/components/ui/button'
 import { cn } from '@/shared/utils/cn'
 
 interface QrOrderNotificationPanelProps {

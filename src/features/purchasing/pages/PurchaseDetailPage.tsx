@@ -13,7 +13,6 @@ import {
   Edit3,
   RefreshCw,
   History,
-  ShieldCheck,
   CheckCircle2,
 } from 'lucide-react'
 
