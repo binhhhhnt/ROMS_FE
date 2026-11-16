@@ -29,13 +29,12 @@ export function MenuAvailabilityCard({
 
   return (
     <div
-      className={`bg-card border rounded-2xl overflow-hidden flex flex-col shadow-xs transition-all ${
-        isAvailable
+      className={`bg-card border rounded-2xl overflow-hidden flex flex-col shadow-xs transition-all ${isAvailable
           ? 'border-border'
           : isTemporarilyUnavailable
             ? 'border-status-pending ring-1 ring-status-pending/30'
             : 'border-border/60 opacity-60'
-      }`}
+        }`}
     >
       {/* Top Image */}
       <div className="relative h-36 bg-surface/60 overflow-hidden flex items-center justify-center">
@@ -91,7 +90,7 @@ export function MenuAvailabilityCard({
               {formatPrice(item.price)}
             </span>
             {item.availability?.reason?.includes('BOM') ? (
-              <span className="text-xs font-medium text-amber-700 dark:text-amber-400">
+              <span className="text-xs font-semibold text-amber-900 dark:text-amber-500">
                 Chưa có BOM
               </span>
             ) : item.availability?.maxPossibleQuantity != null ? (
@@ -117,10 +116,8 @@ export function MenuAvailabilityCard({
           ) : isAvailable ? (
             <Button
               type="button"
-              variant="outline"
-              size="sm"
               onClick={() => onToggleClick(item)}
-              className="w-full h-10 rounded-xl text-xs font-semibold bg-status-pending/15 hover:bg-status-pending/25 text-amber-800 dark:text-amber-300 border-status-pending/40"
+              className="w-full h-10 rounded-xl text-sm font-semibold bg-status-pending hover:bg-status-pending/90 text-white"
             >
               Tạm ngưng món này
             </Button>
@@ -128,9 +125,8 @@ export function MenuAvailabilityCard({
             <Button
               type="button"
               variant="ready"
-              size="sm"
               onClick={() => onToggleClick(item)}
-              className="w-full h-10 rounded-xl text-xs font-semibold"
+              className="w-full h-10 rounded-xl text-sm font-semibold"
             >
               Mở bán lại món
             </Button>
