@@ -5,6 +5,8 @@ import { toast } from 'sonner'
 import { Layers, CheckCircle2 } from 'lucide-react'
 
 import { kitchenApi } from '@/features/kitchen/api/kitchenApi'
+import { settingsApi } from '@/features/settings/api/settingsApi'
+import { printKitchenReadyTicketViaBrowser } from '@/features/kitchen/utils/kitchenTicketPrinter'
 import type { OrderItemStatus } from '@/features/ordering/types/ordering.types'
 import { subscribeToTopic } from '@/shared/lib/stomp'
 import { getApiErrorMessage } from '@/shared/lib/axios'
@@ -32,6 +34,11 @@ export function KitchenSummaryPage() {
     }, 1000)
     return () => clearInterval(timer)
   }, [])
+
+  const { data: settings } = useQuery({
+    queryKey: ['restaurant-settings'],
+    queryFn: () => settingsApi.getSettings(),
+  })
 
   // Query active kitchen orders
   const { data: orders = [], isLoading } = useQuery({
@@ -152,6 +159,21 @@ export function KitchenSummaryPage() {
       }
 
       await kitchenApi.updateOrderItemStatus(orderId, itemId, targetStatus)
+      if (targetStatus === 'READY' && settings?.printReadyTicket !== false && order && currentItem) {
+        printKitchenReadyTicketViaBrowser({
+          tableCode: order.tableCode || `Bàn #${order.tableId}`,
+          orderId: order.id,
+          orderCreatedAt: order.createdAt,
+          items: [
+            {
+              itemName: currentItem.menuItemName,
+              quantity: currentItem.quantity,
+              note: currentItem.note,
+            },
+          ],
+          paperSize: (settings?.readyTicketPaperSize as 'K80' | 'K58' | 'A5') || 'K80',
+        })
+      }
       await queryClient.invalidateQueries({ queryKey: ['kitchen', 'orders'] })
     } catch (err) {
       toast.error(getApiErrorMessage(err))
@@ -200,6 +222,28 @@ export function KitchenSummaryPage() {
       }
       for (const item of cookingItems) {
         await kitchenApi.updateOrderItemStatus(item.orderId, item.itemId, 'READY')
+      }
+      if (settings?.printReadyTicket !== false) {
+        const byOrder = new Map<number, typeof cookingItems>()
+        for (const item of cookingItems) {
+          const list = byOrder.get(item.orderId) || []
+          list.push(item)
+          byOrder.set(item.orderId, list)
+        }
+        for (const [ordId, groupItems] of byOrder.entries()) {
+          const ord = orders.find((o) => o.id === ordId)
+          printKitchenReadyTicketViaBrowser({
+            tableCode: ord?.tableCode || groupItems[0]?.tableCode || `Bàn #${ordId}`,
+            orderId: ordId,
+            orderCreatedAt: ord?.createdAt,
+            items: groupItems.map((gi) => ({
+              itemName: dish.menuItemName,
+              quantity: gi.quantity,
+              note: gi.note,
+            })),
+            paperSize: (settings?.readyTicketPaperSize as 'K80' | 'K58' | 'A5') || 'K80',
+          })
+        }
       }
       toast.success(`Đã ra tất cả (${cookingItems.length} suất đang nấu) món ${dish.menuItemName}!`)
       await queryClient.invalidateQueries({ queryKey: ['kitchen', 'orders'] })

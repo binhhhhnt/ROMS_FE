@@ -1,8 +1,6 @@
 import { X, Printer, Tag, CreditCard, Banknote } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
-import { printReceiptViaBrowser } from '@/features/billing/utils/receiptPrinter'
-import { billApi } from '@/features/billing/api/billApi'
-import { toast } from 'sonner'
+import { printReceiptViaBrowser, groupBillingItems } from '@/features/billing/utils/receiptPrinter'
 import type { BillResponse } from '@/features/billing/types/bill.types'
 
 interface BillDetailModalProps {
@@ -26,14 +24,7 @@ export function BillDetailModal({ isOpen, onClose, bill }: BillDetailModalProps)
       : `${d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} ${d.toLocaleDateString('vi-VN')}`
   }
 
-  const handlePrint = async () => {
-    try {
-      await billApi.printBill(bill.id)
-      toast.success('Đã gửi lệnh in tới máy in nhiệt!')
-    } catch {
-      // Ignored if physical thermal printer is not connected
-    }
-
+  const handlePrint = () => {
     printReceiptViaBrowser({
       title: 'HÓA ĐƠN THANH TOÁN',
       billCode: bill.billCode,
@@ -112,7 +103,7 @@ export function BillDetailModal({ isOpen, onClose, bill }: BillDetailModalProps)
           {/* Items Table */}
           <div>
             <h3 className="text-sm font-semibold text-text mb-2">
-              Danh sách món ({bill.items?.length || 0})
+              Danh sách món ({groupBillingItems(bill.items || []).length})
             </h3>
             <div className="border border-border rounded-lg overflow-x-auto">
               <table className="w-full min-w-[460px] text-left text-xs">
@@ -127,8 +118,8 @@ export function BillDetailModal({ isOpen, onClose, bill }: BillDetailModalProps)
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border tabular-nums">
-                  {bill.items?.map((item, idx) => (
-                    <tr key={item.id || idx}>
+                  {groupBillingItems(bill.items || []).map((item, idx) => (
+                    <tr key={`${item.itemName}-${item.unitPrice}-${item.taxRate}-${idx}`}>
                       <td className="py-2.5 px-3 text-center text-muted">{idx + 1}</td>
                       <td className="py-2.5 px-3 font-medium text-text">{item.itemName}</td>
                       <td className="py-2.5 px-3 text-center font-semibold text-text whitespace-nowrap">{item.quantity}</td>

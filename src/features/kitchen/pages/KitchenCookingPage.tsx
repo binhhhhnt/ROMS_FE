@@ -4,6 +4,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { kitchenApi } from '@/features/kitchen/api/kitchenApi'
+import { settingsApi } from '@/features/settings/api/settingsApi'
+import { printKitchenReadyTicketViaBrowser } from '@/features/kitchen/utils/kitchenTicketPrinter'
 import type { OrderItemStatus } from '@/features/ordering/types/ordering.types'
 import { subscribeToTopic } from '@/shared/lib/stomp'
 import { getApiErrorMessage } from '@/shared/lib/axios'
@@ -23,6 +25,11 @@ export function KitchenCookingPage() {
     }, 1000)
     return () => clearInterval(timer)
   }, [])
+
+  const { data: settings } = useQuery({
+    queryKey: ['restaurant-settings'],
+    queryFn: () => settingsApi.getSettings(),
+  })
 
   // Query active orders for Kitchen cooking screen
   const {
@@ -61,6 +68,21 @@ export function KitchenCookingPage() {
       }
 
       await kitchenApi.updateOrderItemStatus(orderId, itemId, targetStatus)
+      if (targetStatus === 'READY' && settings?.printReadyTicket !== false && order && currentItem) {
+        printKitchenReadyTicketViaBrowser({
+          tableCode: order.tableCode || `Bàn #${order.tableId}`,
+          orderId: order.id,
+          orderCreatedAt: order.createdAt,
+          items: [
+            {
+              itemName: currentItem.menuItemName,
+              quantity: currentItem.quantity,
+              note: currentItem.note,
+            },
+          ],
+          paperSize: (settings?.readyTicketPaperSize as 'K80' | 'K58' | 'A5') || 'K80',
+        })
+      }
       await queryClient.invalidateQueries({ queryKey: ['kitchen', 'orders'] })
     } catch (err) {
       toast.error(getApiErrorMessage(err))
@@ -88,6 +110,19 @@ export function KitchenCookingPage() {
         return
       }
       await kitchenApi.readyAll(orderId)
+      if (settings?.printReadyTicket !== false) {
+        printKitchenReadyTicketViaBrowser({
+          tableCode: order.tableCode || `Bàn #${order.tableId}`,
+          orderId: order.id,
+          orderCreatedAt: order.createdAt,
+          items: cookingItems.map((i) => ({
+            itemName: i.menuItemName,
+            quantity: i.quantity,
+            note: i.note,
+          })),
+          paperSize: (settings?.readyTicketPaperSize as 'K80' | 'K58' | 'A5') || 'K80',
+        })
+      }
       await queryClient.invalidateQueries({ queryKey: ['kitchen', 'orders'] })
     } catch (err) {
       toast.error(getApiErrorMessage(err))

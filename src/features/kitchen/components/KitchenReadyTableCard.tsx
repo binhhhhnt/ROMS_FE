@@ -1,3 +1,8 @@
+import { Printer } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import { settingsApi } from '@/features/settings/api/settingsApi'
+import { printKitchenReadyTicketViaBrowser } from '@/features/kitchen/utils/kitchenTicketPrinter'
+import { Button } from '@/shared/components/ui/button'
 import type { KitchenOrderResponse } from '@/features/kitchen/types/kitchen.types'
 import type { OrderItemResponse } from '@/features/ordering/types/ordering.types'
 
@@ -10,6 +15,24 @@ export function KitchenReadyTableCard({
   order,
   readyItems,
 }: KitchenReadyTableCardProps) {
+  const { data: settings } = useQuery({
+    queryKey: ['restaurant-settings'],
+    queryFn: () => settingsApi.getSettings(),
+  })
+
+  const handlePrintReadyTicket = () => {
+    printKitchenReadyTicketViaBrowser({
+      tableCode: order.tableCode || `Bàn #${order.tableId}`,
+      orderId: order.id,
+      orderCreatedAt: order.createdAt,
+      items: readyItems.map((i) => ({
+        itemName: i.menuItemName,
+        quantity: i.quantity,
+        note: i.note,
+      })),
+      paperSize: (settings?.readyTicketPaperSize as 'K80' | 'K58' | 'A5') || 'K80',
+    })
+  }
   const formatTime = (isoString?: string) => {
     if (!isoString) return ''
     const date = new Date(isoString)
@@ -78,7 +101,16 @@ export function KitchenReadyTableCard({
         <span>
           Tổng <strong className="text-text font-mono">{readyItems.reduce((s, i) => s + i.quantity, 0)}</strong> suất tại quầy
         </span>
-        <span>Đợi nhân viên phục vụ</span>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={handlePrintReadyTicket}
+          className="h-7 px-2.5 text-xs"
+        >
+          <Printer className="w-3.5 h-3.5 mr-1" />
+          In phiếu
+        </Button>
       </div>
     </div>
   )

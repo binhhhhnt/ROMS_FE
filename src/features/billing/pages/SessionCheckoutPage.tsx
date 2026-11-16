@@ -18,6 +18,7 @@ import { billApi } from '@/features/billing/api/billApi'
 import { settingsApi } from '@/features/settings/api/settingsApi'
 import {
   printReceiptViaBrowser,
+  groupBillingItems,
   type ReceiptItem,
   type ReceiptTaxRow,
 } from '@/features/billing/utils/receiptPrinter'
@@ -136,8 +137,6 @@ export function SessionCheckoutPage() {
       })
     },
     onSuccess: (savedBill) => {
-      billApi.printBill(savedBill.id).catch(() => {})
-
       if (shouldPrintOnSuccess) {
         const receiptItems: ReceiptItem[] = savedBill.items.map((item, idx) => ({
           index: idx + 1,
@@ -204,8 +203,6 @@ export function SessionCheckoutPage() {
 
   const handlePrintProforma = () => {
     if (!preview || !hasBillableItems) return
-
-    billApi.printProforma(parsedSessionId).catch(() => {})
 
     const receiptItems: ReceiptItem[] = preview.items.map((item, idx) => ({
       index: idx + 1,
@@ -351,9 +348,9 @@ export function SessionCheckoutPage() {
               </div>
 
               <div className="divide-y divide-border max-h-[380px] overflow-y-auto">
-                {preview.items.map((item, idx) => (
+                {groupBillingItems(preview.items).map((item, idx) => (
                   <div
-                    key={item.orderItemId}
+                    key={`${item.menuItemId}-${item.unitPrice}-${item.taxRate}-${idx}`}
                     className="px-4 py-3 text-sm text-text grid grid-cols-12 items-center"
                   >
                     <span className="col-span-1 text-xs text-muted tabular-nums">{idx + 1}</span>

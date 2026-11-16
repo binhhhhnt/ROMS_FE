@@ -72,14 +72,7 @@ export function BillsPage() {
     toast.success(`Đã sao chép mã HĐ: ${code}`)
   }
 
-  const handleQuickPrint = async (bill: BillResponse) => {
-    try {
-      await billApi.printBill(bill.id)
-      toast.success('Đã gửi lệnh in tới máy in nhiệt!')
-    } catch {
-      // Ignored if physical thermal printer is not connected
-    }
-
+  const handleQuickPrint = (bill: BillResponse) => {
     printReceiptViaBrowser({
       title: 'HÓA ĐƠN THANH TOÁN',
       billCode: bill.billCode,
