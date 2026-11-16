@@ -58,7 +58,7 @@ export function StaffOrderModal({
   // 1. Fetch menu items (returns AVAILABLE and TEMPORARILY_UNAVAILABLE with BOM)
   const { data: menuData, isLoading: isLoadingMenu } = useQuery({
     queryKey: ['menu-items', 'staff-order'],
-    queryFn: () => menuApi.list({ page: 0, size: 100, sort: 'name,asc' }),
+    queryFn: () => menuApi.list({ page: 0, size: 100, sort: 'name,asc', forOrder: true }),
     enabled: isOpen,
   })
 
@@ -87,6 +87,9 @@ export function StaffOrderModal({
   // Filtered menu items
   const filteredMenuItems = useMemo(() => {
     return menuItems.filter((item) => {
+      if (item.status === 'DISCONTINUED') {
+        return false
+      }
       // Category filter
       if (selectedCategory !== 'ALL' && item.category?.id?.toString() !== selectedCategory) {
         return false
@@ -275,11 +278,10 @@ export function StaffOrderModal({
                 <button
                   type="button"
                   onClick={() => setSelectedCategory('ALL')}
-                  className={`text-xs px-3 py-1.5 rounded-md border whitespace-nowrap font-medium transition-colors cursor-pointer ${
-                    selectedCategory === 'ALL'
+                  className={`text-xs px-3 py-1.5 rounded-md border whitespace-nowrap font-medium transition-colors cursor-pointer ${selectedCategory === 'ALL'
                       ? 'bg-primary text-white border-primary'
                       : 'bg-card border-border hover:bg-muted-bg text-text'
-                  }`}
+                    }`}
                 >
                   Tất cả
                 </button>
@@ -289,11 +291,10 @@ export function StaffOrderModal({
                     key={cat.id}
                     type="button"
                     onClick={() => setSelectedCategory(cat.id.toString())}
-                    className={`text-xs px-3 py-1.5 rounded-md border whitespace-nowrap font-medium transition-colors cursor-pointer ${
-                      selectedCategory === cat.id.toString()
+                    className={`text-xs px-3 py-1.5 rounded-md border whitespace-nowrap font-medium transition-colors cursor-pointer ${selectedCategory === cat.id.toString()
                         ? 'bg-primary text-white border-primary'
                         : 'bg-card border-border hover:bg-muted-bg text-text'
-                    }`}
+                      }`}
                   >
                     {cat.name}
                   </button>
@@ -322,24 +323,21 @@ export function StaffOrderModal({
                     return (
                       <div
                         key={item.id}
-                        className={`p-3 rounded-lg border flex flex-col justify-between gap-2.5 transition-colors ${
-                          isOutOfStock
+                        className={`p-3 rounded-lg border flex flex-col justify-between gap-2.5 transition-colors ${isOutOfStock
                             ? 'border-border bg-card opacity-60'
                             : qty > 0
-                            ? 'border-primary bg-surface/40'
-                            : 'border-border bg-card hover:border-primary/40'
-                        }`}
+                              ? 'border-primary bg-surface/40'
+                              : 'border-border bg-card hover:border-primary/40'
+                          }`}
                       >
                         <div>
                           <div className="flex items-start justify-between gap-2">
                             <h4 className={`font-semibold text-sm leading-snug ${isOutOfStock ? 'text-muted' : 'text-text'}`}>
                               {item.name}
                             </h4>
-                            {isOutOfStock ? (
-                              <Badge variant="cancelled" className="shrink-0">Hết</Badge>
-                            ) : item.isFeatured ? (
-                              <Badge variant="pending" className="shrink-0">HOT</Badge>
-                            ) : null}
+                            {item.isFeatured && (
+                              <Badge variant="pending" className="shrink-0">Bán chạy</Badge>
+                            )}
                           </div>
                           {item.description && (
                             <p className="text-xs text-muted line-clamp-1 mt-1">
@@ -382,9 +380,8 @@ export function StaffOrderModal({
                                 type="button"
                                 disabled={isOutOfStock}
                                 onClick={() => handleUpdateQuantity(item.id, 1)}
-                                className={`w-7 h-7 rounded flex items-center justify-center text-text ${
-                                  isOutOfStock ? 'opacity-30 cursor-not-allowed' : 'hover:bg-muted-bg cursor-pointer'
-                                }`}
+                                className={`w-7 h-7 rounded flex items-center justify-center text-text ${isOutOfStock ? 'opacity-30 cursor-not-allowed' : 'hover:bg-muted-bg cursor-pointer'
+                                  }`}
                               >
                                 <Plus className="w-3.5 h-3.5" />
                               </button>

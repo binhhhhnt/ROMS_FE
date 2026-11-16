@@ -77,7 +77,7 @@ export function RevenueReportPage() {
       {/* Page Header */}
       <div>
         <h1 className="text-2xl font-black text-text tracking-tight">
-          Báo cáo & Phân tích Hoạt động
+          Báo cáo & Thống kê
         </h1>
         <p className="text-xs text-muted mt-1">
           Báo cáo chuyên sâu về doanh thu, món ăn bán chạy, dòng tiền chi phí và hiệu suất vận hành.

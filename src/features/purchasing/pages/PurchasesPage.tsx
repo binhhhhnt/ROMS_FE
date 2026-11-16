@@ -92,7 +92,7 @@ export function PurchasesPage() {
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-xl font-bold tracking-tight text-text">
-              Quản lý Phiếu Nhập Hàng
+              Quản lý phiếu nhập hàng
             </h1>
             <Badge variant="outline" className="text-muted">
               Thực tế kho

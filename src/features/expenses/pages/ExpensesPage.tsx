@@ -152,7 +152,7 @@ export function ExpensesPage() {
       {/* Tầng 1: Page Header */}
       <div className="pb-3 border-b border-border">
         <h1 className="text-xl font-bold text-text tracking-tight">
-          Quản lý Chi phí
+          Quản lý chi phí
         </h1>
         <p className="text-xs text-muted mt-0.5">
           Ghi nhận và quản lý các khoản chi phí phát sinh trong quá trình vận hành nhà hàng.

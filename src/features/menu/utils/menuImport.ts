@@ -118,7 +118,7 @@ export async function readMenuExcel(data: ArrayBuffer): Promise<MenuImportRow[]>
     const price = columns.price ? cellText(row.getCell(columns.price).value) : ''
     const vatRate = columns.vatRate ? cellText(row.getCell(columns.vatRate).value) : '8'
     const description = columns.description ? cellText(row.getCell(columns.description).value) : ''
-    const statusRaw = columns.status ? cellText(row.getCell(columns.status).value).toUpperCase() : 'AVAILABLE'
+    const statusRaw = columns.status ? cellText(row.getCell(columns.status).value).trim().toUpperCase() : ''
     const featuredRaw = columns.isFeatured ? cellText(row.getCell(columns.isFeatured).value).toUpperCase() : ''
     const directSaleRaw = columns.isDirectSale ? cellText(row.getCell(columns.isDirectSale).value).toUpperCase() : ''
 
@@ -126,11 +126,17 @@ export async function readMenuExcel(data: ArrayBuffer): Promise<MenuImportRow[]>
 
     const isFeatured = ['CÓ', 'CO', 'YES', 'TRUE', '1'].includes(featuredRaw)
     const isDirectSale = ['CÓ', 'CO', 'YES', 'TRUE', '1'].includes(directSaleRaw)
-    const status = statusRaw.includes('TEMP') || statusRaw.includes('TAM_NGUNG')
-      ? 'TEMPORARILY_UNAVAILABLE'
-      : statusRaw.includes('DISCONTINUED') || statusRaw.includes('NGUNG')
+    const status = !statusRaw
       ? 'DISCONTINUED'
-      : 'AVAILABLE'
+      : statusRaw.includes('TẠM NGƯNG') || statusRaw.includes('TAM NGUNG') || statusRaw.includes('TEMP')
+      ? 'TEMPORARILY_UNAVAILABLE'
+      : statusRaw.includes('ĐANG KINH DOANH') ||
+        statusRaw.includes('DANG KINH DOANH') ||
+        statusRaw.includes('ĐANG PHỤC VỤ') ||
+        statusRaw.includes('DANG PHUC VU') ||
+        statusRaw === 'AVAILABLE'
+      ? 'AVAILABLE'
+      : 'DISCONTINUED'
 
     rows.push({
       rowNumber,
