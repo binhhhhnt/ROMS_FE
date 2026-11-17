@@ -14,6 +14,16 @@ function AuthRehydration({ children }: { children: ReactNode }) {
     let isMounted = true
 
     async function rehydrate() {
+      const path = window.location.pathname
+      if (path.startsWith('/qr/') || path === '/qr') {
+        clearAuth()
+        if (isMounted) {
+          setInitializing(false)
+          setIsDone(true)
+        }
+        return
+      }
+
       try {
         // Attempt single-flight refresh rotation with HttpOnly cookie
         const tokenData = await authApi.refresh()

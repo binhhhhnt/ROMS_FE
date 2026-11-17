@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
-import { Minus, Plus, ShoppingBag, Trash2, UtensilsCrossed, Loader2 } from 'lucide-react'
+import { Minus, Plus, ShoppingBag, Trash2, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { qrApi } from '../api/qrApi'
 import { useQrCartStore } from '../store/qrCartStore'
@@ -63,7 +63,6 @@ export function QrCartPage() {
         </p>
         <Link to={`/qr/${qrToken}/menu`}>
           <Button className="rounded-xl mt-1">
-            <UtensilsCrossed className="w-4 h-4 mr-1.5" />
             Xem thực đơn
           </Button>
         </Link>
