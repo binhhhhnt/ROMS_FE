@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { Minus, Plus, Search, X, Loader2 } from 'lucide-react'
+import { Minus, Plus, Search, X, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
 import { qrApi } from '../api/qrApi'
 import { useQrCartStore } from '../store/qrCartStore'
 import { MenuImage } from '@/features/menu/components/MenuImage'
+import { orderedMenuImages } from '@/features/menu/utils/menu'
 import type { MenuItemReadResponse } from '@/features/menu/types/menu.types'
 import { Button } from '@/shared/components/ui/button'
 import { cn } from '@/shared/utils/cn'
@@ -18,6 +19,7 @@ export function QrMenuPage() {
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | undefined>(undefined)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedItem, setSelectedItem] = useState<MenuItemReadResponse | null>(null)
+  const [activeImageIndex, setActiveImageIndex] = useState(0)
   const [itemQty, setItemQty] = useState(1)
   const [itemNote, setItemNote] = useState('')
 
@@ -43,8 +45,14 @@ export function QrMenuPage() {
     return list.filter((item) => item.name.toLowerCase().includes(q))
   }, [menuData?.content, searchTerm])
 
+  const selectedImages = useMemo(
+    () => (selectedItem ? orderedMenuImages(selectedItem.images) : []),
+    [selectedItem]
+  )
+
   const openItemDetail = (item: MenuItemReadResponse) => {
     setSelectedItem(item)
+    setActiveImageIndex(0)
     setItemQty(1)
     setItemNote('')
   }
@@ -211,11 +219,40 @@ export function QrMenuPage() {
               </button>
             </div>
 
-            <MenuImage
-              src={selectedItem.images?.[0]?.imageUrl}
-              name={selectedItem.name}
-              className="w-full h-48 md:h-56 rounded-2xl"
-            />
+            <div className="relative">
+              <MenuImage
+                src={selectedImages[activeImageIndex]?.imageUrl}
+                name={selectedItem.name}
+                className="w-full h-48 md:h-56 rounded-2xl"
+              />
+              {selectedImages.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setActiveImageIndex((idx) => (idx - 1 + selectedImages.length) % selectedImages.length)
+                    }
+                    aria-label="Ảnh trước"
+                    className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-colors cursor-pointer"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setActiveImageIndex((idx) => (idx + 1) % selectedImages.length)
+                    }
+                    aria-label="Ảnh tiếp theo"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-colors cursor-pointer"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                  <span className="absolute bottom-2 right-2 px-2 py-0.5 rounded-full bg-black/60 text-white text-[11px] font-medium tabular-nums">
+                    {activeImageIndex + 1} / {selectedImages.length}
+                  </span>
+                </>
+              )}
+            </div>
 
             <div className="flex items-center justify-between">
               <span className="text-lg font-bold text-primary">
