@@ -132,7 +132,7 @@ export function QrMenuPage() {
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
             {menuItems.map((item) => {
-              const primaryImage = item.images?.[0]?.imageUrl
+              const primaryImage = orderedMenuImages(item.images)[0]?.imageUrl
               const isAvailable =
                 item.status === 'AVAILABLE' &&
                 (item.availability ? item.availability.sellable : true)
@@ -223,7 +223,8 @@ export function QrMenuPage() {
               <MenuImage
                 src={selectedImages[activeImageIndex]?.imageUrl}
                 name={selectedItem.name}
-                className="w-full h-48 md:h-56 rounded-2xl"
+                fit="contain"
+                className="w-full aspect-4/3 max-h-72 rounded-2xl bg-surface/70 border border-border/60"
               />
               {selectedImages.length > 1 && (
                 <>
