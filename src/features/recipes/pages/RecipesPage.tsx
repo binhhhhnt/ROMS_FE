@@ -60,9 +60,7 @@ export function RecipesPage() {
       // Search
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase().trim()
-        const matchName = item.name.toLowerCase().includes(query)
-        const matchDesc = item.description?.toLowerCase().includes(query) || false
-        if (!matchName && !matchDesc) return false
+        if (!item.name.toLowerCase().includes(query)) return false
       }
 
       // Category
@@ -250,7 +248,7 @@ export function RecipesPage() {
       {/* Menu Items Table */}
       <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-xs">
+          <table className="w-full min-w-[720px] text-xs">
             <thead className="bg-surface/50 border-b border-border text-muted-foreground font-medium">
               <tr>
                 <th className="px-4 py-3 text-left w-16">ID</th>
@@ -309,11 +307,6 @@ export function RecipesPage() {
                         <div className="font-semibold text-text text-sm group-hover:text-accent transition-colors">
                           {item.name}
                         </div>
-                        {item.description && (
-                          <div className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
-                            {item.description}
-                          </div>
-                        )}
                       </td>
 
                       {/* Category */}

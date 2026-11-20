@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
-  Sliders,
   Receipt,
   Percent,
   Plus,
@@ -168,43 +167,37 @@ export function RestaurantSettingsPage() {
   return (
     <div className="space-y-6 max-w-6xl mx-auto pb-16">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-4">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-              <Sliders className="w-5 h-5" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-text tracking-tight">Cài đặt Nhà hàng & In ấn</h1>
-              <p className="text-sm text-text-secondary">
-                Quản lý chính sách tính thuế VAT, thông tin biên lai và cấu hình máy in hóa đơn / phiếu bếp
-              </p>
-            </div>
-          </div>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-3">
+        <div className="min-w-0">
+          <h1 className="text-xl font-bold text-text tracking-tight">Cài đặt Nhà hàng &amp; In ấn</h1>
+          <p className="text-xs text-muted mt-0.5">
+            Quản lý chính sách tính thuế VAT, thông tin biên lai và cấu hình máy in hóa đơn / phiếu bếp
+          </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           {isDirty && (
             <Button
               variant="outline"
               size="sm"
               onClick={resetFormToSettings}
               disabled={updateMutation.isPending}
-              className="gap-1.5"
+              className="h-9 px-3 text-xs gap-1.5"
             >
-              <RotateCcw className="w-4 h-4" />
+              <RotateCcw className="w-3.5 h-3.5" />
               Hoàn tác
             </Button>
           )}
 
           <Button
+            variant="primary"
             size="sm"
             onClick={handleSaveAllSettings}
             disabled={!isDirty || updateMutation.isPending}
-            className="bg-primary hover:bg-primary-hover text-white gap-2"
+            className="h-9 px-3.5 text-xs font-semibold gap-1.5"
           >
-            <Save className="w-4 h-4" />
-            {updateMutation.isPending ? 'Đang lưu...' : 'Lưu cấu hình'}
+            <Save className="w-3.5 h-3.5" />
+            Lưu cấu hình
           </Button>
 
           <Button
@@ -215,58 +208,33 @@ export function RestaurantSettingsPage() {
               refetchPrinters()
               refetchTaxCategories()
             }}
-            className="gap-1.5"
+            className="h-9 px-2.5"
             title="Làm mới toàn bộ dữ liệu"
           >
-            <RefreshCw className="w-4 h-4" />
+            <RefreshCw className="w-3.5 h-3.5" />
           </Button>
         </div>
       </div>
 
-      {/* Dirty notification banner */}
-      {isDirty && (
-        <div className="flex items-center justify-between p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-700 dark:text-amber-400 text-sm">
-          <div className="flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 flex-shrink-0" />
-            <span>Bạn có thay đổi cấu hình chưa được lưu vào hệ thống.</span>
-          </div>
-          <Button
-            size="sm"
-            onClick={handleSaveAllSettings}
-            disabled={updateMutation.isPending}
-            className="bg-amber-600 hover:bg-amber-700 text-white text-xs h-7 gap-1"
-          >
-            <Save className="w-3.5 h-3.5" />
-            Lưu ngay
-          </Button>
-        </div>
-      )}
 
       {/* Section 1: VAT Policy & Tax Categories (2 columns) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* Left Column: VAT Calculation Toggle Card (7 cols) */}
-        <div className="lg:col-span-7 space-y-6">
-          <Card className="border-border shadow-sm h-full flex flex-col">
-            <CardHeader className="bg-surface/30 border-b border-border">
-              <div className="flex items-center justify-between">
+        <div className="lg:col-span-7 space-y-5">
+          <Card className="border-border rounded-lg h-full flex flex-col">
+            <CardHeader className="bg-surface/60 border-b border-border">
+              <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <Receipt className="w-5 h-5 text-accent" />
-                  <CardTitle className="text-lg">Phương thức tính Thuế VAT</CardTitle>
+                  <Receipt className="w-4 h-4 text-primary" />
+                  <CardTitle className="text-base">Phương thức tính Thuế VAT</CardTitle>
                 </div>
                 {settings && (
-                  <Badge
-                    variant={settings.menuPriceIncludesVat ? 'default' : 'secondary'}
-                    className={
-                      settings.menuPriceIncludesVat
-                        ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                        : 'bg-amber-500 hover:bg-amber-600 text-white'
-                    }
-                  >
+                  <Badge variant={settings.menuPriceIncludesVat ? 'ready' : 'pending'}>
                     {settings.menuPriceIncludesVat ? 'Giá đã gồm VAT' : 'Giá chưa gồm VAT'}
                   </Badge>
                 )}
               </div>
-              <CardDescription>
+              <CardDescription className="text-xs">
                 Quyết định giá niêm yết trên menu đã bao gồm thuế hay sẽ cộng thêm thuế khi tính tiền
               </CardDescription>
             </CardHeader>
@@ -289,8 +257,8 @@ export function RestaurantSettingsPage() {
                     <div
                       onClick={() => setIncludesVat(true)}
                       className={`relative flex flex-col p-4 rounded-xl border-2 cursor-pointer transition-all ${includesVat
-                          ? 'border-primary bg-primary/5 shadow-sm'
-                          : 'border-border bg-card hover:bg-surface/50'
+                        ? 'border-primary bg-primary/5 shadow-sm'
+                        : 'border-border bg-card hover:bg-surface/50'
                         }`}
                     >
                       <div className="flex items-center justify-between mb-2">
@@ -311,8 +279,8 @@ export function RestaurantSettingsPage() {
                     <div
                       onClick={() => setIncludesVat(false)}
                       className={`relative flex flex-col p-4 rounded-xl border-2 cursor-pointer transition-all ${!includesVat
-                          ? 'border-primary bg-primary/5 shadow-sm'
-                          : 'border-border bg-card hover:bg-surface/50'
+                        ? 'border-primary bg-primary/5 shadow-sm'
+                        : 'border-border bg-card hover:bg-surface/50'
                         }`}
                     >
                       <div className="flex items-center justify-between mb-2">
@@ -338,7 +306,7 @@ export function RestaurantSettingsPage() {
                     </div>
 
                     <div className="overflow-x-auto">
-                      <table className="w-full text-xs text-left">
+                      <table className="w-full min-w-[500px] text-xs text-left">
                         <thead>
                           <tr className="border-b border-border text-text-secondary">
                             <th className="py-2 pr-3 font-medium">Cấu hình</th>

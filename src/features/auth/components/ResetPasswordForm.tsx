@@ -50,15 +50,13 @@ export function ResetPasswordForm() {
   const onSubmit = async (values: ResetPasswordFormValues) => {
     setIsLoading(true)
     try {
-      const message = await authApi.resetPassword({
+      await authApi.resetPassword({
         email: values.email.trim(),
         otp: values.otp.trim(),
         newPassword: values.newPassword,
       })
 
-      toast.success(
-        message || 'Đặt lại mật khẩu thành công! Vui lòng đăng nhập với mật khẩu mới.'
-      )
+      toast.success('Đặt lại mật khẩu thành công! Vui lòng đăng nhập với mật khẩu mới.')
       navigate('/login', { replace: true })
     } catch (err) {
       const message = getApiErrorMessage(err)
@@ -76,8 +74,8 @@ export function ResetPasswordForm() {
 
     setIsResending(true)
     try {
-      const message = await authApi.forgotPassword({ email: currentEmail.trim() })
-      toast.success(message || 'Đã gửi lại mã OTP thành công. Vui lòng kiểm tra hộp thư!')
+      await authApi.forgotPassword({ email: currentEmail.trim() })
+      toast.success('Đã gửi lại mã OTP thành công. Vui lòng kiểm tra hộp thư!')
     } catch (err) {
       const message = getApiErrorMessage(err)
       toast.error(message)

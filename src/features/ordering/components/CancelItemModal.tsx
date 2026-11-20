@@ -58,28 +58,25 @@ export function CancelItemModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-card border border-border rounded-2xl p-6 max-w-md w-full shadow-2xl flex flex-col gap-5 text-left">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+      <div className="bg-card border border-border rounded-lg p-5 max-w-md w-full shadow-md flex flex-col gap-4 text-left">
         {/* Header */}
-        <div className="flex items-start gap-3.5">
-          <div className="p-2.5 rounded-full bg-status-cancelled/15 text-status-cancelled shrink-0">
-            <AlertTriangle className="w-6 h-6" />
-          </div>
-          <div>
-            <h3 className="font-bold text-lg text-text">{title}</h3>
+        <div className="flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-status-cancelled shrink-0 mt-0.5" />
+          <div className="min-w-0 flex-1">
+            <h3 className="font-bold text-base text-text">{title}</h3>
             {itemName && (
-              <p className="text-sm font-semibold text-accent mt-0.5">
+              <p className="text-sm font-semibold text-primary mt-0.5">
                 {itemName}
                 {typeof maxQuantity === 'number' && maxQuantity >= 1 && (
-                  <span className="text-xs font-bold text-muted ml-1.5">
-                    (Đã đặt: &times;{maxQuantity})
+                  <span className="text-xs font-mono text-muted ml-1.5">
+                    (Đã đặt: {maxQuantity}x)
                   </span>
                 )}
               </p>
             )}
             <p className="text-xs text-muted mt-1 leading-relaxed">
-              Lưu ý: Bạn chỉ có thể hủy khi món ăn hoặc đơn hàng đang ở trạng thái{' '}
-              <strong className="text-status-pending">Chờ tiếp nhận (PENDING)</strong>.
+              Chỉ có thể hủy khi món hoặc đơn đang ở trạng thái Chờ tiếp nhận.
             </p>
           </div>
         </div>
@@ -182,23 +179,24 @@ export function CancelItemModal({
         </div>
 
         {/* Footer Actions */}
-        <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-border">
+        <div className="flex items-center justify-end gap-2 pt-3 border-t border-border">
           <Button
             type="button"
-            variant="ghost"
-            size="md"
+            variant="outline"
+            size="sm"
             onClick={onClose}
             disabled={isLoading}
+            className="h-9 px-3.5 text-xs"
           >
             Đóng
           </Button>
           <Button
             type="button"
             variant="destructive"
-            size="md"
+            size="sm"
             isLoading={isLoading}
             onClick={handleConfirm}
-            className="font-bold shadow-sm"
+            className="h-9 px-4 text-xs font-semibold"
           >
             {canSelectQuantity
               ? `Xác nhận hủy (${cancelQuantity}/${maxQuantity})`

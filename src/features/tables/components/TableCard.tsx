@@ -1,4 +1,4 @@
-import { Users, MapPin, Play, ArrowRightLeft, Settings2, Power, Eye, BellRing, Receipt } from 'lucide-react'
+import { Users, Play, ArrowRightLeft, Settings2, Power, Eye, Receipt } from 'lucide-react'
 import type { TableItem } from '@/features/tables/types/table.types'
 import { Badge } from '@/shared/components/ui/badge'
 import { Button } from '@/shared/components/ui/button'
@@ -34,69 +34,76 @@ export function TableCard({
 
   const statusBadge = () => {
     if (isOutOfService) {
-      return <Badge variant="secondary" className="whitespace-nowrap shrink-0">Bảo trì / Tắt</Badge>
+      return (
+        <Badge variant="outline" className="text-muted whitespace-nowrap shrink-0">
+          <span className="w-2 h-2 rounded-full bg-muted shrink-0" />
+          Bảo trì / Tắt
+        </Badge>
+      )
     }
     if (hasReadyDishes) {
       return (
-        <Badge variant="ready" className="bg-status-ready text-white animate-pulse flex items-center gap-1 whitespace-nowrap shrink-0">
-          <BellRing className="w-3 h-3 shrink-0" />
+        <Badge variant="ready" className="whitespace-nowrap shrink-0">
+          <span className="w-2 h-2 rounded-full bg-status-ready shrink-0" />
           {readyItemsCount} món cần bưng
         </Badge>
       )
     }
     if (isOccupied) {
       return (
-        <Badge variant="cooking" className="animate-pulse whitespace-nowrap shrink-0">
+        <Badge variant="cooking" className="whitespace-nowrap shrink-0">
+          <span className="w-2 h-2 rounded-full bg-status-cooking shrink-0" />
           Đang phục vụ #{table.activeSessionId}
         </Badge>
       )
     }
-    return <Badge variant="completed" className="whitespace-nowrap shrink-0">Bàn trống</Badge>
+    return (
+      <Badge variant="completed" className="whitespace-nowrap shrink-0">
+        <span className="w-2 h-2 rounded-full bg-status-completed shrink-0" />
+        Bàn trống
+      </Badge>
+    )
   }
 
   return (
     <div
-      className={`bg-card border rounded-2xl p-5 shadow-xs transition-all hover:shadow-md flex flex-col justify-between text-left ${hasReadyDishes
-          ? 'border-status-ready ring-2 ring-status-ready/30 bg-emerald-50/10'
+      className={`bg-card border border-border rounded-lg p-4 transition-colors flex flex-col justify-between text-left ${
+        hasReadyDishes
+          ? 'border-t-4 border-t-status-ready'
           : isOccupied
-            ? 'border-status-cooking/40 bg-status-cooking/5'
+            ? 'border-t-4 border-t-status-cooking'
             : isOutOfService
-              ? 'border-border/60 opacity-60 bg-surface/20'
-              : 'border-border hover:border-primary/40'
-        }`}
+              ? 'opacity-60'
+              : 'hover:border-primary/40'
+      }`}
     >
       {/* Top Header */}
       <div>
-        <div className="flex flex-col items-start gap-2 mb-3">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-xl font-black text-text tracking-tight uppercase whitespace-nowrap">
+        <div className="flex flex-wrap items-start justify-between gap-2 mb-2.5">
+          <div className="min-w-0 flex-1">
+            <span className="text-lg font-bold text-text block leading-tight">
               Bàn {table.tableCode}
             </span>
-            {table.area && (
-              <span className="inline-flex items-center gap-1 text-[11px] text-muted bg-surface px-2 py-0.5 rounded-md border border-border whitespace-nowrap">
-                <MapPin className="w-3 h-3 text-accent shrink-0" />
-                {table.area}
+            <span className="text-xs text-muted mt-0.5 block">
+              {table.area ? `${table.area} • ` : ''}
+              <span className="inline-flex items-center gap-1">
+                <Users className="w-3 h-3 inline" />
+                {table.capacity} khách
               </span>
-            )}
+            </span>
           </div>
           {statusBadge()}
-        </div>
-
-        {/* Capacity */}
-        <div className="flex items-center gap-1.5 text-xs text-muted mb-4">
-          <Users className="w-3.5 h-3.5" />
-          <span>Sức chứa: <strong>{table.capacity} khách</strong></span>
         </div>
       </div>
 
       {/* Actions */}
-      <div className="pt-3 border-t border-border flex flex-col gap-2">
+      <div className="pt-3 mt-2 border-t border-border flex flex-col gap-2">
         {isEmpty && table.isActive && (
           <Button
             variant="primary"
             size="sm"
             onClick={() => onOpenSession(table)}
-            className="w-full text-xs font-semibold shadow-xs"
+            className="w-full h-9 text-xs font-semibold"
           >
             <Play className="w-3.5 h-3.5 mr-1.5 fill-current" />
             Mở bàn đón khách
@@ -110,7 +117,7 @@ export function TableCard({
                 variant="primary"
                 size="sm"
                 onClick={() => onCheckout(table)}
-                className="w-full text-xs font-semibold bg-primary hover:bg-primary-hover text-white shadow-xs"
+                className="w-full h-9 text-xs font-semibold"
               >
                 <Receipt className="w-3.5 h-3.5 mr-1.5" />
                 Thanh toán
@@ -122,7 +129,7 @@ export function TableCard({
                 variant="outline"
                 size="sm"
                 onClick={() => onViewDetail(table)}
-                className="text-xs px-2"
+                className="h-9 text-xs px-2"
                 title="Xem đơn hàng & lịch sử bàn"
               >
                 <Eye className="w-3.5 h-3.5 mr-1" />
@@ -132,7 +139,7 @@ export function TableCard({
                 variant="outline"
                 size="sm"
                 onClick={() => onTransferTable(table)}
-                className="text-xs px-2 text-accent"
+                className="h-9 text-xs px-2"
                 title="Chuyển sang bàn khác"
               >
                 <ArrowRightLeft className="w-3.5 h-3.5 mr-1" />
@@ -144,27 +151,28 @@ export function TableCard({
 
         {/* Owner Operations */}
         {isOwner && (
-          <div className="grid grid-cols-2 gap-1.5 pt-2.5 border-t border-border/50">
-            <button
+          <div className="grid grid-cols-2 gap-1.5 pt-2 border-t border-border">
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={() => onEditTable?.(table)}
-              className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-border/70 bg-surface/50 px-3 py-2 text-xs font-medium text-text hover:bg-surface transition-colors"
+              className="h-8 text-xs px-2"
             >
-              <Settings2 className="w-3.5 h-3.5 text-accent shrink-0" />
+              <Settings2 className="w-3.5 h-3.5 mr-1 shrink-0" />
               Sửa bàn
-            </button>
+            </Button>
 
-            <button
+            <Button
               type="button"
+              variant={table.isActive ? 'destructiveOutline' : 'outline'}
+              size="sm"
               onClick={() => onToggleStatus?.(table)}
-              className={`inline-flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors ${table.isActive
-                  ? 'border-status-cancelled/30 bg-status-cancelled/5 text-status-cancelled hover:bg-status-cancelled/15'
-                  : 'border-status-completed/30 bg-status-completed/5 text-status-completed hover:bg-status-completed/15'
-                }`}
+              className="h-8 text-xs px-2"
             >
-              <Power className="w-3.5 h-3.5 shrink-0" />
+              <Power className="w-3.5 h-3.5 mr-1 shrink-0" />
               {table.isActive ? 'Tắt bàn' : 'Bật bàn'}
-            </button>
+            </Button>
           </div>
         )}
       </div>

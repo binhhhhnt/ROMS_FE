@@ -62,10 +62,10 @@ export function CategoryManagementPage() {
         </div>
       </header>
 
-      <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm" aria-busy={query.isFetching}>
-        <div className="flex items-center justify-between gap-3 border-b border-border bg-surface/30 px-5 py-4">
-          <h2 className="font-semibold text-primary">Danh sách danh mục</h2>
-          {data && <span className="text-sm text-muted">{data.totalElements} danh mục</span>}
+      <div className="overflow-hidden rounded-lg border border-border bg-card" aria-busy={query.isFetching}>
+        <div className="flex items-center justify-between gap-3 border-b border-border bg-card px-5 py-3.5">
+          <h2 className="font-semibold text-sm text-text">Danh sách danh mục</h2>
+          {data && <span className="text-xs text-muted tabular-nums">{data.totalElements} danh mục</span>}
         </div>
         {query.isPending ? (
           <p role="status" className="p-12 text-center text-sm text-muted">Đang tải danh mục món...</p>
@@ -85,17 +85,17 @@ export function CategoryManagementPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <caption className="sr-only">Danh mục món, mô tả, thứ tự hiển thị và trạng thái phục vụ</caption>
-              <thead className="border-b border-border bg-background text-xs text-muted">
+              <thead className="border-b border-border bg-surface/60 text-xs text-muted font-medium">
                 <tr><th scope="col" className="px-5 py-3">Tên danh mục</th><th scope="col" className="px-5 py-3">Mô tả</th><th scope="col" className="whitespace-nowrap px-5 py-3">Thứ tự</th><th scope="col" className="px-5 py-3">Trạng thái</th><th scope="col" className="px-5 py-3 text-right">Thao tác</th></tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {data?.content.map((category) => (
-                  <tr key={category.id} className="hover:bg-surface/20">
-                    <th scope="row" className="min-w-40 max-w-xs break-words px-5 py-4 font-semibold text-primary">{category.name}</th>
-                    <td className="min-w-48 max-w-sm whitespace-pre-wrap break-words px-5 py-4 text-muted">{category.description || '—'}</td>
-                    <td className="px-5 py-4 tabular-nums">{category.displayOrder}</td>
-                    <td className="whitespace-nowrap px-5 py-4"><Badge variant={category.isActive ? 'secondary' : 'outline'}>{category.isActive ? 'Đang phục vụ' : 'Tạm ngưng phục vụ'}</Badge></td>
-                    <td className="px-5 py-4"><div className="flex items-center justify-end gap-2 whitespace-nowrap"><Button variant="ghost" size="sm" aria-label={`Chỉnh sửa danh mục ${category.name}`} onClick={() => setEditor(category)}><Pencil aria-hidden="true" className="h-4 w-4" />Chỉnh sửa</Button><CatalogDeleteButton kind="category" id={category.id} name={category.name} onDeleted={handleDeleted} /></div></td>
+                  <tr key={category.id} className="hover:bg-muted-bg/40 transition-colors">
+                    <th scope="row" className="min-w-40 max-w-xs break-words px-5 py-3.5 font-semibold text-text">{category.name}</th>
+                    <td className="min-w-48 max-w-sm whitespace-pre-wrap break-words px-5 py-3.5 text-muted">{category.description || '—'}</td>
+                    <td className="px-5 py-3.5 tabular-nums">{category.displayOrder}</td>
+                    <td className="whitespace-nowrap px-5 py-3.5"><Badge variant={category.isActive ? 'ready' : 'outline'}>{category.isActive ? 'Đang phục vụ' : 'Tạm ngưng'}</Badge></td>
+                    <td className="px-5 py-3.5"><div className="flex items-center justify-end gap-2 whitespace-nowrap"><Button variant="outline" size="sm" className="h-8 px-2.5 text-xs" aria-label={`Chỉnh sửa danh mục ${category.name}`} onClick={() => setEditor(category)}><Pencil aria-hidden="true" className="h-3.5 w-3.5 mr-1" />Chỉnh sửa</Button><CatalogDeleteButton kind="category" id={category.id} name={category.name} onDeleted={handleDeleted} /></div></td>
                   </tr>
                 ))}
               </tbody>

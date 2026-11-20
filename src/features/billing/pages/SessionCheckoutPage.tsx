@@ -3,7 +3,6 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   ArrowLeft,
-  Receipt,
   Printer,
   Tag,
   AlertCircle,
@@ -19,11 +18,13 @@ import { billApi } from '@/features/billing/api/billApi'
 import { settingsApi } from '@/features/settings/api/settingsApi'
 import {
   printReceiptViaBrowser,
+  groupBillingItems,
   type ReceiptItem,
   type ReceiptTaxRow,
 } from '@/features/billing/utils/receiptPrinter'
 import { Button } from '@/shared/components/ui/button'
 import { getApiErrorMessage } from '@/shared/lib/axios'
+import { getApiErrorCode } from '@/shared/lib/errorMessages'
 import type { PaymentItemDto } from '@/features/billing/types/bill.types'
 
 type PaymentTab = 'CASH' | 'BANK_TRANSFER' | 'SPLIT'
@@ -67,6 +68,8 @@ export function SessionCheckoutPage() {
     queryKey: ['billPreview', parsedSessionId],
     queryFn: () => billApi.getBillPreview(parsedSessionId),
     enabled: Number.isFinite(parsedSessionId) && parsedSessionId > 0,
+    staleTime: 0,
+    refetchOnMount: 'always',
   })
 
   const activePromo = useMemo(() => {
@@ -134,8 +137,6 @@ export function SessionCheckoutPage() {
       })
     },
     onSuccess: (savedBill) => {
-      billApi.printBill(savedBill.id).catch(() => {})
-
       if (shouldPrintOnSuccess) {
         const receiptItems: ReceiptItem[] = savedBill.items.map((item, idx) => ({
           index: idx + 1,
@@ -186,7 +187,13 @@ export function SessionCheckoutPage() {
 
       navigate('/tables', { replace: true })
     },
-    onError: (err) => {
+    onError: (err: unknown) => {
+      const apiCode = getApiErrorCode(err)
+      if (apiCode === 'PAYMENT_AMOUNT_MISMATCH') {
+        queryClient.invalidateQueries({ queryKey: ['billPreview', parsedSessionId] })
+        toast.error('Hóa đơn vừa có thay đổi (thêm món hoặc kiểm đồ). Đã tải lại số tiền mới nhất, vui lòng kiểm tra lại!')
+        return
+      }
       toast.error(getApiErrorMessage(err) || 'Thanh toán thất bại, vui lòng thử lại!')
     },
   })
@@ -196,8 +203,6 @@ export function SessionCheckoutPage() {
 
   const handlePrintProforma = () => {
     if (!preview || !hasBillableItems) return
-
-    billApi.printProforma(parsedSessionId).catch(() => {})
 
     const receiptItems: ReceiptItem[] = preview.items.map((item, idx) => ({
       index: idx + 1,
@@ -260,28 +265,25 @@ export function SessionCheckoutPage() {
   }
 
   return (
-    <div className="space-y-6 pb-8">
+    <div className="space-y-5 pb-8">
       {/* Top POS Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-card border border-border rounded-2xl p-4 sm:p-5 shadow-xs">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-border">
+        <div className="flex items-center gap-3 min-w-0">
           <Button
             type="button"
             variant="outline"
             size="sm"
             onClick={() => navigate(backPath)}
-            className="gap-1.5"
+            className="h-9 px-3 text-xs gap-1.5 shrink-0"
           >
             <ArrowLeft className="w-4 h-4" />
             Quay lại
           </Button>
-          <div className="p-2.5 bg-primary/10 text-primary rounded-xl hidden sm:flex">
-            <Receipt className="w-5 h-5" />
-          </div>
-          <div>
-            <h1 className="text-lg sm:text-xl font-bold text-text">
-              Thanh toán - {displayTableCode}
+          <div className="min-w-0">
+            <h1 className="text-xl font-bold text-text truncate">
+              Thanh toán — {displayTableCode}
             </h1>
-            <p className="text-xs text-muted">
+            <p className="text-xs text-muted mt-0.5">
               Kiểm tra chi tiết món ăn, áp mã ưu đãi và hoàn tất thu tiền
             </p>
           </div>
@@ -293,7 +295,7 @@ export function SessionCheckoutPage() {
           size="sm"
           onClick={handlePrintProforma}
           disabled={!hasBillableItems}
-          className="gap-1.5 self-start sm:self-auto"
+          className="h-9 px-3 text-xs gap-1.5 self-start sm:self-auto shrink-0"
         >
           <Printer className="w-4 h-4" />
           In phiếu tạm tính
@@ -302,20 +304,20 @@ export function SessionCheckoutPage() {
 
       {/* Main Content */}
       {isLoading ? (
-        <div className="bg-card border border-border rounded-2xl py-20 text-center text-muted text-sm flex flex-col items-center gap-3">
-          <RefreshCw className="w-7 h-7 animate-spin text-primary" />
+        <div className="bg-card border border-border rounded-lg py-16 text-center text-muted text-sm flex flex-col items-center gap-3">
+          <RefreshCw className="w-6 h-6 animate-spin text-primary" />
           <span>Đang tải thông tin hóa đơn tạm tính...</span>
         </div>
       ) : isError ? (
-        <div className="bg-card border border-red-500/20 rounded-2xl p-8 text-center space-y-4">
-          <div className="flex items-center justify-center gap-2 text-red-600 font-semibold text-base">
+        <div className="bg-card border border-border border-l-4 border-l-status-cancelled rounded-lg p-6 text-center space-y-3">
+          <div className="flex items-center justify-center gap-2 text-status-cancelled font-semibold text-sm">
             <AlertCircle className="w-5 h-5" />
             <span>Không thể lấy thông tin tính tiền</span>
           </div>
-          <p className="text-sm text-red-500 max-w-md mx-auto">
+          <p className="text-xs text-muted max-w-md mx-auto">
             {getApiErrorMessage(error) || 'Chưa thể thanh toán do còn món chưa hoàn tất.'}
           </p>
-          <div className="flex items-center justify-center gap-2">
+          <div className="flex items-center justify-center gap-2 pt-1">
             <Button size="sm" variant="outline" onClick={() => navigate(backPath)}>
               Quay lại
             </Button>
@@ -325,19 +327,19 @@ export function SessionCheckoutPage() {
           </div>
         </div>
       ) : !preview || preview.items.length === 0 ? (
-        <div className="bg-card border border-border rounded-2xl py-16 text-center space-y-3">
+        <div className="bg-card border border-border rounded-lg py-16 text-center space-y-3">
           <p className="text-muted text-sm">Phiên bàn chưa có món ăn nào để thanh toán.</p>
           <Button size="sm" variant="outline" onClick={() => navigate(backPath)}>
             Quay lại
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
           {/* Left Column: Items, Promotion & Calculation */}
-          <div className="lg:col-span-7 space-y-5">
+          <div className="lg:col-span-7 space-y-4">
             {/* Items Table */}
-            <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-xs">
-              <div className="bg-surface/60 px-4 py-3 border-b border-border text-xs font-semibold text-text grid grid-cols-12">
+            <div className="bg-card border border-border rounded-lg overflow-hidden">
+              <div className="bg-surface/60 px-4 py-3 border-b border-border text-xs font-medium text-muted grid grid-cols-12">
                 <span className="col-span-1">#</span>
                 <span className="col-span-5">Tên món</span>
                 <span className="col-span-2 text-center">SL</span>
@@ -345,26 +347,26 @@ export function SessionCheckoutPage() {
                 <span className="col-span-2 text-right">Thành tiền</span>
               </div>
 
-              <div className="divide-y divide-border/60 max-h-[380px] overflow-y-auto">
-                {preview.items.map((item, idx) => (
+              <div className="divide-y divide-border max-h-[380px] overflow-y-auto">
+                {groupBillingItems(preview.items).map((item, idx) => (
                   <div
-                    key={item.orderItemId}
-                    className="px-4 py-3 text-sm text-text grid grid-cols-12 items-center hover:bg-surface/30 transition-colors"
+                    key={`${item.menuItemId}-${item.unitPrice}-${item.taxRate}-${idx}`}
+                    className="px-4 py-3 text-sm text-text grid grid-cols-12 items-center"
                   >
-                    <span className="col-span-1 text-xs text-muted">{idx + 1}</span>
-                    <div className="col-span-5 pr-2">
+                    <span className="col-span-1 text-xs text-muted tabular-nums">{idx + 1}</span>
+                    <div className="col-span-5 pr-2 min-w-0">
                       <p className="font-semibold text-text truncate">{item.itemName}</p>
                       {!preview.menuPriceIncludesVat && item.taxRate > 0 && (
-                        <span className="text-[11px] text-muted">VAT: {item.taxRate}%</span>
+                        <span className="text-xs text-muted">VAT: {item.taxRate}%</span>
                       )}
                     </div>
-                    <span className="col-span-2 text-center font-bold text-text">
+                    <span className="col-span-2 text-center font-semibold text-text tabular-nums">
                       {item.quantity}
                     </span>
-                    <span className="col-span-2 text-right text-xs text-muted">
+                    <span className="col-span-2 text-right text-xs text-muted tabular-nums whitespace-nowrap">
                       {item.unitPrice.toLocaleString('vi-VN')} đ
                     </span>
-                    <span className="col-span-2 text-right font-bold text-text">
+                    <span className="col-span-2 text-right font-semibold text-text tabular-nums whitespace-nowrap">
                       {item.subtotal.toLocaleString('vi-VN')} đ
                     </span>
                   </div>
@@ -373,7 +375,7 @@ export function SessionCheckoutPage() {
             </div>
 
             {/* Promotions Section */}
-            <div className="bg-card p-5 rounded-2xl border border-border space-y-3 shadow-xs">
+            <div className="bg-card p-4 sm:p-5 rounded-lg border border-border space-y-3">
               <div className="flex items-center gap-2 text-sm font-semibold text-text">
                 <Tag className="w-4 h-4 text-primary" />
                 <span>Mã khuyến mãi / Giảm giá</span>
@@ -386,7 +388,7 @@ export function SessionCheckoutPage() {
                     setSelectedPromoCode(e.target.value)
                     setCustomPromoCode('')
                   }}
-                  className="w-full px-3 py-2.5 text-sm bg-surface/40 border border-border rounded-xl text-text focus:outline-hidden focus:ring-2 focus:ring-primary/20"
+                  className="w-full h-10 px-3 text-xs bg-card border border-border rounded-md text-text focus:outline-hidden focus:ring-2 focus:ring-accent"
                 >
                   <option value="">-- Chọn voucher sẵn có --</option>
                   {preview.availablePromotions.map((p) => (
@@ -409,7 +411,7 @@ export function SessionCheckoutPage() {
                       setCustomPromoCode(e.target.value.toUpperCase())
                       setSelectedPromoCode('')
                     }}
-                    className="w-full px-3 py-2.5 text-sm bg-surface/40 border border-border rounded-xl text-text uppercase font-mono focus:outline-hidden focus:ring-2 focus:ring-primary/20"
+                    className="w-full h-10 px-3 text-xs bg-card border border-border rounded-md text-text uppercase font-mono focus:outline-hidden focus:ring-2 focus:ring-accent"
                   />
                   {(selectedPromoCode || customPromoCode) && (
                     <Button
@@ -420,7 +422,7 @@ export function SessionCheckoutPage() {
                         setSelectedPromoCode('')
                         setCustomPromoCode('')
                       }}
-                      className="px-3 text-xs text-muted hover:text-text"
+                      className="h-10 px-3 text-xs"
                     >
                       Xóa
                     </Button>
@@ -429,9 +431,9 @@ export function SessionCheckoutPage() {
               </div>
 
               {activePromo && (
-                <div className="flex items-center justify-between text-xs text-emerald-600 bg-emerald-500/10 border border-emerald-500/20 px-3 py-2 rounded-xl">
-                  <span className="font-semibold">Áp dụng: {activePromo.name}</span>
-                  <span className="font-bold">
+                <div className="flex items-center justify-between text-xs text-status-completed bg-card border border-border border-l-4 border-l-status-completed px-3 py-2 rounded-md">
+                  <span className="font-medium">Áp dụng: {activePromo.name}</span>
+                  <span className="font-semibold tabular-nums">
                     -
                     {activePromo.discountType === 'PERCENT'
                       ? `${activePromo.discountValue}%`
@@ -442,23 +444,23 @@ export function SessionCheckoutPage() {
             </div>
 
             {/* Calculation Summary Box */}
-            <div className="bg-card p-5 rounded-2xl border border-border space-y-2.5 text-sm shadow-xs">
+            <div className="bg-card p-4 sm:p-5 rounded-lg border border-border space-y-2.5 text-sm">
               <div className="flex justify-between text-text">
                 <span className="text-muted">Tổng tiền món:</span>
-                <span className="font-semibold">
+                <span className="font-semibold tabular-nums">
                   {preview.subtotal.toLocaleString('vi-VN')} đ
                 </span>
               </div>
 
               {!preview.menuPriceIncludesVat && (
-                <div className="space-y-1.5 py-2 border-y border-border/60 text-xs">
+                <div className="space-y-1.5 py-2 border-y border-border text-xs">
                   {preview.taxBreakdowns && preview.taxBreakdowns.length > 0 ? (
                     preview.taxBreakdowns.map((tax) => (
                       <div key={tax.rate} className="flex justify-between text-muted">
                         <span>
                           Thuế VAT ({tax.rate}% trên {tax.taxableAmount.toLocaleString('vi-VN')} đ):
                         </span>
-                        <span className="font-medium text-text">
+                        <span className="font-medium text-text tabular-nums">
                           +{tax.taxAmount.toLocaleString('vi-VN')} đ
                         </span>
                       </div>
@@ -466,7 +468,7 @@ export function SessionCheckoutPage() {
                   ) : (
                     <div className="flex justify-between text-muted">
                       <span>Thuế VAT:</span>
-                      <span className="font-medium text-text">
+                      <span className="font-medium text-text tabular-nums">
                         +{preview.totalTax.toLocaleString('vi-VN')} đ
                       </span>
                     </div>
@@ -476,19 +478,19 @@ export function SessionCheckoutPage() {
 
               <div className="flex justify-between text-text font-medium">
                 <span className="text-muted">Thành tiền (trước giảm giá):</span>
-                <span>{preview.amountBeforeDiscount.toLocaleString('vi-VN')} đ</span>
+                <span className="tabular-nums">{preview.amountBeforeDiscount.toLocaleString('vi-VN')} đ</span>
               </div>
 
               {discountAmount > 0 && (
-                <div className="flex justify-between text-emerald-600 font-semibold">
+                <div className="flex justify-between text-status-completed font-semibold">
                   <span>Giảm giá khuyến mãi:</span>
-                  <span>-{discountAmount.toLocaleString('vi-VN')} đ</span>
+                  <span className="tabular-nums">-{discountAmount.toLocaleString('vi-VN')} đ</span>
                 </div>
               )}
 
-              <div className="pt-3 border-t border-border flex justify-between items-center font-black text-text">
+              <div className="pt-3 border-t border-border flex justify-between items-center font-bold text-text">
                 <span className="text-base">Tổng cộng thanh toán:</span>
-                <span className="text-2xl text-primary font-black">
+                <span className="text-2xl text-primary font-bold tabular-nums">
                   {totalAmount.toLocaleString('vi-VN')} đ
                 </span>
               </div>
@@ -496,60 +498,60 @@ export function SessionCheckoutPage() {
           </div>
 
           {/* Right Column: POS Payment Panel */}
-          <div className="lg:col-span-5 lg:sticky lg:top-6 bg-card border border-border rounded-2xl shadow-sm overflow-hidden">
+          <div className="lg:col-span-5 lg:sticky lg:top-6 bg-card border border-border rounded-lg overflow-hidden">
             {/* Total Display */}
-            <div className="p-5 bg-primary/5 border-b border-border flex items-center justify-between">
-              <span className="text-sm font-medium text-muted">Cần thanh toán:</span>
-              <span className="text-3xl font-black text-primary">
+            <div className="px-5 py-4 bg-surface/60 border-b border-border flex items-center justify-between">
+              <span className="text-sm font-medium text-text">Cần thanh toán:</span>
+              <span className="text-2xl font-bold text-primary tabular-nums">
                 {totalAmount.toLocaleString('vi-VN')} đ
               </span>
             </div>
 
-            <div className="p-5 space-y-5">
+            <div className="p-5 space-y-4">
               {/* Method Selector Tabs */}
-              <div className="grid grid-cols-3 gap-2 p-1.5 bg-surface rounded-xl border border-border">
+              <div className="grid grid-cols-3 gap-2">
                 <button
                   type="button"
                   onClick={() => setActiveTab('CASH')}
-                  className={`flex flex-col items-center gap-1.5 py-3 px-2 rounded-lg text-xs font-semibold transition-all ${
+                  className={`flex flex-col items-center gap-1.5 py-2.5 px-2 rounded-md text-xs font-semibold border transition-colors cursor-pointer ${
                     activeTab === 'CASH'
-                      ? 'bg-card text-primary shadow-xs border border-border'
-                      : 'text-muted hover:text-text'
+                      ? 'bg-primary text-white border-primary'
+                      : 'bg-card text-text border-border hover:bg-muted-bg'
                   }`}
                 >
-                  <Banknote className="w-5 h-5 text-emerald-500" />
+                  <Banknote className={`w-4 h-4 ${activeTab === 'CASH' ? 'text-white' : 'text-emerald-600'}`} />
                   Tiền mặt
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveTab('BANK_TRANSFER')}
-                  className={`flex flex-col items-center gap-1.5 py-3 px-2 rounded-lg text-xs font-semibold transition-all ${
+                  className={`flex flex-col items-center gap-1.5 py-2.5 px-2 rounded-md text-xs font-semibold border transition-colors cursor-pointer ${
                     activeTab === 'BANK_TRANSFER'
-                      ? 'bg-card text-primary shadow-xs border border-border'
-                      : 'text-muted hover:text-text'
+                      ? 'bg-primary text-white border-primary'
+                      : 'bg-card text-text border-border hover:bg-muted-bg'
                   }`}
                 >
-                  <QrCode className="w-5 h-5 text-sky-500" />
+                  <QrCode className={`w-4 h-4 ${activeTab === 'BANK_TRANSFER' ? 'text-white' : 'text-sky-600'}`} />
                   Chuyển khoản
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveTab('SPLIT')}
-                  className={`flex flex-col items-center gap-1.5 py-3 px-2 rounded-lg text-xs font-semibold transition-all ${
+                  className={`flex flex-col items-center gap-1.5 py-2.5 px-2 rounded-md text-xs font-semibold border transition-colors cursor-pointer ${
                     activeTab === 'SPLIT'
-                      ? 'bg-card text-primary shadow-xs border border-border'
-                      : 'text-muted hover:text-text'
+                      ? 'bg-primary text-white border-primary'
+                      : 'bg-card text-text border-border hover:bg-muted-bg'
                   }`}
                 >
-                  <Split className="w-5 h-5 text-amber-500" />
+                  <Split className={`w-4 h-4 ${activeTab === 'SPLIT' ? 'text-white' : 'text-amber-600'}`} />
                   Kết hợp
                 </button>
               </div>
 
               {/* CASH Tab */}
               {activeTab === 'CASH' && (
-                <div className="space-y-4">
-                  <div className="space-y-2">
+                <div className="space-y-3.5">
+                  <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-text block">
                       Tiền khách đưa (VNĐ) — tùy chọn
                     </label>
@@ -560,7 +562,7 @@ export function SessionCheckoutPage() {
                       placeholder={totalAmount.toLocaleString('vi-VN')}
                       value={cashTenderedInput}
                       onChange={(e) => setCashTenderedInput(e.target.value)}
-                      className="w-full px-4 py-3 text-base font-bold bg-surface/40 border border-border rounded-xl text-text focus:outline-hidden focus:ring-2 focus:ring-primary/20"
+                      className="w-full px-3.5 py-2.5 text-base font-bold tabular-nums bg-card border border-border rounded-md text-text focus:outline-hidden focus:ring-2 focus:ring-accent"
                     />
                   </div>
 
@@ -571,10 +573,10 @@ export function SessionCheckoutPage() {
                           key={amt}
                           type="button"
                           onClick={() => setCashTenderedInput(String(amt))}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+                          className={`h-9 px-3 rounded-md text-xs font-semibold border tabular-nums transition-colors cursor-pointer ${
                             cashTendered === amt
                               ? 'bg-primary text-white border-primary'
-                              : 'bg-surface hover:bg-surface/80 text-text border-border'
+                              : 'bg-card hover:bg-muted-bg text-text border-border'
                           }`}
                         >
                           {amt === totalAmount
@@ -586,7 +588,7 @@ export function SessionCheckoutPage() {
                         <button
                           type="button"
                           onClick={() => setCashTenderedInput('')}
-                          className="px-3 py-1.5 rounded-lg text-xs font-medium text-muted hover:text-text border border-border"
+                          className="h-9 px-3 rounded-md text-xs font-medium text-muted hover:text-text border border-border bg-card cursor-pointer"
                         >
                           Xóa
                         </button>
@@ -596,16 +598,16 @@ export function SessionCheckoutPage() {
 
                   {changeAmount !== null && (
                     <div
-                      className={`p-4 rounded-xl border flex items-center justify-between ${
+                      className={`p-3.5 rounded-md border border-border border-l-4 flex items-center justify-between bg-card ${
                         changeAmount >= 0
-                          ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-700'
-                          : 'bg-red-500/10 border-red-500/20 text-red-600'
+                          ? 'border-l-status-ready text-status-ready'
+                          : 'border-l-status-cancelled text-status-cancelled'
                       }`}
                     >
-                      <span className="text-sm font-medium">
+                      <span className="text-sm font-medium text-text">
                         {changeAmount >= 0 ? 'Tiền thừa trả khách:' : 'Còn thiếu:'}
                       </span>
-                      <span className="text-lg font-black">
+                      <span className="text-lg font-bold tabular-nums">
                         {Math.abs(changeAmount).toLocaleString('vi-VN')} đ
                       </span>
                     </div>
@@ -615,11 +617,11 @@ export function SessionCheckoutPage() {
 
               {/* BANK_TRANSFER Tab */}
               {activeTab === 'BANK_TRANSFER' && (
-                <div className="p-4 rounded-xl bg-sky-500/10 border border-sky-500/20 space-y-2 text-sm text-text">
-                  <div className="font-semibold text-sky-700">Thanh toán chuyển khoản</div>
+                <div className="p-3.5 rounded-md bg-card border border-border border-l-4 border-l-status-cooking space-y-1.5 text-sm text-text">
+                  <div className="font-semibold text-status-cooking">Thanh toán chuyển khoản</div>
                   <p className="text-xs text-muted">
                     Xác nhận khách hàng đã chuyển khoản đủ{' '}
-                    <strong className="text-text">{totalAmount.toLocaleString('vi-VN')} đ</strong>{' '}
+                    <strong className="text-text tabular-nums">{totalAmount.toLocaleString('vi-VN')} đ</strong>{' '}
                     trước khi hoàn tất hóa đơn.
                   </p>
                 </div>
@@ -639,17 +641,17 @@ export function SessionCheckoutPage() {
                       step={1000}
                       value={cashPartInput}
                       onChange={(e) => setCashPartInput(e.target.value)}
-                      className="w-full px-4 py-2.5 text-sm font-bold bg-surface/40 border border-border rounded-xl text-text focus:outline-hidden focus:ring-2 focus:ring-primary/20"
+                      className="w-full px-3.5 py-2.5 text-sm font-bold tabular-nums bg-card border border-border rounded-md text-text focus:outline-hidden focus:ring-2 focus:ring-accent"
                     />
                   </div>
-                  <div className="p-3.5 rounded-xl bg-surface/50 border border-border flex items-center justify-between">
+                  <div className="p-3.5 rounded-md bg-surface/40 border border-border flex items-center justify-between">
                     <span className="text-xs font-medium text-muted">Chuyển khoản còn lại:</span>
-                    <span className="text-base font-bold text-primary">
+                    <span className="text-base font-bold text-primary tabular-nums">
                       {transferPart.toLocaleString('vi-VN')} đ
                     </span>
                   </div>
                   {!isSplitValid && (
-                    <p className="text-xs text-red-500 font-medium">
+                    <p className="text-xs text-status-cancelled font-medium">
                       Tổng tiền mặt và chuyển khoản phải bằng đúng{' '}
                       {totalAmount.toLocaleString('vi-VN')} đ.
                     </p>
@@ -658,7 +660,7 @@ export function SessionCheckoutPage() {
               )}
 
               {/* Confirm Actions */}
-              <div className="pt-2 space-y-2.5">
+              <div className="pt-2 space-y-2">
                 <Button
                   type="button"
                   variant="primary"
@@ -668,10 +670,10 @@ export function SessionCheckoutPage() {
                     (activeTab === 'SPLIT' && !isSplitValid) ||
                     (activeTab === 'CASH' && cashTendered !== null && cashTendered < totalAmount)
                   }
-                  className="w-full py-3.5 text-sm font-bold bg-primary hover:bg-primary-hover text-white gap-2 shadow-sm"
+                  className="w-full h-11 text-sm font-semibold gap-2"
                 >
                   <Printer className="w-4 h-4" />
-                  {checkoutMutation.isPending ? 'Đang xử lý...' : 'Xác nhận & In hóa đơn'}
+                  Xác nhận &amp; In hóa đơn
                 </Button>
 
                 <Button
@@ -683,7 +685,7 @@ export function SessionCheckoutPage() {
                     (activeTab === 'SPLIT' && !isSplitValid) ||
                     (activeTab === 'CASH' && cashTendered !== null && cashTendered < totalAmount)
                   }
-                  className="w-full py-3 text-sm font-semibold gap-2"
+                  className="w-full h-11 text-sm font-semibold gap-2"
                 >
                   <CheckCircle className="w-4 h-4" />
                   Xác nhận thanh toán (Không in)

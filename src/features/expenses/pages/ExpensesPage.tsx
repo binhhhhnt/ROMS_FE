@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { Banknote, CheckCircle2, XCircle, TrendingDown } from 'lucide-react'
+import { Badge } from '@/shared/components/ui/badge'
 import { expenseApi } from '@/features/expenses/api/expenseApi'
 import { getApiErrorMessage } from '@/shared/lib/axios'
 import { ExpenseFilterBar } from '@/features/expenses/components/ExpenseFilterBar'
@@ -147,66 +148,57 @@ export function ExpensesPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6 text-left max-w-7xl mx-auto">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-text tracking-tight flex items-center gap-2">
-            Quản lý Chi phí
-          </h1>
-          <p className="text-xs text-muted mt-1">
-            Ghi nhận và quản lý các khoản chi phí phát sinh trong quá trình vận hành nhà hàng.
-          </p>
-        </div>
+    <div className="flex flex-col gap-5 text-left max-w-7xl mx-auto">
+      {/* Tầng 1: Page Header */}
+      <div className="pb-3 border-b border-border">
+        <h1 className="text-xl font-bold text-text tracking-tight">
+          Quản lý chi phí
+        </h1>
+        <p className="text-xs text-muted mt-0.5">
+          Ghi nhận và quản lý các khoản chi phí phát sinh trong quá trình vận hành nhà hàng.
+        </p>
       </div>
 
       {/* Summary KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-card border border-border rounded-xl p-4 shadow-xs flex items-center justify-between">
+        <div className="bg-card border border-border rounded-lg p-4 flex items-center justify-between">
           <div>
             <span className="text-xs text-muted font-medium">Tổng chi trên trang hiện tại</span>
-            <div className="text-xl font-bold font-mono text-status-cancelled mt-1">
+            <div className="text-xl font-bold tabular-nums text-status-cancelled mt-1">
               {formatVND(stats.activeTotalAmount)}
             </div>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-status-cancelled/10 text-status-cancelled flex items-center justify-center">
-            <TrendingDown className="w-5 h-5" />
-          </div>
+          <TrendingDown className="w-5 h-5 text-status-cancelled/60 shrink-0" />
         </div>
 
-        <div className="bg-card border border-border rounded-xl p-4 shadow-xs flex items-center justify-between">
+        <div className="bg-card border border-border rounded-lg p-4 flex items-center justify-between">
           <div>
             <span className="text-xs text-muted font-medium">Tổng số khoản chi (Toàn hệ thống)</span>
-            <div className="text-xl font-bold font-mono text-primary mt-1">
+            <div className="text-xl font-bold tabular-nums text-primary mt-1">
               {stats.totalCount} <span className="text-xs font-normal text-muted">khoản</span>
             </div>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-            <Banknote className="w-5 h-5" />
-          </div>
+          <Banknote className="w-5 h-5 text-primary/60 shrink-0" />
         </div>
 
-        <div className="bg-card border border-border rounded-xl p-4 shadow-xs flex items-center justify-between">
+        <div className="bg-card border border-border rounded-lg p-4 flex items-center justify-between">
           <div>
             <span className="text-xs text-muted font-medium">Trạng thái (Trên trang)</span>
-            <div className="text-sm font-semibold text-text mt-1 flex items-center gap-3">
-              <span className="text-status-ready flex items-center gap-1 text-xs">
-                <CheckCircle2 className="w-3.5 h-3.5" /> {stats.activeCount} Hoạt động
-              </span>
-              <span className="text-status-cancelled flex items-center gap-1 text-xs">
-                <XCircle className="w-3.5 h-3.5" /> {stats.cancelledCount} Đã hủy
-              </span>
+            <div className="mt-1.5 flex items-center gap-2">
+              <Badge variant="ready">
+                <CheckCircle2 className="w-3 h-3" /> {stats.activeCount} Hoạt động
+              </Badge>
+              <Badge variant="cancelled">
+                <XCircle className="w-3 h-3" /> {stats.cancelledCount} Đã hủy
+              </Badge>
             </div>
-          </div>
-          <div className="w-10 h-10 rounded-xl bg-surface text-accent flex items-center justify-center">
-            <CheckCircle2 className="w-5 h-5" />
           </div>
         </div>
       </div>
 
       {/* Error state */}
       {isError && (
-        <div className="p-4 rounded-xl bg-status-cancelled/10 border border-status-cancelled/30 text-status-cancelled text-xs">
+        <div className="p-3.5 rounded-lg bg-card border border-border border-l-4 border-l-status-cancelled text-status-cancelled text-xs">
           Có lỗi khi tải danh sách chi phí: {getApiErrorMessage(error)}
         </div>
       )}

@@ -153,7 +153,7 @@ export function CreateInventoryCheckModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-card border border-border rounded-2xl p-6 max-w-4xl w-full max-h-[90vh] shadow-2xl flex flex-col gap-4 text-left overflow-hidden">
+      <div className="bg-card border border-border rounded-2xl p-4 sm:p-6 max-w-4xl w-full max-h-[90vh] shadow-2xl flex flex-col gap-4 text-left overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-border shrink-0">
           <div className="flex items-center gap-2.5">
@@ -245,8 +245,8 @@ export function CreateInventoryCheckModal({
           </div>
 
           {/* Items Table */}
-          <div className="border border-border rounded-xl overflow-hidden shrink-0">
-            <table className="w-full text-left text-xs">
+          <div className="border border-border rounded-xl overflow-x-auto shrink-0">
+            <table className="w-full min-w-[640px] text-left text-xs">
               <thead className="bg-surface/60 border-b border-border uppercase font-semibold text-primary">
                 <tr>
                   <th className="py-2.5 px-3">Nguyên liệu</th>

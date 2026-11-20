@@ -25,18 +25,16 @@ export function ProfilePage({ defaultTab = 'profile' }: ProfilePageProps) {
       </div>
 
       {/* Main Card */}
-      <div className="bg-card border border-border shadow-xl rounded-xl p-6 sm:p-8">
+      <div className="bg-card border border-border rounded-lg p-6 sm:p-8">
         {/* Header */}
-        <div className="flex items-center gap-4 pb-6 border-b border-border">
-          <div className="w-12 h-12 rounded-xl bg-surface flex items-center justify-center text-primary shadow-inner shrink-0">
-            <UserCog className="w-6 h-6 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold text-text">Thiết lập tài khoản cá nhân</h1>
-            <p className="text-xs text-muted mt-0.5">
-              Quản lý thông tin hồ sơ và bảo mật tài khoản người dùng ROMS.
-            </p>
-          </div>
+        <div className="pb-5 border-b border-border">
+          <h1 className="text-lg font-bold text-text flex items-center gap-2">
+            <UserCog className="w-5 h-5 text-primary" />
+            Thiết lập tài khoản cá nhân
+          </h1>
+          <p className="text-xs text-muted mt-1">
+            Quản lý thông tin hồ sơ và bảo mật tài khoản người dùng ROMS.
+          </p>
         </div>
 
         {/* Tab Switcher */}

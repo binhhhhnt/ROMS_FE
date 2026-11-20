@@ -1,7 +1,7 @@
 import { Utensils, ArrowRight, CheckCircle2, X } from 'lucide-react'
 import { useEffect, useRef, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { kitchenApi } from '@/features/kitchen/api/kitchenApi'
 import { useReadyDishesStore, type ReadyDishItem } from '../store/readyDishesStore'
 import { subscribeToTopic } from '@/shared/lib/stomp'
@@ -20,6 +20,7 @@ export function ReadyDishesPanel({
   onClose,
 }: ReadyDishesPanelProps) {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { readyItems, setReadyOrders, addReadyDish, removeReadyDish } = useReadyDishesStore()
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
@@ -46,11 +47,21 @@ export function ReadyDishesPanel({
 
   // 2. Lắng nghe WebSocket STOMP
   useEffect(() => {
+    const invalidateOrderCaches = () => {
+      queryClient.invalidateQueries({ queryKey: ['sessionOrders'] })
+      queryClient.invalidateQueries({ queryKey: ['orders', 'staff'] })
+      queryClient.invalidateQueries({ queryKey: ['billPreview'] })
+      queryClient.invalidateQueries({ queryKey: ['tableDetail'] })
+      queryClient.invalidateQueries({ queryKey: ['tablesOverview'] })
+      queryClient.invalidateQueries({ queryKey: ['tablesOverviewReadyOrders'] })
+    }
+
     // Topic Bếp ra món & cập nhật món đã bưng/hủy: /topic/service/ready-dishes
     const unsubReady = subscribeToTopic<ReadyDishItem>(
       '/topic/service/ready-dishes',
       (data) => {
         if (!data || !data.orderItemId) return
+        invalidateOrderCaches()
         if (data.status === 'COMPLETED' || data.status === 'CANCELLED') {
           removeReadyDish(data.orderItemId)
           return
@@ -67,6 +78,7 @@ export function ReadyDishesPanel({
       '/topic/kitchen/orders',
       (event) => {
         if (!event) return
+        invalidateOrderCaches()
         // Nếu là event thay đổi item status sang COMPLETED hoặc CANCELLED
         if (
           event.orderItemId &&
@@ -81,7 +93,7 @@ export function ReadyDishesPanel({
       unsubReady()
       unsubKitchen()
     }
-  }, [addReadyDish, removeReadyDish])
+  }, [addReadyDish, removeReadyDish, queryClient])
 
   // Gom các món sẵn sàng theo từng bàn và sắp xếp theo thời gian món mới nhất
   const groupedByTable = useMemo(() => {
@@ -160,7 +172,7 @@ export function ReadyDishesPanel({
             onClick={onClose}
             aria-hidden="true"
           />
-          <div className="absolute right-0 top-full mt-2 w-88 bg-card border border-border rounded-xl shadow-2xl z-50 overflow-hidden animate-in fade-in-50 duration-200">
+          <div className="fixed inset-x-3 top-16 mt-2 sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-88 bg-card border border-border rounded-xl shadow-2xl z-50 overflow-hidden animate-in fade-in-50 duration-200">
             {/* Header của Panel */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-surface">
               <div className="flex items-center gap-2">

@@ -73,6 +73,7 @@ export const ERROR_CODE_MESSAGES: Record<string, string> = {
   INVALID_RETURN_QUANTITY: 'Số lượng trả món không hợp lệ.',
   RETURN_EXCEEDS_QUANTITY: 'Số lượng trả vượt quá số lượng đã gọi.',
   NOT_DIRECT_SALE: 'Chỉ có thể trả các món bán trực tiếp.',
+  ITEM_NOT_COMPLETED: 'Chỉ có thể trả món khi món đã ở trạng thái hoàn tất phục vụ.',
   ITEM_CANCELLED: 'Món này đã được hủy trước đó.',
 
   // 6. Thanh toán, Hóa đơn, Thuế & Khuyến mãi
@@ -118,8 +119,10 @@ const PATTERN_TRANSLATIONS: Array<[RegExp, string]> = [
   [/startdate cannot be after enddate/i, 'Ngày kết thúc không được trước ngày bắt đầu.'],
   [/access is denied|forbidden|is not permitted|cannot .* order|only .* can /i, 'Bạn không có quyền thực hiện thao tác này.'],
   [/unauthorized|authentication required/i, 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.'],
-  [/must not be blank|must not be empty|must not be null|is required/i, 'Vui lòng nhập đầy đủ thông tin bắt buộc.'],
+  [/must not be blank|must not be empty|must not be null|cannot be blank|cannot be empty|cannot be null|is required/i, 'Vui lòng nhập đầy đủ thông tin bắt buộc.'],
+  [/must not exceed|cannot exceed/i, 'Dữ liệu nhập vào vượt quá độ dài cho phép.'],
   [/must be positive|must be greater than 0/i, 'Giá trị nhập vào phải lớn hơn 0.'],
+  [/must be at least|must be >=|greater than or equal to/i, 'Giá trị nhập vào không hợp lệ.'],
   [/network error|failed to fetch|timeout/i, 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại đường truyền mạng.'],
   [/unexpected internal server error/i, SYSTEM_ERROR_MESSAGE],
 ]
@@ -217,4 +220,12 @@ export function resolveApiErrorMessage(error: unknown): string {
   }
 
   return SYSTEM_ERROR_MESSAGE
+}
+
+export function getApiErrorCode(error: unknown): string | undefined {
+  if (!axios.isAxiosError(error)) return undefined
+  const responseData = error.response?.data as
+    | { errorCode?: string; code?: string; error?: { code?: string } }
+    | undefined
+  return responseData?.error?.code || responseData?.errorCode || responseData?.code
 }

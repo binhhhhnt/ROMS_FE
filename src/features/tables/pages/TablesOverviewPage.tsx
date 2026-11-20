@@ -69,6 +69,8 @@ export function TablesOverviewPage({ initialActiveOnly = true }: TablesOverviewP
     queryKey: ['tablesOverview'],
     queryFn: () => tableApi.getTables({ size: 100 }),
     refetchInterval: 10000, // Poll every 10s for real-time table state
+    staleTime: 0,
+    refetchOnMount: 'always',
   })
 
   // Fetch areas
@@ -242,32 +244,25 @@ export function TablesOverviewPage({ initialActiveOnly = true }: TablesOverviewP
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
-              <Layers className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold tracking-tight text-text">
-                Sơ đồ bàn & Trạng thái phục vụ
-              </h1>
-              <p className="text-xs text-muted">
-                Theo dõi trạng thái thời gian thực, mở bàn đón khách, chuyển bàn và đóng phiên.
-              </p>
-            </div>
-          </div>
+    <div className="flex flex-col gap-5">
+      {/* Tầng 1: Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-border">
+        <div className="min-w-0">
+          <h1 className="text-xl font-bold tracking-tight text-text">
+            Sơ đồ bàn &amp; Trạng thái phục vụ
+          </h1>
+          <p className="text-xs text-muted mt-0.5">
+            Theo dõi trạng thái thời gian thực, mở bàn đón khách, chuyển bàn và đóng phiên.
+          </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2 shrink-0">
           <Button
             variant="outline"
             size="sm"
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="text-xs"
+            className="h-9 px-3 text-xs"
           >
             <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${isRefreshing ? 'animate-spin' : ''}`} />
             Làm mới
@@ -281,58 +276,60 @@ export function TablesOverviewPage({ initialActiveOnly = true }: TablesOverviewP
                 setTableToEdit(null)
                 setIsTableModalOpen(true)
               }}
-              className="text-xs shadow-md font-semibold"
+              className="h-9 px-3.5 text-xs font-semibold"
             >
-              <Plus className="w-4 h-4 mr-1.5" />
+              <Plus className="w-4 h-4 mr-1" />
               Thêm bàn mới
             </Button>
           )}
         </div>
       </div>
 
-      {/* KPI Chips */}
+      {/* KPI Chips (Nền trắng phẳng, số liệu tabular-nums) */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="p-4 bg-card border border-border rounded-xl shadow-xs flex items-center justify-between text-left">
+        <div className="p-4 bg-card border border-border rounded-lg flex items-center justify-between text-left">
           <div>
-            <span className="text-[11px] text-muted block uppercase font-medium">Tổng số bàn</span>
-            <span className="text-2xl font-black text-text">{totalTables}</span>
+            <span className="text-xs text-muted block font-medium">Tổng số bàn</span>
+            <span className="text-2xl font-bold font-mono text-text tabular-nums mt-0.5 block">
+              {totalTables}
+            </span>
           </div>
-          <Layers className="w-7 h-7 text-muted/40" />
+          <Layers className="w-5 h-5 text-muted/50 shrink-0" />
         </div>
 
-        <div className="p-4 bg-status-cooking/10 border border-status-cooking/20 rounded-xl shadow-xs flex items-center justify-between text-left">
+        <div className="p-4 bg-card border border-border rounded-lg flex items-center justify-between text-left">
           <div>
-            <span className="text-[11px] text-status-cooking block uppercase font-medium">
-              Đang phục vụ
+            <span className="text-xs text-muted block font-medium">Đang phục vụ</span>
+            <span className="text-2xl font-bold font-mono text-status-cooking tabular-nums mt-0.5 block">
+              {occupiedCount}
             </span>
-            <span className="text-2xl font-black text-status-cooking">{occupiedCount}</span>
           </div>
-          <Clock className="w-7 h-7 text-status-cooking/40" />
+          <Clock className="w-5 h-5 text-status-cooking/60 shrink-0" />
         </div>
 
-        <div className="p-4 bg-status-completed/10 border border-status-completed/20 rounded-xl shadow-xs flex items-center justify-between text-left">
+        <div className="p-4 bg-card border border-border rounded-lg flex items-center justify-between text-left">
           <div>
-            <span className="text-[11px] text-status-completed block uppercase font-medium">
-              Bàn trống
+            <span className="text-xs text-muted block font-medium">Bàn trống</span>
+            <span className="text-2xl font-bold font-mono text-status-completed tabular-nums mt-0.5 block">
+              {emptyCount}
             </span>
-            <span className="text-2xl font-black text-status-completed">{emptyCount}</span>
           </div>
-          <CheckCircle2 className="w-7 h-7 text-status-completed/40" />
+          <CheckCircle2 className="w-5 h-5 text-status-completed/60 shrink-0" />
         </div>
 
-        <div className="p-4 bg-surface/50 border border-border rounded-xl shadow-xs flex items-center justify-between text-left">
+        <div className="p-4 bg-card border border-border rounded-lg flex items-center justify-between text-left">
           <div>
-            <span className="text-[11px] text-muted block uppercase font-medium">
-              Tạm ngừng / Bảo trì
+            <span className="text-xs text-muted block font-medium">Tạm ngừng</span>
+            <span className="text-2xl font-bold font-mono text-muted tabular-nums mt-0.5 block">
+              {outOfServiceCount}
             </span>
-            <span className="text-2xl font-black text-muted">{outOfServiceCount}</span>
           </div>
-          <AlertTriangle className="w-7 h-7 text-muted/40" />
+          <AlertTriangle className="w-5 h-5 text-muted/50 shrink-0" />
         </div>
       </div>
 
-      {/* Filters Toolbar */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 p-4 bg-card border border-border rounded-xl shadow-xs">
+      {/* Tầng 2: Filters Toolbar */}
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 p-3.5 bg-card border border-border rounded-lg">
         {/* Search by code */}
         <div className="relative">
           <Input
@@ -347,7 +344,7 @@ export function TablesOverviewPage({ initialActiveOnly = true }: TablesOverviewP
         <div className="flex items-center gap-2">
           <Filter className="w-4 h-4 text-muted shrink-0" />
           <select
-            className="flex h-10 w-full rounded-lg border border-border bg-card px-3 py-2 text-xs text-text shadow-xs focus:outline-hidden focus:ring-2 focus:ring-accent"
+            className="flex h-10 w-full rounded-md border border-border bg-card px-3 py-2 text-xs text-text focus:outline-hidden focus:ring-2 focus:ring-accent"
             value={selectedArea}
             onChange={(e) => setSelectedArea(e.target.value)}
           >
@@ -363,7 +360,7 @@ export function TablesOverviewPage({ initialActiveOnly = true }: TablesOverviewP
         {/* Filter Status */}
         <div>
           <select
-            className="flex h-10 w-full rounded-lg border border-border bg-card px-3 py-2 text-xs text-text shadow-xs focus:outline-hidden focus:ring-2 focus:ring-accent"
+            className="flex h-10 w-full rounded-md border border-border bg-card px-3 py-2 text-xs text-text focus:outline-hidden focus:ring-2 focus:ring-accent"
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
           >
@@ -375,7 +372,7 @@ export function TablesOverviewPage({ initialActiveOnly = true }: TablesOverviewP
         </div>
 
         {/* View Mode Toggle */}
-        <div className="flex items-center justify-end gap-1">
+        <div className="flex items-center justify-start sm:justify-end gap-1.5">
           <Button
             variant={viewMode === 'grid' ? 'primary' : 'outline'}
             size="sm"
@@ -399,14 +396,14 @@ export function TablesOverviewPage({ initialActiveOnly = true }: TablesOverviewP
         </div>
       </div>
 
-      {/* Main Display Area */}
+      {/* Tầng 3: Main Display Area */}
       {isLoading ? (
         <div className="py-16 text-center text-muted">
           <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-2" />
           Đang tải dữ liệu bàn ăn...
         </div>
       ) : filteredTables.length === 0 ? (
-        <div className="py-16 text-center text-muted bg-card border border-border rounded-xl">
+        <div className="py-16 text-center text-muted bg-card border border-border rounded-lg">
           Không tìm thấy bàn nào phù hợp với bộ lọc hiện tại.
         </div>
       ) : viewMode === 'grid' ? (
@@ -431,11 +428,11 @@ export function TablesOverviewPage({ initialActiveOnly = true }: TablesOverviewP
           ))}
         </div>
       ) : (
-        <div className="bg-card border border-border shadow-md rounded-xl overflow-hidden">
+        <div className="bg-card border border-border rounded-lg overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
+            <table className="w-full min-w-[680px] text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-border bg-surface/60 text-muted uppercase tracking-wider font-semibold">
+                <tr className="border-b border-border bg-surface/60 text-muted font-medium">
                   <th className="py-3 px-4 whitespace-nowrap">Mã bàn</th>
                   <th className="py-3 px-4 whitespace-nowrap">Sức chứa</th>
                   <th className="py-3 px-4 whitespace-nowrap">Khu vực</th>
@@ -450,57 +447,45 @@ export function TablesOverviewPage({ initialActiveOnly = true }: TablesOverviewP
                   const isOccupied = t.realtimeStatus === 'OCCUPIED'
                   const isEmpty = t.realtimeStatus === 'EMPTY' && t.isActive
                   return (
-                    <tr key={t.id} className="hover:bg-surface/40 transition-colors">
+                    <tr key={t.id} className="hover:bg-muted-bg/50 transition-colors">
                       <td className="py-3.5 px-4 whitespace-nowrap">
-                        <span className="font-bold text-sm text-text uppercase">
+                        <span className="font-semibold text-sm text-text">
                           Bàn {t.tableCode}
                         </span>
                       </td>
                       <td className="py-3.5 px-4 text-muted whitespace-nowrap">
                         {t.capacity} người
                       </td>
-                      <td className="py-3.5 px-4 whitespace-nowrap">
-                        {t.area ? (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-surface border border-border text-[11px] text-text font-medium">
-                            {t.area}
-                          </span>
-                        ) : (
-                          <span className="text-muted">—</span>
-                        )}
+                      <td className="py-3.5 px-4 whitespace-nowrap text-text">
+                        {t.area || <span className="text-muted">—</span>}
                       </td>
                       <td className="py-3.5 px-4 whitespace-nowrap">
                         <div className="flex items-center gap-1.5">
                           {isOccupied ? (
                             <Badge variant="cooking" className="whitespace-nowrap">
+                              <span className="w-2 h-2 rounded-full bg-status-cooking shrink-0" />
                               Đang phục vụ
                             </Badge>
                           ) : isEmpty ? (
                             <Badge variant="completed" className="whitespace-nowrap">
+                              <span className="w-2 h-2 rounded-full bg-status-completed shrink-0" />
                               Bàn trống
                             </Badge>
                           ) : (
-                            <Badge variant="secondary" className="whitespace-nowrap">
+                            <Badge variant="outline" className="text-muted whitespace-nowrap">
                               Bảo trì
                             </Badge>
                           )}
                           {isOccupied && readyCount > 0 && (
-                            <Badge
-                              variant="ready"
-                              className="bg-status-ready text-white animate-pulse whitespace-nowrap"
-                            >
+                            <Badge variant="ready" className="whitespace-nowrap">
+                              <span className="w-2 h-2 rounded-full bg-status-ready shrink-0" />
                               {readyCount} món cần bưng
                             </Badge>
                           )}
                         </div>
                       </td>
-                      <td className="py-3.5 px-4 font-mono text-muted whitespace-nowrap">
-                        {t.activeSessionId ? (
-                          <span className="px-2 py-0.5 rounded bg-surface border border-border text-text text-[11px] font-semibold">
-                            #{t.activeSessionId}
-                          </span>
-                        ) : (
-                          '—'
-                        )}
+                      <td className="py-3.5 px-4 font-mono text-text whitespace-nowrap">
+                        {t.activeSessionId ? `#${t.activeSessionId}` : '—'}
                       </td>
                       <td className="py-3.5 px-4 text-right whitespace-nowrap">
                         <div className="flex items-center justify-end gap-2">
@@ -517,7 +502,7 @@ export function TablesOverviewPage({ initialActiveOnly = true }: TablesOverviewP
                               variant="primary"
                               size="sm"
                               onClick={() => navigateToCheckout(t)}
-                              className="h-8 px-3 text-xs bg-primary hover:bg-primary-hover text-white font-semibold"
+                              className="h-8 px-3 text-xs font-semibold"
                             >
                               Thanh toán
                             </Button>

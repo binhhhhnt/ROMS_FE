@@ -1,4 +1,4 @@
-import { ArrowDownLeft, ArrowUpRight, Scale } from 'lucide-react'
+import { ArrowDownLeft, ArrowUpRight, Scale, RotateCcw } from 'lucide-react'
 import type { StockMovementType } from '@/features/inventory/types/stockMovement.types'
 import { Badge } from '@/shared/components/ui/badge'
 
@@ -36,6 +36,16 @@ export function MovementTypeBadge({ type }: MovementTypeBadgeProps) {
         >
           <Scale className="w-3.5 h-3.5" />
           <span>Điều chỉnh kiểm kê</span>
+        </Badge>
+      )
+    case 'ORDER_RETURN':
+      return (
+        <Badge
+          variant="outline"
+          className="border-accent text-accent bg-accent/10 flex items-center gap-1 font-medium"
+        >
+          <RotateCcw className="w-3.5 h-3.5" />
+          <span>Hoàn trả kiểm đồ</span>
         </Badge>
       )
     default:

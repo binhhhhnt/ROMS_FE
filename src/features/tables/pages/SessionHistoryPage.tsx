@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { History, RefreshCw, Filter } from 'lucide-react'
+import { RefreshCw, Filter } from 'lucide-react'
 
 import { tableApi } from '@/features/tables/api/tableApi'
 import type { ServiceSessionStatus } from '@/features/tables/types/table.types'
@@ -28,21 +28,16 @@ export function SessionHistoryPage() {
   const totalElements = data?.totalElements || 0
 
   return (
-    <div className="flex flex-col gap-6 text-left">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border">
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
-            <History className="w-5 h-5 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold tracking-tight text-text">
-              Lịch sử phiên phục vụ
-            </h1>
-            <p className="text-xs text-muted">
-              Tra cứu toàn bộ các phiên phục vụ tại bàn, thời gian mở/đóng và người phụ trách.
-            </p>
-          </div>
+    <div className="flex flex-col gap-5 text-left">
+      {/* Tầng 1: Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-border">
+        <div className="min-w-0">
+          <h1 className="text-xl font-bold tracking-tight text-text">
+            Lịch sử phiên phục vụ
+          </h1>
+          <p className="text-xs text-muted mt-0.5">
+            Tra cứu toàn bộ các phiên phục vụ tại bàn, thời gian mở/đóng và người phụ trách.
+          </p>
         </div>
 
         <Button
@@ -50,18 +45,18 @@ export function SessionHistoryPage() {
           size="sm"
           onClick={() => refetch()}
           disabled={isFetching}
-          className="text-xs"
+          className="h-9 px-3 text-xs shrink-0 self-start sm:self-auto"
         >
           <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${isFetching ? 'animate-spin' : ''}`} />
           Làm mới
         </Button>
       </div>
 
-      {/* Filter Toolbar */}
-      <div className="flex items-center gap-3 p-4 bg-card border border-border rounded-xl shadow-xs">
+      {/* Tầng 2: Filter Toolbar */}
+      <div className="flex items-center gap-3 p-3.5 bg-card border border-border rounded-lg">
         <Filter className="w-4 h-4 text-muted shrink-0" />
         <select
-          className="flex h-10 w-48 rounded-lg border border-border bg-card px-3 py-2 text-xs text-text shadow-xs focus:outline-hidden focus:ring-2 focus:ring-accent"
+          className="flex h-10 w-full sm:w-56 rounded-md border border-border bg-card px-3 py-2 text-xs text-text focus:outline-hidden focus:ring-2 focus:ring-accent"
           value={statusFilter}
           onChange={(e) => {
             setStatusFilter((e.target.value as ServiceSessionStatus) || '')
@@ -74,89 +69,99 @@ export function SessionHistoryPage() {
         </select>
       </div>
 
-      {/* Sessions Table */}
-      <div className="bg-card border border-border shadow-md rounded-xl overflow-hidden">
-        <table className="w-full text-left text-xs border-collapse">
-          <thead>
-            <tr className="border-b border-border bg-surface/50 text-muted uppercase tracking-wider font-semibold">
-              <th className="py-3 px-4">Mã phiên</th>
-              <th className="py-3 px-4">Bàn ăn</th>
-              <th className="py-3 px-4">Trạng thái</th>
-              <th className="py-3 px-4">Thời gian mở</th>
-              <th className="py-3 px-4">Người mở</th>
-              <th className="py-3 px-4">Thời gian đóng</th>
-              <th className="py-3 px-4">Người đóng</th>
-              <th className="py-3 px-4 text-right">Thao tác</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {isLoading ? (
-              <tr>
-                <td colSpan={8} className="py-12 text-center text-muted">
-                  <div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-                  Đang tải lịch sử phiên...
-                </td>
+      {/* Tầng 3: Sessions Table */}
+      <div className="bg-card border border-border rounded-lg overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[680px] text-left text-xs border-collapse">
+            <thead>
+              <tr className="border-b border-border bg-surface/60 text-muted font-medium">
+                <th className="py-3 px-4 whitespace-nowrap">Mã phiên</th>
+                <th className="py-3 px-4 whitespace-nowrap">Bàn ăn</th>
+                <th className="py-3 px-4 whitespace-nowrap">Trạng thái</th>
+                <th className="py-3 px-4 whitespace-nowrap">Thời gian mở</th>
+                <th className="py-3 px-4 whitespace-nowrap">Người mở</th>
+                <th className="py-3 px-4 whitespace-nowrap">Thời gian đóng</th>
+                <th className="py-3 px-4 whitespace-nowrap">Người đóng</th>
+                <th className="py-3 px-4 text-right whitespace-nowrap">Thao tác</th>
               </tr>
-            ) : sessions.length === 0 ? (
-              <tr>
-                <td colSpan={8} className="py-10 text-center text-muted">
-                  Không có phiên phục vụ nào trong hệ thống.
-                </td>
-              </tr>
-            ) : (
-              sessions.map((s) => (
-                <tr key={s.id} className="hover:bg-surface/30 transition-colors">
-                  <td className="py-3 px-4 font-mono font-bold text-primary">#{s.id}</td>
-                  <td className="py-3 px-4 font-semibold text-text uppercase">
-                    Bàn {s.tableCode}
-                  </td>
-                  <td className="py-3 px-4">
-                    {s.status === 'ACTIVE' ? (
-                      <Badge variant="cooking">Đang phục vụ</Badge>
-                    ) : (
-                      <Badge variant="completed">Đã đóng</Badge>
-                    )}
-                  </td>
-                  <td className="py-3 px-4 text-muted">
-                    {new Date(s.openedAt).toLocaleString('vi-VN')}
-                  </td>
-                  <td className="py-3 px-4 text-text font-medium">{s.openedByName || '-'}</td>
-                  <td className="py-3 px-4 text-muted">
-                    {s.closedAt ? new Date(s.closedAt).toLocaleString('vi-VN') : '-'}
-                  </td>
-                  <td className="py-3 px-4 text-text font-medium">{s.closedByName || '-'}</td>
-                  <td className="py-3 px-4 text-right">
-                    <Link
-                      to={`/sessions/${s.id}`}
-                      className="inline-flex items-center text-xs font-semibold text-primary hover:underline"
-                    >
-                      Chi tiết &rarr;
-                    </Link>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {isLoading ? (
+                <tr>
+                  <td colSpan={8} className="py-12 text-center text-muted">
+                    <div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                    Đang tải lịch sử phiên...
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : sessions.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="py-10 text-center text-muted">
+                    Không có phiên phục vụ nào trong hệ thống.
+                  </td>
+                </tr>
+              ) : (
+                sessions.map((s) => (
+                  <tr key={s.id} className="hover:bg-muted-bg/50 transition-colors">
+                    <td className="py-3 px-4 font-mono font-semibold text-text whitespace-nowrap">
+                      #{s.id}
+                    </td>
+                    <td className="py-3 px-4 font-semibold text-text whitespace-nowrap">
+                      Bàn {s.tableCode}
+                    </td>
+                    <td className="py-3 px-4 whitespace-nowrap">
+                      {s.status === 'ACTIVE' ? (
+                        <Badge variant="cooking">
+                          <span className="w-2 h-2 rounded-full bg-status-cooking shrink-0" />
+                          Đang phục vụ
+                        </Badge>
+                      ) : (
+                        <Badge variant="completed">Đã đóng</Badge>
+                      )}
+                    </td>
+                    <td className="py-3 px-4 text-muted tabular-nums whitespace-nowrap">
+                      {new Date(s.openedAt).toLocaleString('vi-VN')}
+                    </td>
+                    <td className="py-3 px-4 text-text font-medium whitespace-nowrap">
+                      {s.openedByName || '—'}
+                    </td>
+                    <td className="py-3 px-4 text-muted tabular-nums whitespace-nowrap">
+                      {s.closedAt ? new Date(s.closedAt).toLocaleString('vi-VN') : '—'}
+                    </td>
+                    <td className="py-3 px-4 text-text font-medium whitespace-nowrap">
+                      {s.closedByName || '—'}
+                    </td>
+                    <td className="py-3 px-4 text-right whitespace-nowrap">
+                      <Link to={`/sessions/${s.id}`}>
+                        <Button variant="outline" size="sm" className="h-8 px-2.5 text-xs">
+                          Chi tiết
+                        </Button>
+                      </Link>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="p-4 border-t border-border flex items-center justify-between bg-surface/20 text-xs">
+          <div className="px-4 py-3 border-t border-border flex items-center justify-between bg-card text-xs">
             <span className="text-muted">
-              Tổng số: <strong>{totalElements}</strong> phiên phục vụ
+              Tổng số: <strong className="text-text">{totalElements}</strong> phiên phục vụ
             </span>
 
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
               <Button
                 variant="outline"
                 size="sm"
                 disabled={page === 0}
                 onClick={() => setPage((p) => Math.max(0, p - 1))}
-                className="h-8 px-2"
+                className="h-8 px-2.5"
               >
                 Trước
               </Button>
-              <span className="px-2 font-medium">
+              <span className="px-2 font-mono font-medium tabular-nums">
                 {page + 1} / {totalPages}
               </span>
               <Button
@@ -164,7 +169,7 @@ export function SessionHistoryPage() {
                 size="sm"
                 disabled={page + 1 >= totalPages}
                 onClick={() => setPage((p) => p + 1)}
-                className="h-8 px-2"
+                className="h-8 px-2.5"
               >
                 Sau
               </Button>

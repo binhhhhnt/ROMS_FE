@@ -182,22 +182,20 @@ export function KitchenMenuAvailabilityPage() {
 
   return (
     <div className="max-w-7xl mx-auto flex flex-col gap-5">
-      {/* Top Header */}
-      <div className="flex items-center justify-between bg-card px-5 py-4 rounded-xl border border-border shadow-xs">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-black text-text tracking-tight">
-            TRẠNG THÁI MÓN ĂN (MENU AVAILABILITY)
-          </h1>
-          <p className="text-xs text-muted mt-0.5">
-            Bật / tắt nhanh khả năng đặt món tại bếp khi hết nguyên liệu đột xuất hoặc mở bán lại
-          </p>
-        </div>
+      {/* Tầng 1: Top Header */}
+      <div className="pb-3 border-b border-border">
+        <h1 className="text-xl sm:text-2xl font-bold text-text tracking-tight">
+          Trạng thái món ăn (Menu Availability)
+        </h1>
+        <p className="text-xs text-muted mt-0.5">
+          Bật / tắt nhanh khả năng đặt món tại bếp khi hết nguyên liệu đột xuất hoặc mở bán lại
+        </p>
       </div>
 
-      {/* Search and Filters Toolbar */}
-      <div className="bg-card border border-border rounded-2xl p-4 shadow-xs flex flex-col gap-4">
+      {/* Tầng 2: Search and Filters Toolbar */}
+      <div className="bg-card border border-border rounded-lg p-4 flex flex-col gap-3.5">
         {/* Status Tabs */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 border-b border-border">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-2 border-b border-border">
           {statusTabs.map((tab) => {
             const isActive = selectedStatus === tab.value
             return (
@@ -205,21 +203,19 @@ export function KitchenMenuAvailabilityPage() {
                 key={tab.value}
                 type="button"
                 onClick={() => setSelectedStatus(tab.value)}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-colors flex items-center gap-2 cursor-pointer ${
+                className={`px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-2 cursor-pointer border ${
                   isActive
-                    ? 'bg-primary text-white shadow-xs'
-                    : 'text-muted hover:bg-surface hover:text-text'
+                    ? 'bg-primary text-white border-primary'
+                    : 'bg-card text-muted border-border hover:bg-muted-bg hover:text-text'
                 }`}
               >
                 <span>{tab.label}</span>
                 <span
-                  className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
-                    isActive
-                      ? 'bg-white/20 text-white'
-                      : 'bg-surface text-muted'
+                  className={`font-mono text-[11px] tabular-nums ${
+                    isActive ? 'text-white/80' : 'text-muted'
                   }`}
                 >
-                  {tab.count}
+                  ({tab.count})
                 </span>
               </button>
             )
@@ -230,12 +226,12 @@ export function KitchenMenuAvailabilityPage() {
         <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
           <div className="sm:col-span-8 relative">
             <Search className="w-4 h-4 text-muted absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-            <Input
+              <Input
               type="text"
               placeholder="Tìm kiếm theo tên món ăn..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 text-xs h-10 bg-background border-border text-text placeholder:text-muted focus:border-primary"
+              className="pl-9 text-xs h-10"
             />
           </div>
 
@@ -244,7 +240,7 @@ export function KitchenMenuAvailabilityPage() {
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full text-xs h-10 px-3 rounded-xl border border-border bg-background text-text focus:outline-none focus:border-primary"
+              className="w-full text-xs h-10 px-3 rounded-md border border-border bg-card text-text focus:outline-none focus:border-accent"
             >
               <option value="ALL">Tất cả danh mục món</option>
               {categories.map((cat) => (
@@ -257,19 +253,19 @@ export function KitchenMenuAvailabilityPage() {
         </div>
       </div>
 
-      {/* Menu Items Grid */}
+      {/* Tầng 3: Menu Items Grid */}
       {isLoadingMenu ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
             <div
               key={i}
-              className="bg-card border border-border rounded-2xl h-72 animate-pulse shadow-xs"
+              className="bg-card border border-border rounded-lg h-64 animate-pulse"
             />
           ))}
         </div>
       ) : filteredItems.length === 0 ? (
-        <div className="bg-card border border-dashed border-border rounded-2xl p-16 text-center flex flex-col items-center justify-center my-8 shadow-xs">
-          <h3 className="text-base font-bold text-text mb-1">
+        <div className="bg-card border border-dashed border-border rounded-lg p-12 text-center flex flex-col items-center justify-center">
+          <h3 className="text-sm font-semibold text-text mb-1">
             Không tìm thấy món ăn nào
           </h3>
           <p className="text-xs text-muted max-w-sm">
@@ -277,7 +273,7 @@ export function KitchenMenuAvailabilityPage() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {filteredItems.map((item) => (
             <MenuAvailabilityCard
               key={item.id}

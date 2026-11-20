@@ -34,9 +34,9 @@ export function ForgotPasswordForm() {
     setIsLoading(true)
     try {
       const email = values.email.trim()
-      const message = await authApi.forgotPassword({ email })
+      await authApi.forgotPassword({ email })
       setSubmittedEmail(email)
-      toast.success(message || 'Mã xác thực OTP đã được gửi đến email của bạn!')
+      toast.success('Mã xác thực OTP đã được gửi đến email của bạn!')
     } catch (err) {
       const message = getApiErrorMessage(err)
       toast.error(message)
@@ -49,8 +49,8 @@ export function ForgotPasswordForm() {
     if (!submittedEmail) return
     setIsLoading(true)
     try {
-      const message = await authApi.forgotPassword({ email: submittedEmail })
-      toast.success(message || 'Đã gửi lại mã OTP thành công!')
+      await authApi.forgotPassword({ email: submittedEmail })
+      toast.success('Đã gửi lại mã OTP thành công!')
     } catch (err) {
       const message = getApiErrorMessage(err)
       toast.error(message)

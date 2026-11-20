@@ -9,7 +9,7 @@
   --color-accent: #3D92CB;
   --color-accent-hover: #2f75a3;
   --color-card: #FFFFFF;
-  --color-border: #E2E8F0;
+  --color-border: #CBD5E1;
   --color-muted: #64748B;
   --color-muted-bg: #EDF2F7;
 
@@ -25,6 +25,7 @@
   * {
     border-color: var(--color-border);
   }
+
   body {
     background-color: var(--color-background);
     color: var(--color-text);
