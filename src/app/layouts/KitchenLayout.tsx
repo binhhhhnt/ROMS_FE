@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAuthStore } from '@/app/store/authStore'
@@ -8,22 +8,68 @@ import { Button } from '@/shared/components/ui/button'
 import { ChefHat, LogOut, Flame, Layers, CheckCircle2, UtensilsCrossed, BookOpen, LayoutDashboard, Menu, X } from 'lucide-react'
 import { cn } from '@/shared/utils/cn'
 
+const BELL_COOLDOWN_MS = 1000
+const MAX_NOTIFIED_ORDER_IDS = 200
+
 export function KitchenLayout() {
   const { user, clearAuth } = useAuthStore()
   const navigate = useNavigate()
   const location = useLocation()
   const queryClient = useQueryClient()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const lastPlayedAtRef = useRef<number>(0)
+  const notifiedOrderIdsRef = useRef<Set<number>>(new Set())
 
   useEffect(() => {
     setIsMobileMenuOpen(false)
   }, [location.pathname])
 
+  // Khởi tạo audio thông báo order mới vào bếp
+  useEffect(() => {
+    const audio = new Audio('/sounds/bell.mp3')
+    audio.volume = 0.7
+    audio.preload = 'auto'
+    audioRef.current = audio
+  }, [])
+
   // Realtime STOMP Subscription at layout level to keep kitchen queries in sync across tabs
   useEffect(() => {
-    const unsub = subscribeToTopic('/topic/kitchen/orders', () => {
-      queryClient.invalidateQueries({ queryKey: ['kitchen', 'orders'] })
-    })
+    const unsub = subscribeToTopic<Record<string, unknown>>(
+      '/topic/kitchen/orders',
+      (event) => {
+        queryClient.invalidateQueries({ queryKey: ['kitchen', 'orders'] })
+
+        const isNewKitchenOrder =
+          Boolean(event) &&
+          typeof event === 'object' &&
+          typeof event.totalItems === 'number' &&
+          typeof event.orderId === 'number' &&
+          !('oldStatus' in event) &&
+          !('orderItemId' in event)
+
+        if (!isNewKitchenOrder || !audioRef.current) return
+
+        const orderId = event.orderId as number
+        if (notifiedOrderIdsRef.current.has(orderId)) return
+        notifiedOrderIdsRef.current.add(orderId)
+        if (notifiedOrderIdsRef.current.size > MAX_NOTIFIED_ORDER_IDS) {
+          const oldestOrderId = notifiedOrderIdsRef.current.values().next().value
+          if (oldestOrderId !== undefined) {
+            notifiedOrderIdsRef.current.delete(oldestOrderId)
+          }
+        }
+
+        const now = Date.now()
+        if (now - lastPlayedAtRef.current < BELL_COOLDOWN_MS) return
+        lastPlayedAtRef.current = now
+
+        audioRef.current.currentTime = 0
+        audioRef.current.play().catch(() => {
+          // Bỏ qua nếu browser chặn autoplay trước khi có user interaction
+        })
+      }
+    )
 
     return () => {
       unsub()
