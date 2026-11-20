@@ -5,6 +5,8 @@ import { toast } from 'sonner'
 import { Layers, CheckCircle2 } from 'lucide-react'
 
 import { kitchenApi } from '@/features/kitchen/api/kitchenApi'
+import { settingsApi } from '@/features/settings/api/settingsApi'
+import { printKitchenReadyTicketViaBrowser } from '@/features/kitchen/utils/kitchenTicketPrinter'
 import type { OrderItemStatus } from '@/features/ordering/types/ordering.types'
 import { subscribeToTopic } from '@/shared/lib/stomp'
 import { getApiErrorMessage } from '@/shared/lib/axios'
@@ -19,6 +21,8 @@ import { KitchenSummaryTableBreakdown } from '@/features/kitchen/components/Kitc
 export function KitchenSummaryPage() {
   const queryClient = useQueryClient()
   const [selectedMenuItemId, setSelectedMenuItemId] = useState<number | null>(null)
+  const [updatingItemIds, setUpdatingItemIds] = useState<Set<number>>(new Set())
+  const [processingMenuItemIds, setProcessingMenuItemIds] = useState<Set<number>>(new Set())
   const [currentTime, setCurrentTime] = useState<string>(
     new Date().toLocaleTimeString('vi-VN')
   )
@@ -30,6 +34,11 @@ export function KitchenSummaryPage() {
     }, 1000)
     return () => clearInterval(timer)
   }, [])
+
+  const { data: settings } = useQuery({
+    queryKey: ['restaurant-settings'],
+    queryFn: () => settingsApi.getSettings(),
+  })
 
   // Query active kitchen orders
   const { data: orders = [], isLoading } = useQuery({
@@ -140,6 +149,7 @@ export function KitchenSummaryPage() {
     itemId: number,
     targetStatus: OrderItemStatus
   ) => {
+    setUpdatingItemIds((prev) => new Set(prev).add(itemId))
     try {
       const order = orders.find((o) => o.id === orderId)
       const currentItem = order?.items.find((i) => i.id === itemId)
@@ -149,14 +159,36 @@ export function KitchenSummaryPage() {
       }
 
       await kitchenApi.updateOrderItemStatus(orderId, itemId, targetStatus)
+      if (targetStatus === 'READY' && settings?.printReadyTicket !== false && order && currentItem) {
+        printKitchenReadyTicketViaBrowser({
+          tableCode: order.tableCode || `Bàn #${order.tableId}`,
+          orderId: order.id,
+          orderCreatedAt: order.createdAt,
+          items: [
+            {
+              itemName: currentItem.menuItemName,
+              quantity: currentItem.quantity,
+              note: currentItem.note,
+            },
+          ],
+          paperSize: (settings?.readyTicketPaperSize as 'K80' | 'K58' | 'A5') || 'K80',
+        })
+      }
       await queryClient.invalidateQueries({ queryKey: ['kitchen', 'orders'] })
     } catch (err) {
       toast.error(getApiErrorMessage(err))
+    } finally {
+      setUpdatingItemIds((prev) => {
+        const next = new Set(prev)
+        next.delete(itemId)
+        return next
+      })
     }
   }
 
   // Action: Cook all pending portions of a dish
   const handleCookAllDish = async (dish: ConsolidatedDish) => {
+    setProcessingMenuItemIds((prev) => new Set(prev).add(dish.menuItemId))
     try {
       const pendingItems = dish.tableItems.filter((i) => i.status === 'PENDING')
       if (pendingItems.length === 0) {
@@ -170,11 +202,18 @@ export function KitchenSummaryPage() {
       await queryClient.invalidateQueries({ queryKey: ['kitchen', 'orders'] })
     } catch (err) {
       toast.error(getApiErrorMessage(err))
+    } finally {
+      setProcessingMenuItemIds((prev) => {
+        const next = new Set(prev)
+        next.delete(dish.menuItemId)
+        return next
+      })
     }
   }
 
   // Action: Ready ONLY cooking portions of a dish across all tables
   const handleReadyAllDish = async (dish: ConsolidatedDish) => {
+    setProcessingMenuItemIds((prev) => new Set(prev).add(dish.menuItemId))
     try {
       const cookingItems = dish.tableItems.filter((i) => i.status === 'COOKING')
       if (cookingItems.length === 0) {
@@ -184,21 +223,49 @@ export function KitchenSummaryPage() {
       for (const item of cookingItems) {
         await kitchenApi.updateOrderItemStatus(item.orderId, item.itemId, 'READY')
       }
+      if (settings?.printReadyTicket !== false) {
+        const byOrder = new Map<number, typeof cookingItems>()
+        for (const item of cookingItems) {
+          const list = byOrder.get(item.orderId) || []
+          list.push(item)
+          byOrder.set(item.orderId, list)
+        }
+        for (const [ordId, groupItems] of byOrder.entries()) {
+          const ord = orders.find((o) => o.id === ordId)
+          printKitchenReadyTicketViaBrowser({
+            tableCode: ord?.tableCode || groupItems[0]?.tableCode || `Bàn #${ordId}`,
+            orderId: ordId,
+            orderCreatedAt: ord?.createdAt,
+            items: groupItems.map((gi) => ({
+              itemName: dish.menuItemName,
+              quantity: gi.quantity,
+              note: gi.note,
+            })),
+            paperSize: (settings?.readyTicketPaperSize as 'K80' | 'K58' | 'A5') || 'K80',
+          })
+        }
+      }
       toast.success(`Đã ra tất cả (${cookingItems.length} suất đang nấu) món ${dish.menuItemName}!`)
       await queryClient.invalidateQueries({ queryKey: ['kitchen', 'orders'] })
     } catch (err) {
       toast.error(getApiErrorMessage(err))
+    } finally {
+      setProcessingMenuItemIds((prev) => {
+        const next = new Set(prev)
+        next.delete(dish.menuItemId)
+        return next
+      })
     }
   }
 
   return (
-    <div className="max-w-7xl mx-auto flex flex-col gap-5 h-[calc(100vh-6rem)]">
+    <div className="max-w-7xl mx-auto flex flex-col gap-5 lg:h-[calc(100vh-6rem)]">
       {/* Top Header */}
-      <div className="flex items-center justify-between bg-card px-5 py-4 rounded-xl border border-border shadow-xs shrink-0">
-        <div>
-          <div className="flex items-center gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card px-4 sm:px-5 py-4 rounded-xl border border-border shadow-xs shrink-0">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <h1 className="text-xl sm:text-2xl font-black text-text tracking-tight flex items-center gap-2">
-              <Layers className="w-6 h-6 text-primary" />
+              <Layers className="w-6 h-6 text-primary shrink-0" />
               TỔNG HỢP CHẾ BIẾN
             </h1>
             <span className="px-3 py-1 rounded-full text-xs font-black bg-primary text-white">
@@ -275,6 +342,10 @@ export function KitchenSummaryPage() {
                   key={dish.menuItemId}
                   dish={dish}
                   isSelected={dish.menuItemId === selectedMenuItemId}
+                  isProcessing={processingMenuItemIds.has(dish.menuItemId)}
+                  hasUpdatingItems={dish.tableItems.some((item) =>
+                    updatingItemIds.has(item.itemId)
+                  )}
                   onSelect={() => setSelectedMenuItemId(dish.menuItemId)}
                   onCookAll={handleCookAllDish}
                   onReadyAll={handleReadyAllDish}
@@ -287,6 +358,10 @@ export function KitchenSummaryPage() {
           <div className="lg:col-span-7 flex flex-col min-h-0">
             <KitchenSummaryTableBreakdown
               dish={selectedDish}
+              updatingItemIds={updatingItemIds}
+              isDishBatchProcessing={
+                selectedDish ? processingMenuItemIds.has(selectedDish.menuItemId) : false
+              }
               onUpdateItemStatus={handleUpdateItemStatus}
             />
           </div>

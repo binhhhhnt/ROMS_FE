@@ -325,8 +325,8 @@ export function RecipeEditorDrawer({
                 Không thể tải công thức của món ăn này. Vui lòng thử lại.
               </div>
             ) : recipe && recipe.items.length > 0 ? (
-              <div className="border border-border rounded-lg overflow-hidden bg-card">
-                <table className="w-full text-xs">
+              <div className="border border-border rounded-lg overflow-x-auto bg-card">
+                <table className="w-full min-w-[440px] text-xs">
                   <thead className="bg-surface/50 border-b border-border text-muted-foreground font-medium">
                     <tr>
                       <th className="px-4 py-2.5 text-left">Nguyên liệu</th>

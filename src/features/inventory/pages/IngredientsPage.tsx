@@ -336,7 +336,7 @@ export function IngredientsPage() {
       {/* Main Table */}
       <div className="bg-card border border-border rounded-xl shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
+          <table className="w-full min-w-[820px] text-left text-sm">
             <thead className="bg-surface/60 border-b border-border text-xs uppercase text-primary font-semibold tracking-wider">
               <tr>
                 <th className="py-3 px-4 w-16">STT</th>

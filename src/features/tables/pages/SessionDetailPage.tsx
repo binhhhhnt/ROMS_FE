@@ -3,15 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import {
   ArrowLeft,
-  Clock,
   ArrowRightLeft,
-  History,
-  Layers,
   AlertCircle,
-  User,
-  Utensils,
-  ClipboardList,
-  PackageOpen,
 } from 'lucide-react'
 
 import { tableApi } from '@/features/tables/api/tableApi'
@@ -128,87 +121,83 @@ export function SessionDetailPage() {
   const transfers: TableTransferHistoryItem[] = transfersData?.content || []
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+    <div className="space-y-5 max-w-5xl mx-auto pb-12">
+      {/* Tầng 1: Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border">
+        <div className="flex items-center gap-3 min-w-0">
           <Button
-            variant="ghost"
-            size="icon"
+            variant="outline"
+            size="sm"
             onClick={() => navigate(-1)}
-            className="rounded-full"
-            title="Quay lại"
+            className="h-9 px-3 text-xs shrink-0"
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            Quay lại
           </Button>
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold tracking-tight text-text">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <h1 className="text-xl font-bold tracking-tight text-text">
                 Phiên phục vụ #{session.id}
               </h1>
               <Badge variant={isActive ? 'cooking' : 'completed'}>
                 {isActive ? 'Đang phục vụ' : 'Đã kết thúc'}
               </Badge>
             </div>
-            <p className="text-sm text-muted mt-0.5">
-              Mã bàn: <strong className="text-text">Bàn {session.tableCode}</strong>
+            <p className="text-xs text-muted mt-0.5">
+              Bàn {session.tableCode} {table?.area ? `• ${table.area}` : ''}
             </p>
           </div>
         </div>
       </div>
 
-      {/* Main Info Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="rounded-xl border border-border bg-card p-6 shadow-xs space-y-4">
-          <h2 className="text-base font-semibold text-text flex items-center gap-2 border-b border-border pb-3">
-            <Clock className="h-4 w-4 text-primary" />
-            Thời gian & Nhân sự
+      {/* Tầng 2: Main Info Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="rounded-lg border border-border bg-card p-4 sm:p-5 space-y-3">
+          <h2 className="text-sm font-semibold text-text border-b border-border pb-2.5">
+            Thời gian &amp; Nhân sự
           </h2>
-          <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="grid grid-cols-2 gap-3 text-xs">
             <div>
-              <span className="text-xs text-muted block">Thời điểm mở</span>
-              <span className="font-medium text-text mt-1 block">
+              <span className="text-muted block">Thời điểm mở</span>
+              <span className="font-medium text-text tabular-nums mt-0.5 block">
                 {new Date(session.openedAt).toLocaleString('vi-VN')}
               </span>
             </div>
             <div>
-              <span className="text-xs text-muted block">Người mở phiên</span>
-              <span className="font-medium text-text mt-1 flex items-center gap-1.5">
-                <User className="h-3.5 w-3.5 text-muted" />
+              <span className="text-muted block">Người mở phiên</span>
+              <span className="font-medium text-text mt-0.5 block">
                 {session.openedByName || 'Hệ thống'}
               </span>
             </div>
             <div>
-              <span className="text-xs text-muted block">Thời điểm đóng</span>
-              <span className="font-medium text-text mt-1 block">
+              <span className="text-muted block">Thời điểm đóng</span>
+              <span className="font-medium text-text tabular-nums mt-0.5 block">
                 {session.closedAt ? new Date(session.closedAt).toLocaleString('vi-VN') : '—'}
               </span>
             </div>
             <div>
-              <span className="text-xs text-muted block">Người đóng phiên</span>
-              <span className="font-medium text-text mt-1 flex items-center gap-1.5">
-                <User className="h-3.5 w-3.5 text-muted" />
+              <span className="text-muted block">Người đóng phiên</span>
+              <span className="font-medium text-text mt-0.5 block">
                 {session.closedByName || '—'}
               </span>
             </div>
           </div>
         </div>
 
-        <div className="rounded-xl border border-border bg-card p-6 shadow-xs space-y-4">
-          <h2 className="text-base font-semibold text-text flex items-center gap-2 border-b border-border pb-3">
-            <Layers className="h-4 w-4 text-primary" />
+        <div className="rounded-lg border border-border bg-card p-4 sm:p-5 space-y-3">
+          <h2 className="text-sm font-semibold text-text border-b border-border pb-2.5">
             Thông tin Bàn
           </h2>
-          <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="grid grid-cols-2 gap-3 text-xs">
             <div>
-              <span className="text-xs text-muted block">Bàn phục vụ</span>
-              <span className="font-medium text-text mt-1 block">
+              <span className="text-muted block">Bàn phục vụ</span>
+              <span className="font-medium text-text mt-0.5 block">
                 Bàn {session.tableCode} (ID: {session.tableId})
               </span>
             </div>
             <div>
-              <span className="text-xs text-muted block">Khu vực bàn</span>
-              <span className="font-medium text-text mt-1 block">
+              <span className="text-muted block">Khu vực bàn</span>
+              <span className="font-medium text-text mt-0.5 block">
                 {table?.area || 'Chung'}
               </span>
             </div>
@@ -216,57 +205,50 @@ export function SessionDetailPage() {
         </div>
       </div>
 
-      {/* Khung thông tin các đồ bị trả (chỉ hiện khi có đồ bị trả) */}
+      {/* Returned Items Card */}
       {aggregatedReturnedItems.length > 0 && (
-        <div className="bg-card border border-border rounded-xl p-4 sm:p-5 flex flex-col gap-3 shadow-2xs">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-border">
-            <div className="flex items-center gap-2.5">
-              <PackageOpen className="w-4 h-4 text-primary" />
-              <div>
-                <h4 className="font-bold text-sm text-text flex items-center gap-2">
-                  Thông tin hàng trả lại kho (Đã kiểm đồ)
-                  <span className="text-xs px-2 py-0.5 rounded-md bg-surface border border-border text-text font-semibold">
-                    {aggregatedReturnedItems.reduce((sum, item) => sum + item.totalReturned, 0)} món
-                  </span>
-                </h4>
-                <p className="text-xs text-muted mt-0.5">
-                  Các sản phẩm khách không dùng hết đã được hoàn kho và trừ trực tiếp vào hóa đơn bàn.
-                </p>
-              </div>
+        <div className="bg-card border border-border rounded-lg overflow-hidden">
+          <div className="px-4 py-3 sm:px-5 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <h4 className="font-semibold text-sm text-text">
+                Hàng đã trả lại kho ({aggregatedReturnedItems.reduce((sum, item) => sum + item.totalReturned, 0)} món)
+              </h4>
+              <p className="text-xs text-muted mt-0.5">
+                Đã hoàn kho và trừ trực tiếp vào hóa đơn bàn.
+              </p>
             </div>
 
-            <div className="text-left sm:text-right">
-              <span className="text-xs text-muted block">Tổng tiền giảm trừ:</span>
-              <span className="text-sm font-bold text-status-cancelled">
+            <div className="text-left sm:text-right shrink-0 tabular-nums">
+              <span className="text-xs text-muted block">Tổng giảm trừ</span>
+              <span className="text-sm font-bold font-mono text-status-cancelled">
                 -{formatPrice(aggregatedReturnedItems.reduce((sum, item) => sum + item.totalDeduction, 0))}
               </span>
             </div>
           </div>
 
-          {/* Bảng đơn giản - nền card chuẩn, viền border trung tính */}
-          <div className="overflow-x-auto rounded-lg border border-border">
+          <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-surface/50 text-muted font-semibold border-b border-border">
+              <thead className="bg-surface/60 text-muted font-medium border-b border-border">
                 <tr>
-                  <th className="py-2.5 px-3">Đồ đã trả</th>
-                  <th className="py-2.5 px-3 text-center">Số lượng trả</th>
+                  <th className="py-2.5 px-4 sm:px-5">Đồ đã trả</th>
+                  <th className="py-2.5 px-3 text-center">SL trả</th>
                   <th className="py-2.5 px-3 text-right">Đơn giá</th>
-                  <th className="py-2.5 px-3 text-right">Số tiền trừ</th>
+                  <th className="py-2.5 px-4 sm:px-5 text-right">Giảm trừ</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
+              <tbody className="divide-y divide-border tabular-nums">
                 {aggregatedReturnedItems.map((item) => (
-                  <tr key={item.menuItemId} className="hover:bg-surface/30 transition-colors">
-                    <td className="py-2.5 px-3 font-semibold text-status-cancelled">
+                  <tr key={item.menuItemId}>
+                    <td className="py-2.5 px-4 sm:px-5 font-medium text-text">
                       {item.menuItemName}
                     </td>
-                    <td className="py-2.5 px-3 text-center font-bold text-status-cancelled">
+                    <td className="py-2.5 px-3 text-center font-mono font-semibold text-status-cancelled">
                       -{item.totalReturned}
                     </td>
-                    <td className="py-2.5 px-3 text-right text-muted">
+                    <td className="py-2.5 px-3 text-right text-muted font-mono">
                       {formatPrice(item.unitPrice)}
                     </td>
-                    <td className="py-2.5 px-3 text-right font-bold text-status-cancelled">
+                    <td className="py-2.5 px-4 sm:px-5 text-right font-mono font-semibold text-status-cancelled">
                       -{formatPrice(item.totalDeduction)}
                     </td>
                   </tr>
@@ -277,177 +259,147 @@ export function SessionDetailPage() {
         </div>
       )}
 
-      {/* Session Orders List */}
-      <div className="rounded-xl border border-border bg-card p-6 shadow-xs space-y-4">
-        <div className="flex items-center justify-between border-b border-border pb-3">
-          <h2 className="text-base font-semibold text-text flex items-center gap-2">
-            <ClipboardList className="h-4 w-4 text-primary" />
-            Các đơn gọi món trong phiên ({sessionOrders.length})
-          </h2>
-        </div>
+      {/* Tầng 3: Session Orders List */}
+      <div className="space-y-3">
+        <h2 className="text-sm font-semibold text-text">
+          Các đơn gọi món trong phiên ({sessionOrders.length})
+        </h2>
 
         {sessionOrders.length === 0 ? (
-          <div className="text-center py-8 text-muted text-sm">
-            <Utensils className="w-8 h-8 mx-auto mb-2 opacity-30" />
-            <p>Phiên phục vụ này chưa có đơn gọi món nào.</p>
+          <div className="text-center py-8 text-muted text-xs bg-card border border-border rounded-lg">
+            Phiên phục vụ này chưa có đơn gọi món nào.
           </div>
         ) : (
           <div className="space-y-4">
-            {sessionOrders.map((order) => {
-              return (
-                <div
-                  key={order.id}
-                  className="rounded-xl border border-border bg-card overflow-hidden shadow-2xs"
-                >
-                  {/* Order Header */}
-                  <div className="bg-surface/50 px-4 py-3 border-b border-border flex flex-wrap items-center justify-between gap-3 text-xs">
-                    <div className="flex flex-wrap items-center gap-2.5">
-                      <span className="font-black text-sm text-text">
-                        Đơn #{order.id}
-                      </span>
+            {sessionOrders.map((order) => (
+              <div
+                key={order.id}
+                className="rounded-lg border border-border bg-card overflow-hidden"
+              >
+                {/* Order Header (Hàng cha: bg-surface/60) */}
+                <div className="bg-surface/60 px-4 py-3 sm:px-5 border-b border-border flex flex-wrap items-center justify-between gap-3 text-xs">
+                  <div className="flex flex-wrap items-center gap-2.5 min-w-0">
+                    <span className="font-bold text-sm text-text font-mono">
+                      Đơn #{order.id}
+                    </span>
 
-                      {/* Order Status Badge */}
-                      {order.status === 'PENDING' && (
-                        <Badge variant="pending" className="text-[11px] py-0.5">
-                          Chờ tiếp nhận
-                        </Badge>
-                      )}
-                      {order.status === 'COOKING' && (
-                        <Badge variant="cooking" className="text-[11px] py-0.5">
-                          Đang chế biến
-                        </Badge>
-                      )}
-                      {order.status === 'COMPLETED' && (
-                        <Badge variant="completed" className="text-[11px] py-0.5">
-                          Hoàn thành
-                        </Badge>
-                      )}
-                      {order.status === 'CANCELLED' && (
-                        <Badge variant="cancelled" className="text-[11px] py-0.5">
-                          Đã hủy
-                        </Badge>
-                      )}
+                    {order.status === 'PENDING' && (
+                      <Badge variant="pending">
+                        <span className="w-2 h-2 rounded-full bg-status-pending shrink-0" />
+                        Chờ tiếp nhận
+                      </Badge>
+                    )}
+                    {order.status === 'COOKING' && (
+                      <Badge variant="cooking">
+                        <span className="w-2 h-2 rounded-full bg-status-cooking shrink-0" />
+                        Đang nấu
+                      </Badge>
+                    )}
+                    {order.status === 'COMPLETED' && (
+                      <Badge variant="completed">Hoàn thành</Badge>
+                    )}
+                    {order.status === 'CANCELLED' && (
+                      <Badge variant="cancelled">Đã hủy</Badge>
+                    )}
 
-                      <span className="text-muted">
-                        ({order.createdByName ? `Tạo bởi: ${order.createdByName}` : 'Khách gọi từ Tablet'})
-                      </span>
-                      <span className="text-muted">
-                        {new Date(order.createdAt).toLocaleTimeString('vi-VN', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <div className="font-extrabold text-sm text-primary">
-                        {new Intl.NumberFormat('vi-VN', {
-                          style: 'currency',
-                          currency: 'VND',
-                        }).format(order.totalAmount)}
-                      </div>
-                    </div>
+                    <span className="text-muted">
+                      • {order.createdByName || 'Khách tại bàn'} •{' '}
+                      {new Date(order.createdAt).toLocaleTimeString('vi-VN', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </span>
                   </div>
 
-                  {/* Items List */}
-                  <div className="divide-y divide-border">
-                    {order.items.map((item) => (
+                  <div className="font-bold font-mono text-sm text-text tabular-nums shrink-0">
+                    {formatPrice(order.totalAmount)}
+                  </div>
+                </div>
+
+                {/* Items List (Hàng con: nền trắng bg-card) */}
+                <div className="divide-y divide-border bg-card">
+                  {order.items.map((item) => {
+                    const isCancelled = item.status === 'CANCELLED'
+                    return (
                       <div
                         key={item.id}
-                        className={`p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs ${item.status === 'READY'
-                          ? 'bg-status-ready/10'
-                          : item.status === 'CANCELLED'
-                            ? 'opacity-60 bg-surface/20'
-                            : 'hover:bg-surface/20'
-                          }`}
+                        className={`px-4 py-3.5 sm:pl-7 sm:pr-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs ${
+                          isCancelled ? 'opacity-60' : ''
+                        }`}
                       >
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-text text-sm">
+                        <div className="min-w-0 flex-1 flex items-start gap-3">
+                          <span className="font-mono font-bold text-base text-text shrink-0 w-9 pt-0.5 tabular-nums">
+                            {item.quantity}x
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <div
+                              className={`font-semibold text-sm text-text ${
+                                isCancelled ? 'line-through text-muted' : ''
+                              }`}
+                            >
                               {item.menuItemName}
-                            </span>
-                            <span className="px-2 py-0.5 rounded bg-surface border border-border font-black text-primary text-xs">
-                              x{item.quantity}
-                            </span>
+                            </div>
+                            {item.note && (
+                              <p className="text-xs text-text mt-1">
+                                <span className="font-semibold">Ghi chú:</span> {item.note}
+                              </p>
+                            )}
                           </div>
-                          {item.note && (
-                            <p className="text-[11px] text-amber-800 mt-1 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-300 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-900/50 inline-block">
-                              Ghi chú: {item.note}
-                            </p>
-                          )}
                         </div>
 
-                        <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
-                          <div className="text-right">
-                            <span className="font-semibold text-text">
-                              {new Intl.NumberFormat('vi-VN', {
-                                style: 'currency',
-                                currency: 'VND',
-                              }).format(
-                                item.subtotal || item.unitPrice * item.quantity
-                              )}
-                            </span>
-                          </div>
+                        <div className="shrink-0 flex items-center justify-between sm:justify-end gap-4 pl-12 sm:pl-0">
+                          <span className="font-semibold font-mono text-sm text-text tabular-nums">
+                            {formatPrice(item.subtotal || item.unitPrice * item.quantity)}
+                          </span>
 
-                          {/* Status Badge per item */}
-                          <div className="min-w-[100px] flex justify-end items-center">
+                          <div className="shrink-0">
                             {item.status === 'PENDING' ? (
-                              <span className="px-2 py-1 rounded-md bg-surface text-muted font-semibold text-[11px] border border-border">
-                                Chờ tiếp nhận
-                              </span>
+                              <Badge variant="pending">Chờ nấu</Badge>
                             ) : item.status === 'READY' ? (
-                              <span className="px-2.5 py-1 rounded-md bg-status-ready/15 text-emerald-700 dark:text-emerald-400 font-semibold text-[11px] border border-status-ready/20">
-                                Sẵn sàng phục vụ
-                              </span>
+                              <Badge variant="ready">Sẵn sàng</Badge>
                             ) : item.status === 'COMPLETED' ? (
-                              <span className="px-2.5 py-1 rounded-md bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-semibold text-[11px] border border-emerald-500/20">
-                                Đã phục vụ
-                              </span>
+                              <Badge variant="completed">Đã phục vụ</Badge>
                             ) : item.status === 'COOKING' ? (
-                              <span className="px-2.5 py-1 rounded-md bg-amber-500/15 text-amber-700 dark:text-amber-400 font-semibold text-[11px] border border-amber-500/20">
-                                Bếp đang nấu
-                              </span>
+                              <Badge variant="cooking">Đang nấu</Badge>
                             ) : item.status === 'CANCELLED' ? (
-                              <span className="px-2.5 py-1 rounded-md bg-red-500/15 text-red-700 dark:text-red-400 font-semibold text-[11px] border border-red-500/20">
-                                Đã hủy
-                              </span>
+                              <Badge variant="cancelled">Đã hủy</Badge>
                             ) : null}
                           </div>
                         </div>
                       </div>
-                    ))}
-                  </div>
+                    )
+                  })}
                 </div>
-              )
-            })}
+              </div>
+            ))}
           </div>
         )}
       </div>
-      {/* Transfer History (Chỉ hiển thị khi có phát sinh chuyển bàn) */}
-      {transfers.length > 0 && (
-        <div className="rounded-xl border border-border bg-card p-6 shadow-xs space-y-4">
-          <h2 className="text-base font-semibold text-text flex items-center gap-2 border-b border-border pb-3">
-            <History className="h-4 w-4 text-primary" />
-            Lịch sử chuyển bàn trong phiên ({transfers.length})
-          </h2>
 
-          <div className="divide-y divide-border/60">
+      {/* Transfer History */}
+      {transfers.length > 0 && (
+        <div className="rounded-lg border border-border bg-card overflow-hidden">
+          <div className="px-4 py-3 sm:px-5 border-b border-border">
+            <h2 className="text-sm font-semibold text-text">
+              Lịch sử chuyển bàn ({transfers.length})
+            </h2>
+          </div>
+
+          <div className="divide-y divide-border">
             {transfers.map((t) => (
-              <div key={t.id} className="py-3 flex items-start justify-between text-sm">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-text">
-                      Bàn {t.fromTableCode || `#${t.fromTableId}`}
-                    </span>
-                    <ArrowRightLeft className="h-3.5 w-3.5 text-muted" />
-                    <span className="font-medium text-primary">
-                      Bàn {t.toTableCode || `#${t.toTableId}`}
-                    </span>
-                  </div>
+              <div key={t.id} className="px-4 py-3 sm:px-5 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-text">
+                    Bàn {t.fromTableCode || `#${t.fromTableId}`}
+                  </span>
+                  <ArrowRightLeft className="h-3.5 w-3.5 text-muted" />
+                  <span className="font-semibold text-primary">
+                    Bàn {t.toTableCode || `#${t.toTableId}`}
+                  </span>
                 </div>
-                <div className="text-right text-xs text-muted">
-                  <p>{new Date(t.transferredAt).toLocaleString('vi-VN')}</p>
-                  <p className="font-medium text-text mt-0.5">{t.transferredByName}</p>
+                <div className="text-right text-muted">
+                  <span className="tabular-nums">{new Date(t.transferredAt).toLocaleString('vi-VN')}</span>
+                  {t.transferredByName && <span className="ml-2 text-text font-medium">• {t.transferredByName}</span>}
                 </div>
               </div>
             ))}

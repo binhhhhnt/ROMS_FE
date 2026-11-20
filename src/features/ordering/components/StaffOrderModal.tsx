@@ -58,7 +58,7 @@ export function StaffOrderModal({
   // 1. Fetch menu items (returns AVAILABLE and TEMPORARILY_UNAVAILABLE with BOM)
   const { data: menuData, isLoading: isLoadingMenu } = useQuery({
     queryKey: ['menu-items', 'staff-order'],
-    queryFn: () => menuApi.list({ page: 0, size: 100, sort: 'name,asc' }),
+    queryFn: () => menuApi.list({ page: 0, size: 100, sort: 'name,asc', forOrder: true }),
     enabled: isOpen,
   })
 
@@ -87,6 +87,9 @@ export function StaffOrderModal({
   // Filtered menu items
   const filteredMenuItems = useMemo(() => {
     return menuItems.filter((item) => {
+      if (item.status === 'DISCONTINUED') {
+        return false
+      }
       // Category filter
       if (selectedCategory !== 'ALL' && item.category?.id?.toString() !== selectedCategory) {
         return false
@@ -200,41 +203,34 @@ export function StaffOrderModal({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-card border border-border rounded-2xl w-full max-w-5xl h-[92vh] max-h-[820px] shadow-2xl flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/50">
+      <div className="bg-card border border-border rounded-lg w-full max-w-5xl h-[92vh] max-h-[820px] shadow-md flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="p-4 sm:px-6 sm:py-4 border-b border-border bg-surface/30 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold">
-              <Utensils className="w-5 h-5" />
+        <div className="px-5 py-3.5 border-b border-border bg-surface/60 flex items-center justify-between shrink-0">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-base font-bold text-text">Đặt món tại bàn</h2>
+              {initialTableCode && (
+                <Badge variant="cooking">Bàn {initialTableCode}</Badge>
+              )}
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg font-bold text-text">Đặt món tại bàn cho Phục vụ</h2>
-                {initialTableCode && (
-                  <Badge variant="cooking" className="font-bold text-xs">
-                    Bàn {initialTableCode}
-                  </Badge>
-                )}
-              </div>
-              <p className="text-xs text-muted">
-                Nhân viên phục vụ ghi nhận món ăn và gửi trực tiếp vào bếp (PENDING)
-              </p>
-            </div>
+            <p className="text-xs text-muted mt-0.5">
+              Chọn món và gửi trực tiếp vào bếp
+            </p>
           </div>
 
           <button
             onClick={onClose}
-            className="text-muted hover:text-text p-1.5 rounded-lg hover:bg-surface transition-colors"
+            className="text-muted hover:text-text p-1.5 rounded-md border border-border bg-card hover:bg-muted-bg transition-colors shrink-0"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Modal Body: Left (Menu selection) & Right (Cart preview) */}
-        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+        <div className="flex-1 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden">
           {/* Left Column: Menu Items Catalog */}
-          <div className="flex-1 flex flex-col p-4 sm:p-5 overflow-hidden border-b lg:border-b-0 lg:border-r border-border">
+          <div className="flex-1 min-h-[300px] lg:min-h-0 flex flex-col p-4 sm:p-5 overflow-hidden border-b lg:border-b-0 lg:border-r border-border">
             {/* Table Selector (if not preselected) */}
             {!initialSessionId && (
               <div className="mb-4">
@@ -277,14 +273,14 @@ export function StaffOrderModal({
                 />
               </div>
 
-              {/* Category Pills - Nằm phía dưới */}
+              {/* Category Pills */}
               <div className="flex items-center gap-1.5 overflow-x-auto pb-1 w-full">
                 <button
                   type="button"
                   onClick={() => setSelectedCategory('ALL')}
-                  className={`text-xs px-3 py-1.5 rounded-lg whitespace-nowrap font-medium transition-colors ${selectedCategory === 'ALL'
-                    ? 'bg-primary text-white shadow-xs'
-                    : 'bg-surface hover:bg-surface/80 text-muted'
+                  className={`text-xs px-3 py-1.5 rounded-md border whitespace-nowrap font-medium transition-colors cursor-pointer ${selectedCategory === 'ALL'
+                      ? 'bg-primary text-white border-primary'
+                      : 'bg-card border-border hover:bg-muted-bg text-text'
                     }`}
                 >
                   Tất cả
@@ -295,9 +291,9 @@ export function StaffOrderModal({
                     key={cat.id}
                     type="button"
                     onClick={() => setSelectedCategory(cat.id.toString())}
-                    className={`text-xs px-3 py-1.5 rounded-lg whitespace-nowrap font-medium transition-colors ${selectedCategory === cat.id.toString()
-                      ? 'bg-primary text-white shadow-xs'
-                      : 'bg-surface hover:bg-surface/80 text-muted'
+                    className={`text-xs px-3 py-1.5 rounded-md border whitespace-nowrap font-medium transition-colors cursor-pointer ${selectedCategory === cat.id.toString()
+                        ? 'bg-primary text-white border-primary'
+                        : 'bg-card border-border hover:bg-muted-bg text-text'
                       }`}
                   >
                     {cat.name}
@@ -327,28 +323,21 @@ export function StaffOrderModal({
                     return (
                       <div
                         key={item.id}
-                        className={`p-3 rounded-xl border flex flex-col justify-between gap-2.5 transition-all ${
-                          isOutOfStock
-                            ? 'border-border/50 bg-card/60 opacity-60 grayscale-[30%]'
+                        className={`p-3 rounded-lg border flex flex-col justify-between gap-2.5 transition-colors ${isOutOfStock
+                            ? 'border-border bg-card opacity-60'
                             : qty > 0
-                            ? 'border-primary/50 bg-primary/5 shadow-xs'
-                            : 'border-border bg-card hover:border-accent/40'
-                        }`}
+                              ? 'border-primary bg-surface/40'
+                              : 'border-border bg-card hover:border-primary/40'
+                          }`}
                       >
                         <div>
                           <div className="flex items-start justify-between gap-2">
-                            <h4 className={`font-bold text-sm leading-tight ${isOutOfStock ? 'text-muted' : 'text-text'}`}>
+                            <h4 className={`font-semibold text-sm leading-snug ${isOutOfStock ? 'text-muted' : 'text-text'}`}>
                               {item.name}
                             </h4>
-                            {isOutOfStock ? (
-                              <span className="text-[10px] bg-rose-500/15 text-rose-600 font-bold px-1.5 py-0.5 rounded shrink-0">
-                                HẾT
-                              </span>
-                            ) : item.isFeatured ? (
-                              <span className="text-[10px] bg-amber-500/15 text-amber-600 font-bold px-1.5 py-0.5 rounded shrink-0">
-                                HOT
-                              </span>
-                            ) : null}
+                            {item.isFeatured && (
+                              <Badge variant="pending" className="shrink-0">Bán chạy</Badge>
+                            )}
                           </div>
                           {item.description && (
                             <p className="text-xs text-muted line-clamp-1 mt-1">
@@ -357,47 +346,44 @@ export function StaffOrderModal({
                           )}
                         </div>
 
-                        <div className="flex items-center justify-between pt-1 border-t border-border/50">
-                          <span className={`font-extrabold text-sm ${isOutOfStock ? 'text-muted line-through' : 'text-primary'}`}>
+                        <div className="flex items-center justify-between pt-2 border-t border-border">
+                          <span className={`font-semibold font-mono text-sm tabular-nums ${isOutOfStock ? 'text-muted line-through' : 'text-text'}`}>
                             {formatPrice(item.price)}
                           </span>
 
                           {isOutOfStock && qty === 0 ? (
-                            <span className="text-xs font-bold text-rose-600 bg-rose-50 px-2 py-1 rounded-md border border-rose-200">
-                              Hết
-                            </span>
+                            <Badge variant="cancelled">Hết món</Badge>
                           ) : qty === 0 ? (
                             <Button
                               type="button"
                               size="sm"
                               variant="outline"
                               onClick={() => handleAddToCart(item)}
-                              className="h-7 text-xs px-2.5 text-primary border-primary/30 hover:bg-primary hover:text-white"
+                              className="h-9 text-xs px-3"
                             >
                               <Plus className="w-3.5 h-3.5 mr-1" />
                               Thêm
                             </Button>
                           ) : (
-                            <div className="flex items-center gap-1.5 bg-card border border-border rounded-lg p-0.5">
+                            <div className="flex items-center gap-1 bg-card border border-border rounded-md p-0.5">
                               <button
                                 type="button"
                                 onClick={() => handleUpdateQuantity(item.id, -1)}
-                                className="w-6 h-6 rounded flex items-center justify-center hover:bg-surface text-muted hover:text-text"
+                                className="w-7 h-7 rounded flex items-center justify-center hover:bg-muted-bg text-text cursor-pointer"
                               >
-                                <Minus className="w-3 h-3" />
+                                <Minus className="w-3.5 h-3.5" />
                               </button>
-                              <span className="text-xs font-bold text-text w-5 text-center">
+                              <span className="text-xs font-mono font-bold text-text w-6 text-center tabular-nums">
                                 {qty}
                               </span>
                               <button
                                 type="button"
                                 disabled={isOutOfStock}
                                 onClick={() => handleUpdateQuantity(item.id, 1)}
-                                className={`w-6 h-6 rounded flex items-center justify-center text-muted hover:text-text ${
-                                  isOutOfStock ? 'opacity-30 cursor-not-allowed' : 'hover:bg-surface'
-                                }`}
+                                className={`w-7 h-7 rounded flex items-center justify-center text-text ${isOutOfStock ? 'opacity-30 cursor-not-allowed' : 'hover:bg-muted-bg cursor-pointer'
+                                  }`}
                               >
-                                <Plus className="w-3 h-3" />
+                                <Plus className="w-3.5 h-3.5" />
                               </button>
                             </div>
                           )}
@@ -411,7 +397,7 @@ export function StaffOrderModal({
           </div>
 
           {/* Right Column: Cart Summary & Send to Kitchen */}
-          <div className="w-full lg:w-96 flex flex-col bg-surface/20 p-4 sm:p-5 overflow-hidden shrink-0">
+          <div className="w-full lg:w-96 flex flex-col bg-card p-4 sm:p-5 overflow-hidden shrink-0">
             <div className="flex items-center justify-between pb-3 border-b border-border shrink-0">
               <div className="flex items-center gap-2">
                 <ShoppingBag className="w-4 h-4 text-accent" />
@@ -519,18 +505,19 @@ export function StaffOrderModal({
                   variant="outline"
                   onClick={onClose}
                   disabled={isSubmitting}
-                  className="flex-1 text-xs"
+                  className="flex-1 h-11 text-xs"
                 >
                   Hủy
                 </Button>
                 <Button
                   type="button"
+                  variant="primary"
                   onClick={handleSubmitOrder}
                   disabled={isSubmitting || cart.length === 0}
-                  className="flex-2 bg-primary hover:bg-primary-hover text-white text-xs font-bold gap-1.5 shadow-sm"
+                  className="flex-2 h-11 text-sm font-semibold gap-1.5"
                 >
-                  <Send className="w-3.5 h-3.5" />
-                  {isSubmitting ? 'Đang gửi...' : 'Gửi bếp'}
+                  <Send className="w-4 h-4" />
+                  Gửi bếp
                 </Button>
               </div>
             </div>

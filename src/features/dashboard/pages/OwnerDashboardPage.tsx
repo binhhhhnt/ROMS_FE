@@ -108,7 +108,7 @@ export function OwnerDashboardPage() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <h1 className="text-2xl font-black text-text tracking-tight">
-              Tổng quan Hoạt động Nhà hàng
+              Tổng quan hoạt động Nhà hàng
             </h1>
             <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-[11px] font-bold">
               <ShieldCheck className="w-3.5 h-3.5" /> Quản trị viên
@@ -226,7 +226,7 @@ export function OwnerDashboardPage() {
                   <div className="w-7 h-7 rounded-md bg-status-cancelled/15 text-status-cancelled flex items-center justify-center">
                     <Receipt className="w-3.5 h-3.5" />
                   </div>
-                  <span>Quản lý Chi phí</span>
+                  <span>Quản lý chi phí</span>
                 </div>
                 <ArrowRight className="w-4 h-4 text-muted" />
               </Link>

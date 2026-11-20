@@ -67,9 +67,9 @@ export function KitchenReadyPage() {
   return (
     <div className="max-w-7xl mx-auto flex flex-col gap-5">
       {/* Top Header */}
-      <div className="flex items-center justify-between bg-card px-5 py-4 rounded-xl border border-border shadow-xs">
-        <div>
-          <div className="flex items-center gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card px-4 sm:px-5 py-4 rounded-xl border border-border shadow-xs">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <h1 className="text-xl sm:text-2xl font-black text-text tracking-tight">
               QUẦY CHỜ BƯNG MÓN
             </h1>
@@ -83,7 +83,7 @@ export function KitchenReadyPage() {
         </div>
 
         {/* Live Clock */}
-        <div className="bg-surface border border-border px-3.5 py-1.5 rounded-lg text-right">
+        <div className="bg-surface border border-border px-3.5 py-1.5 rounded-lg text-right self-start sm:self-auto shrink-0">
           <div className="text-[10px] text-muted font-bold uppercase tracking-wider">
             Thời gian
           </div>

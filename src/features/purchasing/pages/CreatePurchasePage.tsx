@@ -17,12 +17,8 @@ import {
   ArrowLeft,
   Plus,
   Trash2,
-  Calendar,
   FileText,
-  Boxes,
-  Loader2,
   AlertCircle,
-  Receipt,
   CheckCircle2,
   FileSpreadsheet,
 } from 'lucide-react'
@@ -262,24 +258,22 @@ export function CreatePurchasePage() {
     <div className="space-y-6 max-w-5xl mx-auto pb-12">
       {/* Top Header & Back link */}
       <div>
-        <Link
-          to="/inventory/purchases"
-          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-accent mb-2 transition-colors"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Quay lại danh sách phiếu nhập</span>
+        <Link to="/inventory/purchases" className="inline-block mb-3">
+          <Button type="button" variant="outline" size="sm" className="h-9 px-3 text-xs font-medium gap-1.5">
+            <ArrowLeft className="w-4 h-4 shrink-0" />
+            <span>Quay lại danh sách phiếu nhập</span>
+          </Button>
         </Link>
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-text flex items-center gap-2">
-              <Receipt className="w-6 h-6 text-accent" />
+            <h1 className="text-xl font-bold tracking-tight text-text">
               Tạo Phiếu Nhập Hàng Mới
             </h1>
-            <p className="text-sm text-muted-foreground mt-0.5">
+            <p className="text-xs text-muted mt-0.5">
               Ghi nhận nguyên vật liệu mua vào thực tế để tăng số lượng tồn kho tương ứng.
             </p>
           </div>
-          <Button type="button" variant="outline" disabled={isImporting || createMutation.isPending}
+          <Button type="button" variant="outline" size="sm" className="h-9 px-3 text-xs" disabled={isImporting || createMutation.isPending}
             onClick={() => { setImportError(''); setIsImportModalOpen(true) }}>
             <FileSpreadsheet className="w-4 h-4 mr-1.5" />Nhập Excel
           </Button>
@@ -301,9 +295,8 @@ export function CreatePurchasePage() {
       <form onSubmit={handleSubmit} className="space-y-6">
         <fieldset disabled={isImporting || createMutation.isPending} className="space-y-6 min-w-0">
         {/* Card 1: General Info */}
-        <div className="bg-card border border-border rounded-xl p-5 shadow-sm space-y-4">
-          <h2 className="text-sm font-semibold text-text uppercase tracking-wider flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-accent" />
+        <div className="bg-card border border-border rounded-lg p-5 space-y-4">
+          <h2 className="text-sm font-semibold text-text">
             Thông tin chung phiếu nhập
           </h2>
 
@@ -342,14 +335,13 @@ export function CreatePurchasePage() {
         </div>
 
         {/* Card 2: Items List */}
-        <div className="bg-card border border-border rounded-xl p-5 shadow-sm space-y-4">
+        <div className="bg-card border border-border rounded-lg p-5 space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-sm font-semibold text-text uppercase tracking-wider flex items-center gap-2">
-                <Boxes className="w-4 h-4 text-accent" />
+              <h2 className="text-sm font-semibold text-text">
                 Danh sách nguyên vật liệu nhập
               </h2>
-              <p className="text-xs text-muted-foreground mt-0.5">
+              <p className="text-xs text-muted mt-0.5">
                 Mỗi dòng nguyên liệu sẽ được tự động cộng dồn vào tồn kho ngay khi lưu phiếu.
               </p>
             </div>
@@ -360,7 +352,7 @@ export function CreatePurchasePage() {
               size="sm"
               onClick={handleAddRow}
               disabled={rows.length >= MAX_PURCHASE_IMPORT_ROWS}
-              className="text-xs flex items-center gap-1 border-accent/30 text-accent hover:bg-accent/10"
+              className="h-9 px-3 text-xs flex items-center gap-1"
             >
               <Plus className="w-3.5 h-3.5" />
               Thêm dòng
@@ -373,9 +365,9 @@ export function CreatePurchasePage() {
           </p>}
 
           {/* Table */}
-          <div className="border border-border rounded-lg overflow-x-auto bg-surface/10">
+          <div className="border border-border rounded-lg overflow-x-auto bg-card">
             <table className="w-full text-xs">
-              <thead className="bg-surface/50 border-b border-border text-muted-foreground font-medium">
+              <thead className="bg-surface/60 border-b border-border text-muted font-medium">
                 <tr>
                   <th className="px-3 py-2.5 text-center w-10">STT</th>
                   <th className="px-3 py-2.5 text-left min-w-[200px]">Nguyên liệu</th>
@@ -495,11 +487,11 @@ export function CreatePurchasePage() {
                       <td className="px-2 py-2.5 text-center">
                         <Button
                           type="button"
-                          variant="ghost"
+                          variant="destructiveOutline"
                           size="sm"
                           onClick={() => handleRemoveRow(row.tempId)}
                           disabled={rows.length === 1}
-                          className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                          className="h-8 w-8 p-0"
                           title="Xóa dòng"
                           aria-label={`Xóa dòng ${idx + 1}`}
                         >
@@ -553,18 +545,10 @@ export function CreatePurchasePage() {
             variant="primary"
             size="md"
             disabled={createMutation.isPending || isImporting || isLoadingIngredients || ingredientLoadError || invalidRowCount > 0}
+            className="h-10 px-4 text-xs font-semibold gap-1.5"
           >
-            {createMutation.isPending ? (
-              <>
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                <span>Đang ghi nhận nhập kho...</span>
-              </>
-            ) : (
-              <>
-                <CheckCircle2 className="w-4 h-4" />
-                <span>Xác nhận Nhập kho</span>
-              </>
-            )}
+            <CheckCircle2 className="w-4 h-4" />
+            <span>Xác nhận Nhập kho</span>
           </Button>
         </div>
         </fieldset>

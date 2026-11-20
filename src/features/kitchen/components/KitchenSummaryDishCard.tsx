@@ -1,5 +1,6 @@
-import { useState } from 'react'
-import { Flame, Clock, ChevronRight } from 'lucide-react'
+import { Clock, ChevronRight } from 'lucide-react'
+import { Badge } from '@/shared/components/ui/badge'
+import { Button } from '@/shared/components/ui/button'
 
 export interface ConsolidatedTableItem {
   orderId: number
@@ -25,6 +26,8 @@ export interface ConsolidatedDish {
 interface KitchenSummaryDishCardProps {
   dish: ConsolidatedDish
   isSelected: boolean
+  isProcessing: boolean
+  hasUpdatingItems: boolean
   onSelect: () => void
   onCookAll: (dish: ConsolidatedDish) => Promise<void>
   onReadyAll: (dish: ConsolidatedDish) => Promise<void>
@@ -33,12 +36,12 @@ interface KitchenSummaryDishCardProps {
 export function KitchenSummaryDishCard({
   dish,
   isSelected,
+  isProcessing,
+  hasUpdatingItems,
   onSelect,
   onCookAll,
   onReadyAll,
 }: KitchenSummaryDishCardProps) {
-  const [isProcessing, setIsProcessing] = useState(false)
-
   // Calculate elapsed time from the oldest pending/cooking order
   const elapsedMinutes = Math.max(
     0,
@@ -48,102 +51,95 @@ export function KitchenSummaryDishCard({
 
   const handleCookAllClick = async (e: React.MouseEvent) => {
     e.stopPropagation()
-    setIsProcessing(true)
-    try {
-      await onCookAll(dish)
-    } finally {
-      setIsProcessing(false)
-    }
+    await onCookAll(dish)
   }
 
   const handleReadyAllClick = async (e: React.MouseEvent) => {
     e.stopPropagation()
-    setIsProcessing(true)
-    try {
-      await onReadyAll(dish)
-    } finally {
-      setIsProcessing(false)
-    }
+    await onReadyAll(dish)
   }
 
   return (
     <div
       onClick={onSelect}
-      className={`rounded-2xl p-4 border transition-all cursor-pointer select-none flex flex-col gap-3 shadow-xs ${
+      className={`rounded-lg p-4 border transition-colors cursor-pointer select-none flex flex-col gap-3 ${
         isSelected
-          ? 'bg-primary/5 border-primary ring-2 ring-primary/20 shadow-sm'
-          : 'bg-card border-border hover:border-primary/50 hover:bg-surface/50'
+          ? 'bg-surface/60 border-primary'
+          : 'bg-card border-border hover:border-primary/50'
       }`}
     >
-      {/* Top Row: Name and Total Quantity */}
+      {/* Top Row: Quantity Anchor + Name */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <h3 className="font-black text-base text-text leading-snug line-clamp-2">
+          <h3 className="font-semibold text-base text-text leading-snug line-clamp-2">
             {dish.menuItemName}
           </h3>
           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
             {dish.pendingQuantity > 0 && (
-              <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
+              <Badge variant="pending">
+                <span className="w-1.5 h-1.5 rounded-full bg-status-pending shrink-0" />
                 {dish.pendingQuantity} chờ nấu
-              </span>
+              </Badge>
             )}
             {dish.cookingQuantity > 0 && (
-              <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-status-cooking/10 text-status-cooking border border-status-cooking/20 flex items-center gap-1">
-                <Flame className="w-3 h-3" />
+              <Badge variant="cooking">
+                <span className="w-1.5 h-1.5 rounded-full bg-status-cooking shrink-0" />
                 {dish.cookingQuantity} đang nấu
-              </span>
+              </Badge>
             )}
-            <span className="text-[11px] text-muted">
-              ({dish.tableItems.length} bàn gọi)
+            <span className="text-xs text-muted">
+              ({dish.tableItems.length} bàn)
             </span>
           </div>
         </div>
 
-        {/* Big Quantity Badge */}
-        <div className="shrink-0 flex items-center justify-center w-12 h-12 rounded-xl bg-primary text-white font-black text-xl shadow-xs">
-          x{dish.totalQuantity}
-        </div>
+        <span className="font-mono font-bold text-xl text-primary shrink-0 tabular-nums">
+          {dish.totalQuantity}x
+        </span>
       </div>
 
       {/* Middle Row: Oldest Timer */}
-      <div className="flex items-center justify-between text-xs pt-1 border-t border-border/60">
+      <div className="flex items-center justify-between text-xs pt-2.5 border-t border-border">
         <div
-          className={`flex items-center gap-1.5 font-bold ${
-            isUrgent ? 'text-status-cooking font-extrabold animate-pulse' : 'text-muted'
+          className={`flex items-center gap-1.5 font-medium ${
+            isUrgent ? 'text-status-cancelled font-semibold' : 'text-muted'
           }`}
         >
-          <Clock className="w-3.5 h-3.5" />
-          <span>Bàn chờ lâu nhất: {elapsedMinutes} phút</span>
+          <Clock className="w-3.5 h-3.5 shrink-0" />
+          <span>Chờ lâu nhất: {elapsedMinutes} phút</span>
         </div>
 
-        <div className="flex items-center gap-1 text-xs text-primary font-semibold">
-          <span>Xem chi tiết</span>
+        <div className="flex items-center gap-0.5 text-xs text-primary font-medium shrink-0">
+          <span>Chi tiết</span>
           <ChevronRight className="w-3.5 h-3.5" />
         </div>
       </div>
 
-      {/* Bottom Actions Row: 2 Nút song hành cố định */}
-      <div className="flex items-center gap-2 pt-1" onClick={(e) => e.stopPropagation()}>
-        <button
+      {/* Bottom Actions Row */}
+      <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+        <Button
           type="button"
+          variant="cooking"
+          size="sm"
           onClick={handleCookAllClick}
-          disabled={dish.pendingQuantity === 0 || isProcessing}
-          className="flex-1 h-9 px-3 rounded-lg text-xs font-bold bg-status-cooking/10 hover:bg-status-cooking/20 text-status-cooking border border-status-cooking/30 cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed disabled:hover:bg-status-cooking/10 transition-all flex items-center justify-center gap-1"
+          disabled={dish.pendingQuantity === 0 || isProcessing || hasUpdatingItems}
+          className="flex-1 h-9 px-3 text-xs font-semibold"
           title={dish.pendingQuantity > 0 ? 'Nhận nấu tất cả các suất đang chờ' : 'Không có suất nào đang chờ nấu'}
         >
-          <Flame className="w-3.5 h-3.5" />
-          <span>Nấu tất cả</span>
-        </button>
+          Nấu tất cả
+        </Button>
 
-        <button
+        <Button
           type="button"
+          variant="ready"
+          size="sm"
           onClick={handleReadyAllClick}
-          disabled={dish.cookingQuantity === 0 || isProcessing}
-          className="flex-1 h-9 px-3 rounded-lg text-xs font-bold bg-status-ready hover:bg-emerald-600 active:bg-emerald-700 text-white shadow-xs cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed disabled:hover:bg-status-ready transition-all flex items-center justify-center gap-1"
+          disabled={dish.cookingQuantity === 0 || isProcessing || hasUpdatingItems}
+          className="flex-1 h-9 px-3 text-xs font-semibold"
           title={dish.cookingQuantity > 0 ? `Ra ${dish.cookingQuantity} suất đang nấu ra quầy` : 'Chưa có suất nào đang nấu để ra món'}
         >
-          <span>Ra tất cả</span>
-        </button>
+          Ra tất cả
+        </Button>
       </div>
     </div>
   )

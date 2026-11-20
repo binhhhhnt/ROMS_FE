@@ -1,4 +1,7 @@
+import { UtensilsCrossed } from 'lucide-react'
 import type { MenuItemReadItem } from '@/features/kitchen/types/kitchen.types'
+import { Badge } from '@/shared/components/ui/badge'
+import { Button } from '@/shared/components/ui/button'
 
 interface MenuAvailabilityCardProps {
   item: MenuItemReadItem
@@ -26,13 +29,12 @@ export function MenuAvailabilityCard({
 
   return (
     <div
-      className={`bg-card border rounded-2xl overflow-hidden flex flex-col shadow-xs transition-all ${
-        isAvailable
+      className={`bg-card border rounded-2xl overflow-hidden flex flex-col shadow-xs transition-all ${isAvailable
           ? 'border-border'
           : isTemporarilyUnavailable
-          ? 'border-status-cooking ring-1 ring-status-cooking/30 bg-amber-50/10'
-          : 'border-border/60 opacity-60'
-      }`}
+            ? 'border-status-pending ring-1 ring-status-pending/30'
+            : 'border-border/60 opacity-60'
+        }`}
     >
       {/* Top Image */}
       <div className="relative h-36 bg-surface/60 overflow-hidden flex items-center justify-center">
@@ -44,29 +46,34 @@ export function MenuAvailabilityCard({
             loading="lazy"
           />
         ) : (
-          <div className="text-xs text-muted font-medium">Chưa có ảnh</div>
+          <div className="flex flex-col items-center gap-1.5 text-muted">
+            <UtensilsCrossed className="w-7 h-7 opacity-40" />
+            <span className="text-xs font-medium">Chưa có ảnh</span>
+          </div>
         )}
 
         {/* Status Badge Overlay */}
         <div className="absolute top-3 right-3">
           {isAvailable ? (
-            <span className="px-2.5 py-1 rounded-full text-xs font-black bg-status-ready text-white">
-              ĐANG BÁN
-            </span>
+            <Badge variant="ready" className="bg-card/95 rounded-full">
+              <span className="w-1.5 h-1.5 rounded-full bg-status-ready shrink-0" />
+              Đang bán
+            </Badge>
           ) : isTemporarilyUnavailable ? (
-            <span className="px-2.5 py-1 rounded-full text-xs font-black bg-status-cooking text-white">
-              TẠM NGƯNG
-            </span>
+            <Badge variant="pending" className="bg-card/95 rounded-full">
+              <span className="w-1.5 h-1.5 rounded-full bg-status-pending shrink-0" />
+              Tạm ngưng
+            </Badge>
           ) : (
-            <span className="px-2.5 py-1 rounded-full text-xs font-black bg-muted text-white">
-              NGỪNG BÁN
-            </span>
+            <Badge variant="outline" className="bg-card/95 text-muted rounded-full">
+              Ngừng bán
+            </Badge>
           )}
         </div>
 
         {/* Category Pill */}
         {item.category && (
-          <div className="absolute bottom-2.5 left-2.5 bg-white/95 text-text text-[11px] font-bold px-2.5 py-0.5 rounded-md border border-border">
+          <div className="absolute bottom-2.5 left-2.5 bg-card/95 text-text text-[11px] font-semibold px-2.5 py-0.5 rounded-md border border-border">
             {item.category.name}
           </div>
         )}
@@ -78,21 +85,21 @@ export function MenuAvailabilityCard({
           <h3 className="font-bold text-base text-text line-clamp-1">
             {item.name}
           </h3>
-          <div className="flex items-center justify-between mt-0.5">
-            <span className="text-sm font-black text-primary">
+          <div className="flex items-center justify-between gap-2 mt-1">
+            <span className="text-sm font-bold tabular-nums text-primary">
               {formatPrice(item.price)}
             </span>
             {item.availability?.reason?.includes('BOM') ? (
-              <span className="text-[11px] font-medium text-amber-600 dark:text-amber-400">
+              <span className="text-xs font-semibold text-amber-900 dark:text-amber-500">
                 Chưa có BOM
               </span>
             ) : item.availability?.maxPossibleQuantity != null ? (
               item.availability.maxPossibleQuantity === 0 ? (
-                <span className="text-[11px] font-medium text-rose-500">
-                  Hết kho (0 suất)
+                <span className="text-xs font-medium text-status-cancelled">
+                  Hết kho (0)
                 </span>
               ) : (
-                <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+                <span className="text-xs font-medium text-status-completed tabular-nums">
                   Kho: {item.availability.maxPossibleQuantity} suất
                 </span>
               )
@@ -103,25 +110,26 @@ export function MenuAvailabilityCard({
         {/* Action Toggle Footer */}
         <div className="pt-2 border-t border-border">
           {isDiscontinued ? (
-            <div className="text-center py-2 text-xs font-semibold text-muted">
-              Ngừng bán vĩnh viễn (Chỉ Chủ quán)
+            <div className="text-center py-2 text-xs text-muted">
+              Ngừng bán vĩnh viễn
             </div>
           ) : isAvailable ? (
-            <button
+            <Button
               type="button"
               onClick={() => onToggleClick(item)}
-              className="w-full h-10 rounded-xl bg-status-cooking/15 hover:bg-status-cooking/25 active:bg-status-cooking/30 text-status-cooking border border-status-cooking/30 text-xs font-bold transition-colors cursor-pointer"
+              className="w-full h-10 rounded-xl text-sm font-semibold bg-status-pending hover:bg-status-pending/90 text-white"
             >
               Tạm ngưng món này
-            </button>
+            </Button>
           ) : (
-            <button
+            <Button
               type="button"
+              variant="ready"
               onClick={() => onToggleClick(item)}
-              className="w-full h-10 rounded-xl bg-status-ready hover:bg-emerald-600 active:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-colors cursor-pointer"
+              className="w-full h-10 rounded-xl text-sm font-semibold"
             >
               Mở bán lại món
-            </button>
+            </Button>
           )}
         </div>
       </div>

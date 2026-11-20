@@ -40,14 +40,12 @@ export function ChangePasswordForm() {
   const onSubmit = async (values: ChangePasswordFormValues) => {
     setIsLoading(true)
     try {
-      const message = await authApi.changePassword({
+      await authApi.changePassword({
         currentPassword: values.currentPassword,
         newPassword: values.newPassword,
       })
 
-      toast.success(
-        message || 'Đổi mật khẩu thành công! Các phiên đăng nhập khác đã được thu hồi.'
-      )
+      toast.success('Đổi mật khẩu thành công! Các phiên đăng nhập khác đã được thu hồi.')
       reset()
 
       // Thu hồi phiên và yêu cầu đăng nhập lại với mật khẩu mới để bảo mật

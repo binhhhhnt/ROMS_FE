@@ -163,7 +163,7 @@ export function MenuItemForm({ item, onSave, onDeleted }: {
           <label htmlFor="menu-item-status" className="mb-2 block text-sm font-semibold">Trạng thái kinh doanh</label>
           <select id="menu-item-status" className={menuControlClass} {...register('status')}>
             <option value="DISCONTINUED">Ngừng kinh doanh (Mặc định - Chưa lên menu)</option>
-            <option value="AVAILABLE">Đang kinh doanh (Mở bán ngay)</option>
+            <option value="AVAILABLE">Đang kinh doanh</option>
             <option value="TEMPORARILY_UNAVAILABLE">Tạm ngưng phục vụ</option>
           </select>
           <p className="mt-1 text-xs text-muted">

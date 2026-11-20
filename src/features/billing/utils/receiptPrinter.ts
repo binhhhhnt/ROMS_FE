@@ -1,3 +1,5 @@
+import { formatPrintDateTime, printHtmlViaIframe } from '@/shared/utils/browserPrinter'
+
 export interface ReceiptItem {
   index: number
   itemName: string
@@ -37,7 +39,50 @@ export interface ReceiptPrintData {
   paperSize?: 'K80' | 'K58' | 'A5'
 }
 
+export interface GroupableBillItem {
+  itemName: string
+  quantity: number
+  unitPrice: number
+  subtotal?: number
+  taxRate?: number
+}
+
+export function groupBillingItems<T extends GroupableBillItem>(items: T[]): T[] {
+  const map = new Map<string, T>()
+
+  for (const item of items) {
+    const key = `${item.itemName}__${item.unitPrice}__${item.taxRate ?? 0}`
+    const itemSubtotal = item.subtotal ?? item.unitPrice * item.quantity
+    const existing = map.get(key)
+
+    if (existing) {
+      const nextQty = existing.quantity + item.quantity
+      const existingSubtotal = existing.subtotal ?? existing.unitPrice * existing.quantity
+      map.set(key, {
+        ...existing,
+        quantity: nextQty,
+        subtotal: existingSubtotal + itemSubtotal,
+      })
+    } else {
+      map.set(key, {
+        ...item,
+        subtotal: itemSubtotal,
+      })
+    }
+  }
+
+  return Array.from(map.values())
+}
+
 export function printReceiptViaBrowser(data: ReceiptPrintData) {
+  const groupedItems: ReceiptItem[] = groupBillingItems(data.items).map((item, idx) => ({
+    ...item,
+    index: idx + 1,
+  }))
+  const normalizedData: ReceiptPrintData = {
+    ...data,
+    items: groupedItems,
+  }
   const paperSize = data.paperSize || 'K80'
   const isA5 = paperSize === 'A5'
   const isK58 = paperSize === 'K58'
@@ -55,21 +100,8 @@ export function printReceiptViaBrowser(data: ReceiptPrintData) {
 
   const formatVnd = (num: number) => num.toLocaleString('vi-VN') + ' đ'
 
-  const formatReceiptDateTime = (value?: string): string => {
-    if (!value) return ''
-    const parsed = new Date(value)
-    if (Number.isNaN(parsed.getTime())) return value
-    const pad = (n: number) => String(n).padStart(2, '0')
-    const hh = pad(parsed.getHours())
-    const min = pad(parsed.getMinutes())
-    const dd = pad(parsed.getDate())
-    const mm = pad(parsed.getMonth() + 1)
-    const yyyy = parsed.getFullYear()
-    return `${hh}:${min} ${dd}/${mm}/${yyyy}`
-  }
-
-  const formattedOpenedAt = formatReceiptDateTime(data.openedAt)
-  const formattedClosedAt = formatReceiptDateTime(data.closedAt)
+  const formattedOpenedAt = formatPrintDateTime(data.openedAt)
+  const formattedClosedAt = formatPrintDateTime(data.closedAt)
 
   const html = `
 <!DOCTYPE html>
@@ -226,7 +258,7 @@ export function printReceiptViaBrowser(data: ReceiptPrintData) {
       </tr>
     </thead>
     <tbody>
-      ${data.items
+      ${normalizedData.items
       .map(
         (item) => `
         <tr>
@@ -308,29 +340,6 @@ export function printReceiptViaBrowser(data: ReceiptPrintData) {
 </html>
   `
 
-  // Create isolated invisible iframe to trigger clean print dialog
-  const iframe = document.createElement('iframe')
-  iframe.style.position = 'fixed'
-  iframe.style.right = '0'
-  iframe.style.bottom = '0'
-  iframe.style.width = '0'
-  iframe.style.height = '0'
-  iframe.style.border = '0'
-  document.body.appendChild(iframe)
-
-  const doc = iframe.contentWindow?.document
-  if (!doc) return
-
-  doc.open()
-  doc.write(html)
-  doc.close()
-
-  setTimeout(() => {
-    iframe.contentWindow?.focus()
-    iframe.contentWindow?.print()
-    setTimeout(() => {
-      document.body.removeChild(iframe)
-    }, 1000)
-  }, 300)
+  printHtmlViaIframe(html)
 }
 

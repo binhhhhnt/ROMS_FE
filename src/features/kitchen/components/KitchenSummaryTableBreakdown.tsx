@@ -1,10 +1,12 @@
-import { useState } from 'react'
-import { UtensilsCrossed, Clock, CheckCircle2 } from 'lucide-react'
+import { UtensilsCrossed, Clock } from 'lucide-react'
 import type { OrderItemStatus } from '@/features/ordering/types/ordering.types'
+import { Button } from '@/shared/components/ui/button'
 import type { ConsolidatedDish, ConsolidatedTableItem } from './KitchenSummaryDishCard'
 
 interface KitchenSummaryTableBreakdownProps {
   dish: ConsolidatedDish | null
+  updatingItemIds: Set<number>
+  isDishBatchProcessing: boolean
   onUpdateItemStatus: (
     orderId: number,
     itemId: number,
@@ -14,21 +16,20 @@ interface KitchenSummaryTableBreakdownProps {
 
 export function KitchenSummaryTableBreakdown({
   dish,
+  updatingItemIds,
+  isDishBatchProcessing,
   onUpdateItemStatus,
 }: KitchenSummaryTableBreakdownProps) {
-  const [updatingItemId, setUpdatingItemId] = useState<number | null>(null)
 
   if (!dish) {
     return (
-      <div className="h-full bg-card border border-dashed border-border rounded-2xl p-12 flex flex-col items-center justify-center text-center shadow-xs">
-        <div className="w-16 h-16 rounded-2xl bg-surface border border-border flex items-center justify-center text-muted mb-4 shadow-xs">
-          <UtensilsCrossed className="w-8 h-8 opacity-60" />
-        </div>
-        <h3 className="font-bold text-base text-text mb-1">
+      <div className="h-full bg-card border border-dashed border-border rounded-lg p-12 flex flex-col items-center justify-center text-center">
+        <UtensilsCrossed className="w-8 h-8 text-muted/60 mb-3" />
+        <h3 className="font-semibold text-sm text-text mb-1">
           Chưa chọn món ăn
         </h3>
         <p className="text-xs text-muted max-w-sm leading-relaxed">
-          Vui lòng bấm chọn một món ăn ở danh sách bên trái để theo dõi chi tiết danh sách từng bàn đang gọi món này.
+          Chọn một món ăn ở danh sách bên trái để xem chi tiết từng bàn đang gọi món này.
         </p>
       </div>
     )
@@ -49,35 +50,30 @@ export function KitchenSummaryTableBreakdown({
   }
 
   return (
-    <div className="bg-card border border-border rounded-2xl flex flex-col shadow-xs overflow-hidden h-full">
-      {/* Header */}
-      <div className="p-4 sm:p-5 bg-surface/50 border-b border-border flex items-center justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-primary uppercase tracking-wider">
-              Chi tiết theo bàn
-            </span>
-            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-surface border border-border text-muted">
-              {dish.tableItems.length} bàn
-            </span>
+    <div className="bg-card border border-border rounded-lg flex flex-col overflow-hidden h-full">
+      {/* Header (Hàng cha: bg-surface/60) */}
+      <div className="px-4 py-3 sm:px-5 bg-surface/60 border-b border-border flex items-center justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 text-xs text-muted">
+            <span className="font-semibold text-primary">Chi tiết theo bàn</span>
+            <span>•</span>
+            <span>{dish.tableItems.length} bàn</span>
           </div>
-          <h2 className="text-xl font-black text-text mt-1">
+          <h2 className="text-lg font-bold text-text mt-0.5 truncate">
             {dish.menuItemName}
           </h2>
         </div>
 
-        <div className="text-right shrink-0">
-          <div className="text-[10px] text-muted font-bold uppercase tracking-wider">
-            Tổng số lượng
-          </div>
-          <div className="text-2xl font-black text-primary font-mono">
-            {dish.totalQuantity} <span className="text-xs font-bold text-muted">suất</span>
+        <div className="text-right shrink-0 tabular-nums">
+          <div className="text-xs text-muted">Tổng</div>
+          <div className="text-xl font-bold text-primary font-mono">
+            {dish.totalQuantity} <span className="text-xs font-medium text-muted">suất</span>
           </div>
         </div>
       </div>
 
-      {/* Table Items List */}
-      <div className="p-4 sm:p-5 flex-1 overflow-y-auto space-y-3">
+      {/* Table Items List (Hàng con: nền trắng, divide-y) */}
+      <div className="divide-y divide-border bg-card flex-1 overflow-y-auto">
         {dish.tableItems.map((item: ConsolidatedTableItem) => {
           const minutesAgo = calculateMinutesAgo(item.createdAt)
           const isUrgent = minutesAgo >= 15
@@ -85,93 +81,70 @@ export function KitchenSummaryTableBreakdown({
           return (
             <div
               key={`${item.orderId}-${item.itemId}`}
-              className="p-4 rounded-xl border border-border bg-surface/30 hover:bg-surface/50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs"
+              className="px-4 py-3.5 sm:px-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
             >
-              {/* Left Column: Table Badge, Time, and Notes */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2.5 flex-wrap">
-                  <span className="w-10 h-10 rounded-xl bg-surface border border-border flex items-center justify-center font-black text-sm text-primary shadow-xs">
-                    {item.tableCode || `T${item.tableId}`}
-                  </span>
+              {/* Left: Quantity Anchor + Table + Time + Notes */}
+              <div className="min-w-0 flex-1 flex items-start gap-3">
+                <span className="font-mono font-bold text-base text-text shrink-0 w-9 pt-0.5 tabular-nums">
+                  {item.quantity}x
+                </span>
 
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-base text-text">
-                        {item.tableCode ? `Bàn ${item.tableCode}` : `Bàn #${item.tableId}`}
-                      </span>
-                      <span className="text-xs font-semibold text-muted bg-surface px-2 py-0.5 rounded border border-border/50">
-                        Đơn #{item.orderId}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-2 text-xs text-muted mt-0.5">
-                      <span className="flex items-center gap-1 font-mono">
-                        <Clock className="w-3 h-3" />
-                        {formatTime(item.createdAt)}
-                      </span>
-                      <span>•</span>
-                      <span className={isUrgent ? 'text-status-cooking font-bold' : ''}>
-                        {minutesAgo} phút trước
-                      </span>
-                    </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-semibold text-sm text-text">
+                      {item.tableCode ? `Bàn ${item.tableCode}` : `Bàn #${item.tableId}`}
+                    </span>
+                    <span className="text-xs font-mono text-muted">
+                      Đơn #{item.orderId}
+                    </span>
                   </div>
-                </div>
 
-                {/* Customer Note */}
-                {item.note && (
-                  <p className="text-xs font-semibold text-amber-800 dark:text-amber-300 mt-2 bg-amber-500/10 px-2.5 py-1.5 rounded-lg border border-amber-500/20 max-w-lg">
-                    Ghi chú: {item.note}
-                  </p>
-                )}
-              </div>
-
-              {/* Right Column: Quantity & Action Button */}
-              <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-border/60">
-                <div className="text-right">
-                  <div className="text-base font-black text-text font-mono">
-                    x{item.quantity} <span className="text-xs font-medium text-muted">suất</span>
+                  <div className="flex items-center gap-2 text-xs text-muted mt-0.5">
+                    <span className="inline-flex items-center gap-1 font-mono">
+                      <Clock className="w-3 h-3 shrink-0" />
+                      {formatTime(item.createdAt)}
+                    </span>
+                    <span>•</span>
+                    <span className={isUrgent ? 'text-status-cancelled font-semibold' : ''}>
+                      {minutesAgo} phút trước
+                    </span>
                   </div>
-                </div>
 
-                {/* 1 Button Duy Nhất Chuyển Đổi Trạng Thái: Chờ nấu -> Nấu -> Ra món */}
-                <div className="shrink-0">
-                  {item.status === 'PENDING' ? (
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        setUpdatingItemId(item.itemId)
-                        try {
-                          await onUpdateItemStatus(item.orderId, item.itemId, 'COOKING')
-                        } finally {
-                          setUpdatingItemId(null)
-                        }
-                      }}
-                      disabled={updatingItemId === item.itemId}
-                      className="h-10 px-4 bg-status-cooking/10 hover:bg-status-cooking/20 active:bg-status-cooking/30 text-status-cooking font-bold text-xs rounded-xl border border-status-cooking/30 cursor-pointer disabled:opacity-60 transition-colors shadow-xs"
-                      title="Nhận nấu cho bàn này"
-                    >
-                      {updatingItemId === item.itemId ? 'Đang lưu...' : 'Nấu'}
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        setUpdatingItemId(item.itemId)
-                        try {
-                          await onUpdateItemStatus(item.orderId, item.itemId, 'READY')
-                        } finally {
-                          setUpdatingItemId(null)
-                        }
-                      }}
-                      disabled={updatingItemId === item.itemId}
-                      className="h-10 px-4 bg-status-ready hover:bg-emerald-600 active:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs cursor-pointer disabled:opacity-60 transition-colors flex items-center gap-1"
-                      title="Ra món cho bàn này"
-                    >
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      <span>{updatingItemId === item.itemId ? 'Đang lưu...' : 'Ra món'}</span>
-                    </button>
+                  {item.note && (
+                    <p className="text-xs text-text mt-1">
+                      <span className="font-semibold">Ghi chú:</span> {item.note}
+                    </p>
                   )}
                 </div>
+              </div>
+
+              {/* Right: Action Button */}
+              <div className="shrink-0 flex items-center justify-end pl-12 sm:pl-0">
+                {item.status === 'PENDING' ? (
+                  <Button
+                    type="button"
+                    variant="cooking"
+                    size="sm"
+                    onClick={() => onUpdateItemStatus(item.orderId, item.itemId, 'COOKING')}
+                    disabled={isDishBatchProcessing || updatingItemIds.has(item.itemId)}
+                    className="h-9 px-3.5 text-xs font-semibold"
+                    title="Nhận nấu cho bàn này"
+                  >
+                    Nấu
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="ready"
+                    size="sm"
+                    onClick={() => onUpdateItemStatus(item.orderId, item.itemId, 'READY')}
+                    disabled={isDishBatchProcessing || updatingItemIds.has(item.itemId)}
+                    className="h-9 px-3.5 text-xs font-semibold"
+                    title="Ra món cho bàn này"
+                  >
+                    Ra món
+                  </Button>
+                )}
               </div>
             </div>
           )

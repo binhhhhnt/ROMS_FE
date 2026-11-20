@@ -71,6 +71,7 @@ export interface MenuListParams {
   status?: MenuStatus
   sort: string
   quantity?: number
+  forOrder?: boolean
 }
 
 export interface ExcelImportResult {

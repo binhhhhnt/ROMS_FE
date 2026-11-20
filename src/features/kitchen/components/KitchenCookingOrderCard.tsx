@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { KitchenOrderResponse } from '@/features/kitchen/types/kitchen.types'
 import type { OrderItemStatus } from '@/features/ordering/types/ordering.types'
+import { Button } from '@/shared/components/ui/button'
 
 interface KitchenCookingOrderCardProps {
   order: KitchenOrderResponse
@@ -19,8 +20,24 @@ export function KitchenCookingOrderCard({
   onReadyAll,
   onCookAll,
 }: KitchenCookingOrderCardProps) {
-  const [updatingItemId, setUpdatingItemId] = useState<number | null>(null)
+  const [updatingItemIds, setUpdatingItemIds] = useState<Set<number>>(new Set())
   const [isFinishingAll, setIsFinishingAll] = useState(false)
+
+  const handleUpdateItem = async (
+    itemId: number,
+    targetStatus: OrderItemStatus
+  ) => {
+    setUpdatingItemIds((prev) => new Set(prev).add(itemId))
+    try {
+      await onUpdateItemStatus(order.id, itemId, targetStatus)
+    } finally {
+      setUpdatingItemIds((prev) => {
+        const next = new Set(prev)
+        next.delete(itemId)
+        return next
+      })
+    }
+  }
 
   // Calculate elapsed cooking time
   const elapsedMinutes = Math.max(
@@ -83,165 +100,131 @@ export function KitchenCookingOrderCard({
 
   return (
     <div
-      className={`bg-card border rounded-2xl shadow-xs overflow-hidden flex flex-col transition-all ${
+      className={`bg-card border border-border rounded-lg overflow-hidden flex flex-col ${
         isAllReady
-          ? 'border-status-ready/60 bg-status-ready/5'
+          ? 'border-t-4 border-t-status-ready'
           : isCookingLong
-            ? 'border-status-cooking ring-1 ring-status-cooking/40'
-            : 'border-border'
+            ? 'border-t-4 border-t-status-cooking'
+            : ''
       }`}
     >
-      {/* Header: Table, Order ID, and Elapsed Time */}
-      <div className="bg-surface/50 p-4 border-b border-border flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-surface border border-border flex items-center justify-center text-primary font-black text-xl">
-            {order.tableCode || `T${order.tableId}`}
+      {/* Header (Hàng cha: bg-surface/60) */}
+      <div className="bg-surface/60 px-4 py-3 border-b border-border flex items-center justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-bold text-base text-text">
+              {order.tableCode ? `Bàn ${order.tableCode}` : `Bàn #${order.tableId}`}
+            </span>
+            <span className="text-xs font-mono text-muted">
+              #{order.id}
+            </span>
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-lg text-text">
-                {order.tableCode ? `Bàn ${order.tableCode}` : `Bàn #${order.tableId}`}
-              </span>
-              <span className="text-xs font-semibold text-muted bg-surface px-2 py-0.5 rounded">
-                #{order.id}
-              </span>
-            </div>
-            <div className="text-xs text-muted mt-0.5">
-              Bắt đầu lúc {formatTime(order.createdAt)}
-            </div>
+          <div className="text-xs text-muted mt-0.5">
+            Bắt đầu lúc {formatTime(order.createdAt)}
           </div>
         </div>
 
         {/* Elapsed Timer Badge */}
-        <div
-          className={`px-3 py-1.5 rounded-lg text-xs font-bold ${
+        <span
+          className={`px-2.5 py-0.5 rounded-md text-xs font-medium border shrink-0 ${
             isAllReady
-              ? 'bg-status-ready/20 text-status-ready border border-status-ready/30'
+              ? 'bg-status-ready/15 text-status-ready border-status-ready/35'
               : isCookingLong
-                ? 'bg-status-cooking/20 text-status-cooking border border-status-cooking/40'
-                : 'bg-surface text-muted border border-border'
+                ? 'bg-status-cooking/15 text-status-cooking border-status-cooking/35'
+                : 'bg-card text-muted border-border'
           }`}
         >
           {isAllReady ? 'Đã xong toàn bộ' : `Đã nhận ${elapsedMinutes} phút`}
-        </div>
+        </span>
       </div>
 
       {/* Dishes List */}
-      <div className="p-4 flex-1 flex flex-col gap-2">
-        <div className="text-xs font-bold text-muted uppercase tracking-wider mb-1 flex items-center justify-between">
-          <span>
-            Tiến độ: {readyItems.length}/{order.items.length} món xong
-          </span>
-          <span className="text-primary font-bold">
-            Còn lại {cookingItems.reduce((sum, i) => sum + i.quantity, 0)} suất
-          </span>
-        </div>
-
-        <div className="space-y-2.5 pt-1">
-          {cookingItems.length === 0 ? (
-            <div className="text-center py-6 text-xs font-semibold text-status-ready bg-status-ready/5 rounded-xl border border-status-ready/20">
-              Tất cả món đã nấu xong ({readyItems.length} món đã chuyển sang quầy chờ bưng)
-            </div>
-          ) : (
-            cookingItems.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between gap-3 p-3 rounded-xl border transition-colors bg-surface/30 border-border"
-              >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2.5">
-                    <span className="w-8 h-8 rounded-lg bg-surface border border-border text-primary flex items-center justify-center font-black text-sm shrink-0">
-                      x{item.quantity}
-                    </span>
-                    <span className="font-bold text-base block leading-snug text-text">
-                      {item.menuItemName}
-                    </span>
-                  </div>
-
+      <div className="divide-y divide-border bg-card flex-1">
+        {cookingItems.length === 0 ? (
+          <div className="text-center py-8 px-4 text-xs font-medium text-status-ready">
+            Tất cả món đã nấu xong ({readyItems.length} món đã chuyển sang quầy chờ bưng)
+          </div>
+        ) : (
+          cookingItems.map((item) => (
+            <div
+              key={item.id}
+              className="px-4 py-3 flex items-center justify-between gap-3"
+            >
+              <div className="min-w-0 flex-1 flex items-start gap-3">
+                <span className="font-mono font-bold text-base text-text shrink-0 w-9 pt-0.5 tabular-nums">
+                  {item.quantity}x
+                </span>
+                <div className="min-w-0 flex-1">
+                  <span className="font-semibold text-sm text-text block leading-snug">
+                    {item.menuItemName}
+                  </span>
                   {item.note && (
-                    <p className="text-xs font-semibold text-amber-800 mt-1 bg-amber-50 px-2.5 py-1 rounded border border-amber-200">
-                      Ghi chú: {item.note}
+                    <p className="text-xs text-text mt-1">
+                      <span className="font-semibold">Ghi chú:</span> {item.note}
                     </p>
                   )}
                 </div>
-
-                {/* 1 Button Duy Nhất Chuyển Đổi Trạng Thái: Chờ nấu -> Nấu -> Ra món */}
-                <div className="shrink-0">
-                  {item.status === 'PENDING' ? (
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        setUpdatingItemId(item.id)
-                        try {
-                          await onUpdateItemStatus(order.id, item.id, 'COOKING')
-                        } finally {
-                          setUpdatingItemId(null)
-                        }
-                      }}
-                      disabled={updatingItemId === item.id}
-                      className="h-10 px-4 bg-status-cooking/10 hover:bg-status-cooking/20 active:bg-status-cooking/30 text-status-cooking font-bold text-xs rounded-xl border border-status-cooking/30 cursor-pointer disabled:opacity-60 transition-colors shadow-xs"
-                      title="Bắt đầu nấu món này"
-                    >
-                      {updatingItemId === item.id ? 'Đang lưu...' : 'Nấu'}
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        setUpdatingItemId(item.id)
-                        try {
-                          await onUpdateItemStatus(order.id, item.id, 'READY')
-                        } finally {
-                          setUpdatingItemId(null)
-                        }
-                      }}
-                      disabled={updatingItemId === item.id}
-                      className="h-10 px-4 bg-status-ready hover:bg-emerald-600 active:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs cursor-pointer transition-colors disabled:opacity-60"
-                      title="Báo món đã nấu xong và chuyển ra quầy"
-                    >
-                      {updatingItemId === item.id ? 'Đang lưu...' : 'Ra món'}
-                    </button>
-                  )}
-                </div>
               </div>
-            ))
-          )}
-        </div>
+
+              <div className="shrink-0">
+                {item.status === 'PENDING' ? (
+                  <Button
+                    type="button"
+                    variant="cooking"
+                    size="sm"
+                    onClick={() => handleUpdateItem(item.id, 'COOKING')}
+                    disabled={isFinishingAll || updatingItemIds.has(item.id)}
+                    className="h-9 px-3.5 text-xs font-semibold"
+                    title="Bắt đầu nấu món này"
+                  >
+                    Nấu
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="ready"
+                    size="sm"
+                    onClick={() => handleUpdateItem(item.id, 'READY')}
+                    disabled={isFinishingAll || updatingItemIds.has(item.id)}
+                    className="h-9 px-3.5 text-xs font-semibold"
+                    title="Báo món đã nấu xong và chuyển ra quầy"
+                  >
+                    Ra món
+                  </Button>
+                )}
+              </div>
+            </div>
+          ))
+        )}
       </div>
 
-      {/* Card Footer: 1 Nút Chuyển Đổi (Nấu tất cả -> Ra tất cả) */}
-      <div className="bg-surface/40 p-4 border-t border-border mt-auto">
+      {/* Card Footer */}
+      <div className="bg-card px-4 py-3 border-t border-border mt-auto">
         {cookingItems.length > 0 ? (
           hasPendingItems ? (
-            <button
+            <Button
               type="button"
+              variant="cooking"
               onClick={handleCookAllItems}
-              disabled={isFinishingAll}
-              className="w-full h-11 bg-status-cooking hover:bg-orange-600 active:bg-orange-700 text-white font-bold text-sm rounded-xl flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer disabled:opacity-60"
+              disabled={isFinishingAll || updatingItemIds.size > 0}
+              className="w-full h-11 text-sm font-semibold"
             >
-              {isFinishingAll ? (
-                <span>Đang lưu...</span>
-              ) : (
-                <span>Nấu tất cả</span>
-              )}
-            </button>
+              Nấu tất cả
+            </Button>
           ) : (
-            <button
+            <Button
               type="button"
+              variant="ready"
               onClick={handleFinishAllItems}
-              disabled={isFinishingAll}
-              className="w-full h-11 bg-status-ready hover:bg-emerald-600 active:bg-emerald-700 text-white font-bold text-sm rounded-xl flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer disabled:opacity-60"
+              disabled={isFinishingAll || updatingItemIds.size > 0}
+              className="w-full h-11 text-sm font-semibold"
             >
-              {isFinishingAll ? (
-                <span>Đang lưu...</span>
-              ) : (
-                <span>Ra tất cả</span>
-              )}
-            </button>
+              Ra tất cả
+            </Button>
           )
         ) : (
-          <div className="text-center text-xs font-bold text-status-ready py-1">
-            Toàn bộ món đã nấu xong & chuyển ra quầy chờ bưng
+          <div className="text-center text-xs font-medium text-status-ready py-1">
+            Toàn bộ món đã nấu xong &amp; chuyển ra quầy chờ bưng
           </div>
         )}
       </div>

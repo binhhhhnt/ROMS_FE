@@ -123,7 +123,7 @@ export function StockMovementsPage() {
               setSelectedIngredientId(val ? Number(val) : undefined)
               setPage(0)
             }}
-            className="text-xs border border-border rounded-lg px-3 py-2 bg-background text-text focus:outline-none focus:border-accent min-w-[200px]"
+            className="text-xs border border-border rounded-lg px-3 py-2 bg-background text-text focus:outline-none focus:border-accent w-full sm:w-auto sm:min-w-[200px]"
           >
             <option value="">Tất cả nguyên liệu</option>
             {ingredientsData?.content?.map((item) => (
@@ -141,12 +141,13 @@ export function StockMovementsPage() {
               setSelectedMovementType(val ? val : undefined)
               setPage(0)
             }}
-            className="text-xs border border-border rounded-lg px-3 py-2 bg-background text-text focus:outline-none focus:border-accent min-w-[180px]"
+            className="text-xs border border-border rounded-lg px-3 py-2 bg-background text-text focus:outline-none focus:border-accent w-full sm:w-auto sm:min-w-[180px]"
           >
             <option value="">Tất cả loại giao dịch</option>
             <option value="PURCHASE">Nhập mua hàng</option>
             <option value="ORDER_CONSUMPTION">Xuất chế biến</option>
             <option value="INVENTORY_ADJUSTMENT">Điều chỉnh kiểm kê</option>
+            <option value="ORDER_RETURN">Hoàn trả kiểm đồ</option>
           </select>
 
           {hasActiveFilters && (
@@ -171,7 +172,7 @@ export function StockMovementsPage() {
       {/* Main Table */}
       <div className="bg-card border border-border rounded-xl shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
+          <table className="w-full min-w-[780px] text-left text-sm">
             <thead className="bg-surface/60 border-b border-border text-xs uppercase text-primary font-semibold tracking-wider">
               <tr>
                 <th className="py-3 px-4 w-16">Mã</th>

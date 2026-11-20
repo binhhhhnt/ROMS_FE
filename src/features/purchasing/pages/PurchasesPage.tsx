@@ -86,30 +86,30 @@ export function PurchasesPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-text">
-              Quản lý Phiếu Nhập Hàng
+    <div className="space-y-5">
+      {/* Tầng 1: Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-border">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-xl font-bold tracking-tight text-text">
+              Quản lý phiếu nhập hàng
             </h1>
-            <Badge variant="outline" className="bg-surface text-muted-foreground border-border">
+            <Badge variant="outline" className="text-muted">
               Thực tế kho
             </Badge>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs text-muted mt-0.5">
             Lịch sử các đợt nhập nguyên vật liệu thực tế vào kho và cập nhật số dư tồn kho.
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2 shrink-0">
           <Button
             variant="outline"
             size="sm"
             onClick={() => refetch()}
             disabled={isRefetching}
-            className="text-xs flex items-center gap-1.5"
+            className="h-9 px-3 text-xs flex items-center gap-1.5"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isRefetching ? 'animate-spin' : ''}`} />
             Làm mới
@@ -117,9 +117,9 @@ export function PurchasesPage() {
 
           <Button
             variant="primary"
-            size="md"
+            size="sm"
             onClick={() => navigate('/inventory/purchases/new')}
-            className="shadow-sm font-semibold text-xs md:text-sm"
+            className="h-9 px-3.5 text-xs font-semibold"
           >
             <Plus className="w-4 h-4 mr-1.5" />
             Tạo phiếu nhập mới
@@ -129,48 +129,41 @@ export function PurchasesPage() {
 
       {/* Metrics Banner */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-card border border-border p-4 rounded-xl flex items-center gap-3 shadow-sm">
-          <div className="w-10 h-10 rounded-lg bg-accent/15 border border-accent/20 flex items-center justify-center text-accent">
-            <Receipt className="w-5 h-5" />
-          </div>
+        <div className="bg-card border border-border p-4 rounded-lg flex items-center justify-between">
           <div>
-            <div className="text-xs text-muted-foreground font-medium">Tổng số phiếu (Kỳ này)</div>
-            <div className="text-xl font-bold text-text">{totalElements}</div>
+            <div className="text-xs text-muted font-medium">Tổng số phiếu (Kỳ này)</div>
+            <div className="text-xl font-bold text-text tabular-nums mt-0.5">{totalElements}</div>
           </div>
+          <Receipt className="w-5 h-5 text-muted/60 shrink-0" />
         </div>
 
-        <div className="bg-card border border-border p-4 rounded-xl flex items-center gap-3 shadow-sm">
-          <div className="w-10 h-10 rounded-lg bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-            <Banknote className="w-5 h-5" />
-          </div>
+        <div className="bg-card border border-border p-4 rounded-lg flex items-center justify-between">
           <div>
-            <div className="text-xs text-muted-foreground font-medium">Tổng tiền trang hiện tại</div>
-            <div className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
+            <div className="text-xs text-muted font-medium">Tổng tiền hiện tại</div>
+            <div className="text-xl font-bold text-status-completed tabular-nums mt-0.5">
               {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
                 pageTotalAmount
               )}
             </div>
           </div>
+          <Banknote className="w-5 h-5 text-status-completed/60 shrink-0" />
         </div>
 
-        <div className="bg-card border border-border p-4 rounded-xl flex items-center gap-3 shadow-sm">
-          <div className="w-10 h-10 rounded-lg bg-sky-500/15 border border-sky-500/20 flex items-center justify-center text-sky-600 dark:text-sky-400">
-            <ShoppingBag className="w-5 h-5" />
-          </div>
+        <div className="bg-card border border-border p-4 rounded-lg flex items-center justify-between">
           <div>
-            <div className="text-xs text-muted-foreground font-medium">Trạng thái</div>
+            <div className="text-xs text-muted font-medium">Trạng thái</div>
             <div className="text-sm font-semibold text-text mt-1">Đã nhập trực tiếp vào kho</div>
           </div>
+          <ShoppingBag className="w-5 h-5 text-muted/60 shrink-0" />
         </div>
       </div>
 
-      {/* Filters Bar */}
-      <div className="bg-card border border-border p-4 rounded-xl space-y-3 shadow-sm">
+      {/* Tầng 2: Filters Bar */}
+      <div className="bg-card border border-border p-4 rounded-lg space-y-3">
         <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
-          {/* From Date */}
           <div className="sm:col-span-3 space-y-1">
             <label className="text-xs font-medium text-text flex items-center gap-1">
-              <Calendar className="w-3.5 h-3.5 text-accent" />
+              <Calendar className="w-3.5 h-3.5 text-muted" />
               Từ ngày
             </label>
             <Input
@@ -184,10 +177,9 @@ export function PurchasesPage() {
             />
           </div>
 
-          {/* To Date */}
           <div className="sm:col-span-3 space-y-1">
             <label className="text-xs font-medium text-text flex items-center gap-1">
-              <Calendar className="w-3.5 h-3.5 text-accent" />
+              <Calendar className="w-3.5 h-3.5 text-muted" />
               Đến ngày
             </label>
             <Input
@@ -201,14 +193,13 @@ export function PurchasesPage() {
             />
           </div>
 
-          {/* Quick Date Buttons */}
           <div className="sm:col-span-6 flex flex-wrap items-center gap-1.5">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={handleSetToday}
-              className="h-9 text-xs px-2.5"
+              className="h-9 text-xs px-3"
             >
               Hôm nay
             </Button>
@@ -217,7 +208,7 @@ export function PurchasesPage() {
               variant="outline"
               size="sm"
               onClick={handleSetLast7Days}
-              className="h-9 text-xs px-2.5"
+              className="h-9 text-xs px-3"
             >
               7 ngày qua
             </Button>
@@ -226,17 +217,17 @@ export function PurchasesPage() {
               variant="outline"
               size="sm"
               onClick={handleSetThisMonth}
-              className="h-9 text-xs px-2.5"
+              className="h-9 text-xs px-3"
             >
               Tháng này
             </Button>
             {(fromDate || toDate) && (
               <Button
                 type="button"
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 onClick={handleClearFilter}
-                className="h-9 text-xs text-muted-foreground hover:text-text px-2"
+                className="h-9 text-xs px-3 text-muted hover:text-text"
               >
                 Đặt lại
               </Button>
@@ -244,49 +235,48 @@ export function PurchasesPage() {
           </div>
         </div>
 
-        {/* Applied filter summary */}
-        <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/50">
+        <div className="flex items-center justify-between text-xs text-muted pt-2 border-t border-border">
           <div className="flex items-center gap-1.5">
-            <Filter className="w-3.5 h-3.5 text-accent" />
+            <Filter className="w-3.5 h-3.5 shrink-0" />
             <span>
-              Tìm thấy <strong>{totalElements}</strong> phiếu nhập
+              Tìm thấy <strong className="text-text tabular-nums">{totalElements}</strong> phiếu nhập
               {fromDate && toDate && ` từ ${fromDate} đến ${toDate}`}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Purchases Data Table */}
-      <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
+      {/* Tầng 3: Purchases Data Table */}
+      <div className="bg-card border border-border rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-xs">
-            <thead className="bg-surface/50 border-b border-border text-muted-foreground font-medium">
+          <table className="w-full min-w-[740px] text-xs">
+            <thead className="bg-surface/60 border-b border-border text-muted font-medium">
               <tr>
-                <th className="px-4 py-3 text-left w-20">Mã phiếu</th>
-                <th className="px-4 py-3 text-left">Ngày nhập kho</th>
-                <th className="px-4 py-3 text-left">Người tạo</th>
+                <th className="px-4 py-3 text-left w-20 whitespace-nowrap">Mã phiếu</th>
+                <th className="px-4 py-3 text-left whitespace-nowrap">Ngày nhập kho</th>
+                <th className="px-4 py-3 text-left whitespace-nowrap">Người tạo</th>
                 <th className="px-4 py-3 text-left">Ghi chú</th>
-                <th className="px-4 py-3 text-right">Tổng tiền</th>
-                <th className="px-4 py-3 text-left">Thời gian ghi nhận</th>
-                <th className="px-4 py-3 text-right">Thao tác</th>
+                <th className="px-4 py-3 text-right whitespace-nowrap">Tổng tiền</th>
+                <th className="px-4 py-3 text-left whitespace-nowrap">Thời gian ghi nhận</th>
+                <th className="px-4 py-3 text-right whitespace-nowrap">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {isLoading ? (
                 <tr>
-                  <td colSpan={7} className="py-16 text-center text-muted-foreground">
+                  <td colSpan={7} className="py-16 text-center text-muted">
                     <div className="flex flex-col items-center justify-center gap-2">
-                      <RefreshCw className="w-6 h-6 animate-spin text-accent" />
+                      <RefreshCw className="w-6 h-6 animate-spin text-primary" />
                       <span>Đang tải danh sách phiếu nhập...</span>
                     </div>
                   </td>
                 </tr>
               ) : purchases.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-16 text-center text-muted-foreground">
+                  <td colSpan={7} className="py-16 text-center text-muted">
                     <div className="flex flex-col items-center justify-center gap-2">
-                      <ShoppingBag className="w-8 h-8 text-muted-foreground/40" />
-                      <span className="font-medium text-sm">Chưa có phiếu nhập hàng nào</span>
+                      <ShoppingBag className="w-8 h-8 text-muted/40" />
+                      <span className="font-medium text-sm text-text">Chưa có phiếu nhập hàng nào</span>
                       <span className="text-xs">
                         Tạo phiếu nhập mới để cập nhật nguyên liệu thực tế vào kho.
                       </span>
@@ -303,74 +293,61 @@ export function PurchasesPage() {
                   </td>
                 </tr>
               ) : (
-                purchases.map((purchase) => {
-                  return (
-                    <tr
-                      key={purchase.id}
-                      className="hover:bg-surface/40 transition-colors group cursor-pointer"
-                      onClick={() => navigate(`/inventory/purchases/${purchase.id}`)}
-                    >
-                      {/* ID */}
-                      <td className="px-4 py-3 font-mono font-semibold text-accent">
-                        #{purchase.id}
-                      </td>
+                purchases.map((purchase) => (
+                  <tr
+                    key={purchase.id}
+                    className="hover:bg-muted-bg/40 transition-colors cursor-pointer"
+                    onClick={() => navigate(`/inventory/purchases/${purchase.id}`)}
+                  >
+                    <td className="px-4 py-3 font-mono font-semibold text-primary whitespace-nowrap">
+                      #{purchase.id}
+                    </td>
 
-                      {/* Purchase Date */}
-                      <td className="px-4 py-3 font-medium text-text">
-                        <div className="flex items-center gap-1.5">
-                          <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
-                          <span>{purchase.purchaseDate}</span>
-                        </div>
-                      </td>
+                    <td className="px-4 py-3 font-medium text-text tabular-nums whitespace-nowrap">
+                      {purchase.purchaseDate}
+                    </td>
 
-                      {/* Created By */}
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-1.5 text-text">
-                          <User className="w-3.5 h-3.5 text-muted-foreground" />
-                          <span>{purchase.createdByName || '—'}</span>
-                        </div>
-                      </td>
+                    <td className="px-4 py-3 text-text whitespace-nowrap">
+                      <div className="flex items-center gap-1.5">
+                        <User className="w-3.5 h-3.5 text-muted shrink-0" />
+                        <span>{purchase.createdByName || '—'}</span>
+                      </div>
+                    </td>
 
-                      {/* Note */}
-                      <td className="px-4 py-3 text-muted-foreground">
-                        {purchase.note ? (
-                          <span className="line-clamp-1 max-w-xs">{purchase.note}</span>
-                        ) : (
-                          <span className="italic">—</span>
-                        )}
-                      </td>
+                    <td className="px-4 py-3 text-muted">
+                      {purchase.note ? (
+                        <span className="line-clamp-1 max-w-xs">{purchase.note}</span>
+                      ) : (
+                        <span>—</span>
+                      )}
+                    </td>
 
-                      {/* Total Amount */}
-                      <td className="px-4 py-3 text-right">
-                        <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm">
-                          {new Intl.NumberFormat('vi-VN', {
-                            style: 'currency',
-                            currency: 'VND',
-                          }).format(purchase.totalAmount)}
-                        </span>
-                      </td>
+                    <td className="px-4 py-3 text-right whitespace-nowrap">
+                      <span className="font-semibold text-status-completed text-sm tabular-nums">
+                        {new Intl.NumberFormat('vi-VN', {
+                          style: 'currency',
+                          currency: 'VND',
+                        }).format(purchase.totalAmount)}
+                      </span>
+                    </td>
 
-                      {/* Created At */}
-                      <td className="px-4 py-3 text-muted-foreground">
-                        <div className="flex items-center gap-1 text-[11px]">
-                          <Clock className="w-3 h-3 text-muted-foreground/70" />
-                          <span>{new Date(purchase.createdAt).toLocaleString('vi-VN')}</span>
-                        </div>
-                      </td>
+                    <td className="px-4 py-3 text-muted tabular-nums whitespace-nowrap">
+                      <div className="flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5 text-muted/70 shrink-0" />
+                        <span>{new Date(purchase.createdAt).toLocaleString('vi-VN')}</span>
+                      </div>
+                    </td>
 
-                      {/* Action */}
-                      <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
-                        <Link
-                          to={`/inventory/purchases/${purchase.id}`}
-                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded text-xs font-medium text-accent hover:bg-accent/10 transition-colors"
-                        >
+                    <td className="px-4 py-3 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                      <Link to={`/inventory/purchases/${purchase.id}`}>
+                        <Button variant="outline" size="sm" className="h-8 px-2.5 text-xs gap-1">
                           <span>Chi tiết</span>
                           <ArrowRight className="w-3.5 h-3.5" />
-                        </Link>
-                      </td>
-                    </tr>
-                  )
-                })
+                        </Button>
+                      </Link>
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
@@ -378,9 +355,11 @@ export function PurchasesPage() {
 
         {/* Pagination Bar */}
         {totalPages > 1 && (
-          <div className="px-4 py-3 border-t border-border bg-surface/30 flex items-center justify-between text-xs text-muted-foreground">
+          <div className="px-4 py-3 border-t border-border bg-card flex items-center justify-between text-xs text-muted">
             <div>
-              Trang <strong>{page + 1}</strong> / {totalPages} (Tổng {totalElements} phiếu)
+              Trang <strong className="text-text tabular-nums">{page + 1}</strong> /{' '}
+              <span className="tabular-nums">{totalPages}</span> (Tổng{' '}
+              <span className="tabular-nums">{totalElements}</span> phiếu)
             </div>
             <div className="flex items-center gap-1.5">
               <Button
@@ -388,7 +367,7 @@ export function PurchasesPage() {
                 size="sm"
                 onClick={() => setPage((p) => Math.max(0, p - 1))}
                 disabled={page === 0}
-                className="h-7 px-2 text-xs"
+                className="h-8 px-2.5 text-xs"
               >
                 <ChevronLeft className="w-3.5 h-3.5 mr-0.5" />
                 Trước
@@ -398,7 +377,7 @@ export function PurchasesPage() {
                 size="sm"
                 onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
                 disabled={page >= totalPages - 1}
-                className="h-7 px-2 text-xs"
+                className="h-8 px-2.5 text-xs"
               >
                 Sau
                 <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
