@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { Printer } from 'lucide-react'
 import type { KitchenOrderResponse } from '@/features/kitchen/types/kitchen.types'
 import type { OrderItemStatus } from '@/features/ordering/types/ordering.types'
+import { useKdsSettingsStore } from '@/features/kitchen/store/kdsSettingsStore'
 import { Button } from '@/shared/components/ui/button'
 
 interface KitchenCookingOrderCardProps {
@@ -12,6 +14,7 @@ interface KitchenCookingOrderCardProps {
   ) => Promise<void>
   onReadyAll?: (orderId: number) => Promise<void>
   onCookAll?: (orderId: number) => Promise<void>
+  onPrintOrderTicket?: (order: KitchenOrderResponse) => void
 }
 
 export function KitchenCookingOrderCard({
@@ -19,9 +22,11 @@ export function KitchenCookingOrderCard({
   onUpdateItemStatus,
   onReadyAll,
   onCookAll,
+  onPrintOrderTicket,
 }: KitchenCookingOrderCardProps) {
   const [updatingItemIds, setUpdatingItemIds] = useState<Set<number>>(new Set())
   const [isFinishingAll, setIsFinishingAll] = useState(false)
+  const overdueMinutes = useKdsSettingsStore((s) => s.overdueMinutes)
 
   const handleUpdateItem = async (
     itemId: number,
@@ -45,7 +50,7 @@ export function KitchenCookingOrderCard({
     Math.floor((Date.now() - new Date(order.createdAt).getTime()) / 60000)
   )
 
-  const isCookingLong = elapsedMinutes >= 15
+  const isCookingLong = elapsedMinutes >= overdueMinutes
 
   const formatTime = (isoString?: string) => {
     if (!isoString) return ''
@@ -98,25 +103,30 @@ export function KitchenCookingOrderCard({
     }
   }
 
+  const isOverdue = !isAllReady && isCookingLong
+
   return (
     <div
-      className={`bg-card border border-border rounded-lg overflow-hidden flex flex-col ${
+      className={`border rounded-lg overflow-hidden flex flex-col transition-colors ${
         isAllReady
-          ? 'border-t-4 border-t-status-ready'
-          : isCookingLong
-            ? 'border-t-4 border-t-status-cooking'
-            : ''
+          ? 'bg-card border-border border-t-4 border-t-status-ready'
+          : isOverdue
+            ? 'bg-red-50 border-red-400 border-t-4 border-t-red-600 shadow-sm'
+            : 'bg-card border-border'
       }`}
     >
-      {/* Header (Hàng cha: bg-surface/60) */}
-      <div className="bg-surface/60 px-4 py-3 border-b border-border flex items-center justify-between gap-3">
+      {/* Header (Hàng cha) */}
+      <div
+        className={`px-4 py-3 border-b flex items-center justify-between gap-3 ${
+          isOverdue
+            ? 'bg-red-100/70 border-red-200'
+            : 'bg-surface/60 border-border'
+        }`}
+      >
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-bold text-base text-text">
               {order.tableCode ? `Bàn ${order.tableCode}` : `Bàn #${order.tableId}`}
-            </span>
-            <span className="text-xs font-mono text-muted">
-              #{order.id}
             </span>
           </div>
           <div className="text-xs text-muted mt-0.5">
@@ -124,22 +134,41 @@ export function KitchenCookingOrderCard({
           </div>
         </div>
 
-        {/* Elapsed Timer Badge */}
-        <span
-          className={`px-2.5 py-0.5 rounded-md text-xs font-medium border shrink-0 ${
-            isAllReady
-              ? 'bg-status-ready/15 text-status-ready border-status-ready/35'
-              : isCookingLong
-                ? 'bg-status-cooking/15 text-status-cooking border-status-cooking/35'
-                : 'bg-card text-muted border-border'
-          }`}
-        >
-          {isAllReady ? 'Đã xong toàn bộ' : `Đã nhận ${elapsedMinutes} phút`}
-        </span>
+        <div className="flex items-center gap-1.5 shrink-0">
+          {onPrintOrderTicket && cookingItems.length > 0 && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onPrintOrderTicket(order)}
+              className="h-7 px-2 text-xs bg-card"
+              title="In lại phiếu order vào bếp"
+            >
+              <Printer className="w-3.5 h-3.5" />
+            </Button>
+          )}
+
+          {/* Elapsed Timer Badge */}
+          <span
+            className={`px-2.5 py-0.5 rounded-md text-xs font-medium border shrink-0 ${
+              isAllReady
+                ? 'bg-status-ready/15 text-status-ready border-status-ready/35'
+                : isOverdue
+                  ? 'bg-red-600 text-white border-red-700 font-semibold'
+                  : 'bg-card text-muted border-border'
+            }`}
+          >
+            {isAllReady
+              ? 'Đã xong toàn bộ'
+              : isOverdue
+                ? `Quá giờ • ${elapsedMinutes} phút`
+                : `Đã nhận ${elapsedMinutes} phút`}
+          </span>
+        </div>
       </div>
 
       {/* Dishes List */}
-      <div className="divide-y divide-border bg-card flex-1">
+      <div className={`divide-y flex-1 ${isOverdue ? 'divide-red-200 bg-red-50/50' : 'divide-border bg-card'}`}>
         {cookingItems.length === 0 ? (
           <div className="text-center py-8 px-4 text-xs font-medium text-status-ready">
             Tất cả món đã nấu xong ({readyItems.length} món đã chuyển sang quầy chờ bưng)

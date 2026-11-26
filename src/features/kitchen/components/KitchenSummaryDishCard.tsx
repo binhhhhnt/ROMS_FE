@@ -1,4 +1,4 @@
-import { Clock, ChevronRight } from 'lucide-react'
+import { Clock } from 'lucide-react'
 import { Badge } from '@/shared/components/ui/badge'
 import { Button } from '@/shared/components/ui/button'
 
@@ -62,11 +62,10 @@ export function KitchenSummaryDishCard({
   return (
     <div
       onClick={onSelect}
-      className={`rounded-lg p-4 border transition-colors cursor-pointer select-none flex flex-col gap-3 ${
-        isSelected
+      className={`rounded-lg p-4 border transition-colors cursor-pointer select-none flex flex-col gap-3 ${isSelected
           ? 'bg-surface/60 border-primary'
           : 'bg-card border-border hover:border-primary/50'
-      }`}
+        }`}
     >
       {/* Top Row: Quantity Anchor + Name */}
       <div className="flex items-start justify-between gap-3">
@@ -101,17 +100,11 @@ export function KitchenSummaryDishCard({
       {/* Middle Row: Oldest Timer */}
       <div className="flex items-center justify-between text-xs pt-2.5 border-t border-border">
         <div
-          className={`flex items-center gap-1.5 font-medium ${
-            isUrgent ? 'text-status-cancelled font-semibold' : 'text-muted'
-          }`}
+          className={`flex items-center gap-1.5 font-medium ${isUrgent ? 'text-status-cancelled font-semibold' : 'text-muted'
+            }`}
         >
           <Clock className="w-3.5 h-3.5 shrink-0" />
           <span>Chờ lâu nhất: {elapsedMinutes} phút</span>
-        </div>
-
-        <div className="flex items-center gap-0.5 text-xs text-primary font-medium shrink-0">
-          <span>Chi tiết</span>
-          <ChevronRight className="w-3.5 h-3.5" />
         </div>
       </div>
 

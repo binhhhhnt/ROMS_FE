@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation } from '@tanstack/react-query'
 import { Utensils, Sparkles, ChefHat, ShoppingCart, HelpCircle, ArrowRight } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -14,36 +14,15 @@ import { ConfirmDialog } from '@/shared/components/ui/confirm-dialog'
 export function TabletWelcomePage() {
   const { user } = useAuthStore()
   const navigate = useNavigate()
-  const queryClient = useQueryClient()
   const tableId = user?.tableId
   const [isConfirmCallOpen, setIsConfirmCallOpen] = useState(false)
 
   // Fetch current table status
-  const { data: table, isLoading } = useQuery({
+  const { data: table } = useQuery({
     queryKey: ['tabletTableInfo', tableId],
     queryFn: () => tableApi.getTableById(tableId!),
     enabled: !!tableId,
     refetchInterval: 5000,
-  })
-
-  // Open session mutation from tablet
-  const openSessionMutation = useMutation({
-    mutationFn: () => tableApi.openSession(tableId!),
-    onSuccess: (newSession) => {
-      queryClient.setQueryData(['tabletTableInfo', tableId], (old: any) => {
-        if (!old) return old
-        return {
-          ...old,
-          activeSessionId: newSession.id,
-        }
-      })
-      queryClient.invalidateQueries({ queryKey: ['tabletTableInfo', tableId] })
-      toast.success('Bắt đầu phiên phục vụ thành công! Chúc quý khách ngon miệng.')
-      navigate('/tablet/menu')
-    },
-    onError: (err) => {
-      toast.error(getApiErrorMessage(err))
-    },
   })
 
   // Call staff mutation
@@ -58,16 +37,8 @@ export function TabletWelcomePage() {
     },
   })
 
-  const hasActiveSession = !!table?.activeSessionId
-
   const handleStartOrdering = () => {
-    if (hasActiveSession) {
-      navigate('/tablet/menu')
-    } else if (tableId) {
-      openSessionMutation.mutate()
-    } else {
-      navigate('/tablet/menu')
-    }
+    navigate('/tablet/menu')
   }
 
   return (
@@ -97,7 +68,6 @@ export function TabletWelcomePage() {
           variant="primary"
           size="lg"
           onClick={handleStartOrdering}
-          isLoading={openSessionMutation.isPending || isLoading}
           className="w-full h-14 text-sm font-bold uppercase tracking-wider shadow-lg shadow-primary/20"
         >
           <ShoppingCart className="w-5 h-5 mr-2" />

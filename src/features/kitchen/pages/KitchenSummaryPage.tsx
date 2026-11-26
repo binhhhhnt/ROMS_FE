@@ -279,12 +279,6 @@ export function KitchenSummaryPage() {
 
         {/* Live Clock & Link */}
         <div className="flex items-center gap-3">
-          <Link
-            to="/kitchen/ready"
-            className="hidden md:inline-flex text-xs font-semibold text-status-ready hover:underline"
-          >
-            Quầy chờ bưng món →
-          </Link>
           <div className="bg-surface border border-border px-3.5 py-1.5 rounded-lg text-right">
             <div className="text-[10px] text-muted font-bold uppercase tracking-wider">
               Thời gian

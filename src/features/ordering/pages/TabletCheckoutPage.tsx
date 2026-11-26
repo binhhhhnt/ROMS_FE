@@ -29,7 +29,7 @@ export function TabletCheckoutPage() {
 
   // Fetch current table information to get real-time activeSessionId
   const tableId = user?.tableId
-  const { data: table, isLoading: isLoadingTable } = useQuery({
+  const { data: table } = useQuery({
     queryKey: ['tabletTableInfo', tableId],
     queryFn: () => tableApi.getTableById(tableId!),
     enabled: !!tableId,
@@ -64,12 +64,23 @@ export function TabletCheckoutPage() {
         const newSession = await tableApi.openSession(tableId)
         currentSessionId = newSession.id
         queryClient.invalidateQueries({ queryKey: ['tabletTableInfo', tableId] })
-        toast.success('Đã tự động khởi tạo phiên phục vụ mới cho bàn!')
       } catch (err) {
-        toast.error(getApiErrorMessage(err) || 'Không thể mở phiên phục vụ cho bàn')
-        setErrorMessage('Không thể mở phiên phục vụ cho bàn. Vui lòng liên hệ nhân viên.')
-        setIsLoading(false)
-        return
+        try {
+          const latestTable = await tableApi.getTableById(tableId)
+          if (latestTable.activeSessionId) {
+            currentSessionId = latestTable.activeSessionId
+            queryClient.setQueryData(['tabletTableInfo', tableId], latestTable)
+          }
+        } catch {
+          // Ignore fallback error and surface the original openSession error
+        }
+
+        if (!currentSessionId) {
+          toast.error(getApiErrorMessage(err) || 'Không thể mở phiên phục vụ cho bàn')
+          setErrorMessage('Không thể mở phiên phục vụ cho bàn. Vui lòng liên hệ nhân viên.')
+          setIsLoading(false)
+          return
+        }
       }
     }
 
@@ -189,23 +200,6 @@ export function TabletCheckoutPage() {
         </div>
       </div>
 
-      {/* Alert when table has no active session */}
-      {tableId && !table?.activeSessionId && !isLoadingTable && (
-        <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 text-xs text-amber-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <ShieldAlert className="w-5 h-5 shrink-0 text-amber-600" />
-            <span>
-              Bàn chưa có phiên phục vụ đang hoạt động (ACTIVE). Vui lòng bắt đầu phiên phục vụ trước khi gửi đơn vào bếp.
-            </span>
-          </div>
-          <Link to="/tablet/welcome">
-            <Button size="sm" variant="outline" className="text-xs shrink-0 border-amber-400 bg-white hover:bg-amber-100 font-semibold">
-              Mở phiên ngay
-            </Button>
-          </Link>
-        </div>
-      )}
-
       {/* Stock Conflict Alert if 409 Occurred */}
       {conflictDetails && (
         <StockConflictAlert
@@ -228,7 +222,7 @@ export function TabletCheckoutPage() {
           <CardTitle className="text-base font-semibold flex items-center justify-between">
             <span>Chi tiết các món yêu cầu ({getTotalItemCount()} phần)</span>
             <span className="text-xs font-normal text-muted">
-              Phiên phục vụ: {effectiveSessionId ? `#${effectiveSessionId}` : 'Chưa có phiên'}
+              Phiên phục vụ: {effectiveSessionId ? (table?.activeSessionCode || `#${effectiveSessionId}`) : 'Tự động mở khi gửi đơn'}
             </span>
           </CardTitle>
         </CardHeader>
@@ -281,7 +275,7 @@ export function TabletCheckoutPage() {
             <span>Mã phiên phục vụ hiện tại:</span>
             {user?.role === 'TABLE_ACCOUNT' ? (
               <span className="font-bold text-primary">
-                {table?.activeSessionId ? `Phiên #${table.activeSessionId} (Đang mở)` : 'Chưa có phiên hoạt động'}
+                {table?.activeSessionId ? `Phiên ${table.activeSessionCode || `#${table.activeSessionId}`} (Đang mở)` : 'Tự động mở khi gửi đơn'}
               </span>
             ) : (
               <div className="flex items-center gap-2">

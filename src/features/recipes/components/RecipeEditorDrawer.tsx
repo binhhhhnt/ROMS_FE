@@ -446,18 +446,6 @@ export function RecipeEditorDrawer({
             )}
           </div>
         </div>
-
-        {/* Footer */}
-        <div className="px-6 py-4 border-t border-border bg-surface/30 flex items-center justify-between">
-          <div className="text-xs text-muted-foreground">
-            {recipe?.items.length
-              ? `Định lượng cho 1 suất phục vụ của món "${menuItem.name}"`
-              : 'Chưa có định lượng nguyên liệu'}
-          </div>
-          <Button variant="outline" size="sm" onClick={onClose} className="text-xs">
-            Đóng
-          </Button>
-        </div>
       </div>
     </div>
   )

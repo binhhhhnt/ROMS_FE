@@ -340,7 +340,7 @@ export function StaffOrderDetailPage() {
           <div className="min-w-0">
             <span className="text-muted block">Phiên phục vụ</span>
             <span className="font-medium text-text font-mono mt-0.5 block truncate">
-              #{order.sessionId || 'Mặc định'}
+              {order.sessionCode || (order.sessionId ? `#${order.sessionId}` : 'Mặc định')}
             </span>
           </div>
 

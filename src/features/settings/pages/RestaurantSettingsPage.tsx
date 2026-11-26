@@ -37,6 +37,7 @@ export function RestaurantSettingsPage() {
   const [phone, setPhone] = useState<string>('')
   const [receiptFooter, setReceiptFooter] = useState<string>('')
   const [printReadyTicket, setPrintReadyTicket] = useState<boolean>(true)
+  const [printKitchenOrderTicket, setPrintKitchenOrderTicket] = useState<boolean>(false)
   const [billPrinterName, setBillPrinterName] = useState<string>('')
   const [billPaperSize, setBillPaperSize] = useState<'A5' | 'K80' | 'K58'>('K80')
   const [readyTicketPrinterName, setReadyTicketPrinterName] = useState<string>('')
@@ -84,6 +85,7 @@ export function RestaurantSettingsPage() {
       setPhone(settings.phone || '')
       setReceiptFooter(settings.receiptFooter || '')
       setPrintReadyTicket(settings.printReadyTicket !== false)
+      setPrintKitchenOrderTicket(Boolean(settings.printKitchenOrderTicket))
       setBillPrinterName(settings.billPrinterName || '')
       setBillPaperSize((settings.billPaperSize as 'A5' | 'K80' | 'K58') || 'K80')
       setReadyTicketPrinterName(settings.readyTicketPrinterName || '')
@@ -106,10 +108,11 @@ export function RestaurantSettingsPage() {
       phone !== (settings.phone || '') ||
       receiptFooter !== (settings.receiptFooter || '') ||
       printReadyTicket !== (settings.printReadyTicket !== false) ||
+      printKitchenOrderTicket !== Boolean(settings.printKitchenOrderTicket) ||
       billPrinterName !== (settings.billPrinterName || '') ||
-      billPaperSize !== ((settings.billPaperSize as any) || 'K80') ||
+      billPaperSize !== (settings.billPaperSize === 'K58' ? 'K58' : 'K80') ||
       readyTicketPrinterName !== (settings.readyTicketPrinterName || '') ||
-      readyTicketPaperSize !== ((settings.readyTicketPaperSize as any) || 'K80')
+      readyTicketPaperSize !== (settings.readyTicketPaperSize === 'K58' ? 'K58' : 'K80')
 
     setIsDirty(hasChanged)
   }, [
@@ -119,6 +122,7 @@ export function RestaurantSettingsPage() {
     phone,
     receiptFooter,
     printReadyTicket,
+    printKitchenOrderTicket,
     billPrinterName,
     billPaperSize,
     readyTicketPrinterName,
@@ -147,6 +151,7 @@ export function RestaurantSettingsPage() {
       phone: phone.trim(),
       receiptFooter: receiptFooter.trim(),
       printReadyTicket,
+      printKitchenOrderTicket,
       billPrinterName: billPrinterName.trim() ? billPrinterName.trim() : null,
       billPaperSize,
       readyTicketPrinterName: readyTicketPrinterName.trim() ? readyTicketPrinterName.trim() : null,
@@ -536,7 +541,32 @@ export function RestaurantSettingsPage() {
                 Tự động gửi lệnh in phiếu ra món gồm tên bàn và danh sách món khi nhân viên bếp nhấn &quot;Ready&quot;.
               </p>
 
-              <div className={`space-y-3 pt-2 ${!printReadyTicket ? 'opacity-50 pointer-events-none' : ''}`}>
+              <div className="pt-3 border-t border-border/60 flex items-start justify-between gap-3">
+                <div>
+                  <h4 className="font-semibold text-text text-xs">Tự in order gửi bếp</h4>
+                  <p className="text-xs text-text-secondary mt-0.5">
+                    Tự động in phiếu order (tên bàn, danh sách món, ghi chú) tại máy Bếp ngay khi có đơn mới gửi vào bếp.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-xs text-text-secondary">
+                    {printKitchenOrderTicket ? 'Đang bật' : 'Tắt'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setPrintKitchenOrderTicket(!printKitchenOrderTicket)}
+                    className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${printKitchenOrderTicket ? 'bg-primary' : 'bg-border'
+                      }`}
+                  >
+                    <span
+                      className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${printKitchenOrderTicket ? 'translate-x-5' : 'translate-x-1'
+                        }`}
+                    />
+                  </button>
+                </div>
+              </div>
+
+              <div className={`space-y-3 pt-2 ${!printReadyTicket && !printKitchenOrderTicket ? 'opacity-50 pointer-events-none' : ''}`}>
                 <div>
                   <label className="block text-xs font-medium text-text mb-1">
                     Chọn máy in tại Bếp:
@@ -544,7 +574,7 @@ export function RestaurantSettingsPage() {
                   <select
                     value={readyTicketPrinterName}
                     onChange={(e) => setReadyTicketPrinterName(e.target.value)}
-                    disabled={!printReadyTicket}
+                    disabled={!printReadyTicket && !printKitchenOrderTicket}
                     className="w-full px-3 py-2 text-sm bg-surface border border-border rounded-lg text-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                   >
                     <option value="">-- Chưa chọn máy in bếp --</option>
@@ -563,7 +593,7 @@ export function RestaurantSettingsPage() {
                   <select
                     value={readyTicketPaperSize}
                     onChange={(e) => setReadyTicketPaperSize(e.target.value as 'A5' | 'K80' | 'K58')}
-                    disabled={!printReadyTicket}
+                    disabled={!printReadyTicket && !printKitchenOrderTicket}
                     className="w-full px-3 py-2 text-sm bg-surface border border-border rounded-lg text-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                   >
                     <option value="K80">K80 (Khổ 80mm - Tiêu chuẩn máy in bếp KDS)</option>

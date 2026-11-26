@@ -56,6 +56,11 @@ export const ingredientApi = {
     return res.data.data
   },
 
+  async activateIngredient(id: number): Promise<IngredientResponse> {
+    const res = await apiClient.patch<ApiResponse<IngredientResponse>>(`/api/ingredients/${id}/activate`)
+    return res.data.data
+  },
+
   async downloadTemplate(): Promise<Blob> {
     const res = await apiClient.get('/api/ingredients/excel/template', {
       responseType: 'blob',

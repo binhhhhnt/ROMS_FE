@@ -130,7 +130,7 @@ export function TabletLayout() {
           {/* Table Badge and Restaurant Brand */}
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white font-bold shadow-sm">
-              {user?.tableName || user?.tableId ? `B${user?.tableId}` : 'TB'}
+              {user?.tableName || (user?.tableId ? `B${user.tableId}` : 'TB')}
             </div>
             <div>
               <h1 className="font-bold text-base leading-tight text-primary">

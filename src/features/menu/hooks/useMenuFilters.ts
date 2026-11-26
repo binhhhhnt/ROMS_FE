@@ -6,7 +6,7 @@ const sorts = ['id,asc', 'name,asc', 'name,desc', 'price,asc', 'price,desc']
 
 export function useMenuFilters(tablet = false) {
   const [search, setSearch] = useSearchParams()
-  const pageValue = search.get('page') ?? '0'
+  const pageValue = tablet ? '0' : (search.get('page') ?? '0')
   const page = Number(pageValue)
   const categoryValue = search.get('categoryId') ?? ''
   const categoryId = positiveMenuId(categoryValue)
@@ -14,12 +14,13 @@ export function useMenuFilters(tablet = false) {
   const sort = search.get('sort') ?? 'id,asc'
   const invalid = !/^\d+$/.test(pageValue) || !Number.isSafeInteger(page) || page >= 2147483647
     || (!!categoryValue && categoryId === null) || !sorts.includes(sort)
-    || (!!statusValue && (!isMenuStatus(statusValue) || (tablet && statusValue !== 'AVAILABLE')))
+    || (!tablet && !!statusValue && !isMenuStatus(statusValue))
   const params: MenuListParams = {
     page: invalid ? 0 : page,
-    size: tablet ? 12 : 20,
+    size: tablet ? 100 : 20,
     categoryId: categoryId ?? undefined,
-    status: tablet ? 'AVAILABLE' : isMenuStatus(statusValue) ? statusValue : undefined,
+    status: tablet ? undefined : isMenuStatus(statusValue) ? statusValue : undefined,
+    forOrder: tablet ? true : undefined,
     sort,
   }
 

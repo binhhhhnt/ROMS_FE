@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   Clock,
   AlertTriangle,
+  MapPin,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -22,6 +23,7 @@ import { subscribeToTopic } from '@/shared/lib/stomp'
 import type { TableItem } from '@/features/tables/types/table.types'
 import { TableCard } from '@/features/tables/components/TableCard'
 import { TableModal } from '@/features/tables/components/TableModal'
+import { AreaManagementModal } from '@/features/tables/components/AreaManagementModal'
 import { TransferTableModal } from '@/features/tables/components/TransferTableModal'
 import { useAuthStore } from '@/app/store/authStore'
 import { getApiErrorMessage } from '@/shared/lib/axios'
@@ -40,13 +42,14 @@ export function TablesOverviewPage({ initialActiveOnly = true }: TablesOverviewP
   const navigate = useNavigate()
   const isOwner = user?.role === 'OWNER'
 
-  const [selectedArea, setSelectedArea] = useState<string>('')
+  const [selectedAreaId, setSelectedAreaId] = useState<number | ''>('')
   const [selectedStatus, setSelectedStatus] = useState<string>(initialActiveOnly ? 'OCCUPIED' : '')
   const [search, setSearch] = useState<string>('')
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid')
 
   // Modals state
   const [isTableModalOpen, setIsTableModalOpen] = useState(false)
+  const [isAreaModalOpen, setIsAreaModalOpen] = useState(false)
   const [tableToEdit, setTableToEdit] = useState<TableItem | null>(null)
   const [transferringTable, setTransferringTable] = useState<TableItem | null>(null)
   const [closeSessionTarget, setCloseSessionTarget] = useState<TableItem | null>(null)
@@ -132,7 +135,7 @@ export function TablesOverviewPage({ initialActiveOnly = true }: TablesOverviewP
 
   // Filtered tables
   const filteredTables = tables.filter((t) => {
-    if (selectedArea && t.area !== selectedArea) return false
+    if (selectedAreaId && t.areaId !== selectedAreaId) return false
     if (selectedStatus === 'OCCUPIED' && t.realtimeStatus !== 'OCCUPIED') return false
     if (selectedStatus === 'EMPTY' && (t.realtimeStatus !== 'EMPTY' || !t.isActive)) return false
     if (selectedStatus === 'OUT_OF_SERVICE' && (t.isActive && t.realtimeStatus !== 'OUT_OF_SERVICE')) return false
@@ -145,7 +148,7 @@ export function TablesOverviewPage({ initialActiveOnly = true }: TablesOverviewP
     mutationFn: (tableId: number) => tableApi.openSession(tableId),
     onSuccess: (session) => {
       queryClient.invalidateQueries({ queryKey: ['tablesOverview'] })
-      toast.success(`Đã mở phiên phục vụ #${session.id} cho Bàn ${session.tableCode}!`)
+      toast.success(`Đã mở phiên phục vụ ${session.sessionCode || `#${session.id}`} cho Bàn ${session.tableCode}!`)
     },
     onError: (err) => {
       toast.error(getApiErrorMessage(err))
@@ -157,7 +160,7 @@ export function TablesOverviewPage({ initialActiveOnly = true }: TablesOverviewP
     mutationFn: (sessionId: number) => tableApi.closeSession(sessionId),
     onSuccess: (session) => {
       queryClient.invalidateQueries({ queryKey: ['tablesOverview'] })
-      toast.success(`Đã đóng phiên phục vụ #${session.id} cho Bàn ${session.tableCode}!`)
+      toast.success(`Đã đóng phiên phục vụ ${session.sessionCode || `#${session.id}`} cho Bàn ${session.tableCode}!`)
     },
     onError: (err) => {
       toast.error(getApiErrorMessage(err))
@@ -269,18 +272,29 @@ export function TablesOverviewPage({ initialActiveOnly = true }: TablesOverviewP
           </Button>
 
           {isOwner && (
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => {
-                setTableToEdit(null)
-                setIsTableModalOpen(true)
-              }}
-              className="h-9 px-3.5 text-xs font-semibold"
-            >
-              <Plus className="w-4 h-4 mr-1" />
-              Thêm bàn mới
-            </Button>
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsAreaModalOpen(true)}
+                className="h-9 px-3 text-xs font-medium"
+              >
+                <MapPin className="w-3.5 h-3.5 mr-1.5" />
+                Quản lý khu vực
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => {
+                  setTableToEdit(null)
+                  setIsTableModalOpen(true)
+                }}
+                className="h-9 px-3.5 text-xs font-semibold"
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                Thêm bàn mới
+              </Button>
+            </>
           )}
         </div>
       </div>
@@ -345,15 +359,17 @@ export function TablesOverviewPage({ initialActiveOnly = true }: TablesOverviewP
           <Filter className="w-4 h-4 text-muted shrink-0" />
           <select
             className="flex h-10 w-full rounded-md border border-border bg-card px-3 py-2 text-xs text-text focus:outline-hidden focus:ring-2 focus:ring-accent"
-            value={selectedArea}
-            onChange={(e) => setSelectedArea(e.target.value)}
+            value={selectedAreaId}
+            onChange={(e) => setSelectedAreaId(e.target.value ? Number(e.target.value) : '')}
           >
             <option value="">Tất cả khu vực</option>
-            {areas.map((a) => (
-              <option key={a} value={a}>
-                Khu vực: {a}
-              </option>
-            ))}
+            {areas
+              .filter((a) => a.isActive || a.id === selectedAreaId)
+              .map((a) => (
+                <option key={a.id} value={a.id}>
+                  Khu vực: {a.name}
+                </option>
+              ))}
           </select>
         </div>
 
@@ -485,7 +501,7 @@ export function TablesOverviewPage({ initialActiveOnly = true }: TablesOverviewP
                         </div>
                       </td>
                       <td className="py-3.5 px-4 font-mono text-text whitespace-nowrap">
-                        {t.activeSessionId ? `#${t.activeSessionId}` : '—'}
+                        {t.activeSessionCode || (t.activeSessionId ? `#${t.activeSessionId}` : '—')}
                       </td>
                       <td className="py-3.5 px-4 text-right whitespace-nowrap">
                         <div className="flex items-center justify-end gap-2">
@@ -534,7 +550,22 @@ export function TablesOverviewPage({ initialActiveOnly = true }: TablesOverviewP
         onClose={() => setIsTableModalOpen(false)}
         onSuccess={() => refetch()}
         tableToEdit={tableToEdit}
-        existingAreas={areas}
+        areas={areas}
+        onManageAreas={
+          isOwner
+            ? () => {
+                setIsTableModalOpen(false)
+                setIsAreaModalOpen(true)
+              }
+            : undefined
+        }
+      />
+
+      {/* Area Management Modal */}
+      <AreaManagementModal
+        isOpen={isAreaModalOpen}
+        onClose={() => setIsAreaModalOpen(false)}
+        areas={areas}
       />
 
       {/* Transfer Table Modal */}

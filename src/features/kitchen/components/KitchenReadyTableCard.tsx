@@ -51,9 +51,6 @@ export function KitchenReadyTableCard({
             <span className="font-bold text-base text-text">
               {order.tableCode ? `Bàn ${order.tableCode}` : `Bàn #${order.tableId}`}
             </span>
-            <span className="text-xs font-mono text-muted">
-              #{order.id}
-            </span>
           </div>
           <div className="text-xs text-muted mt-0.5">
             Ra quầy lúc {formatTime(order.updatedAt || order.createdAt)}

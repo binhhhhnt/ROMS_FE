@@ -47,6 +47,10 @@ export const userApi = {
     return res.data.data
   },
 
+  async deleteUser(id: number): Promise<void> {
+    await apiClient.delete(`/api/users/${id}`)
+  },
+
   async getTables(): Promise<TableOption[]> {
     const res = await apiClient.get<ApiResponse<PageResponse<TableOption>>>('/api/tables', {
       params: { size: 100, isActive: true },

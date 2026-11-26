@@ -15,8 +15,7 @@ import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 import { Badge } from '@/shared/components/ui/badge'
 import { toast } from 'sonner'
-import { menuApi } from '@/features/menu/api/menuApi'
-import { categoryApi } from '@/features/menu/api/categoryApi'
+import { useAllOrderableMenuItems, useMenuCategoryOptions } from '@/features/menu/hooks/useMenu'
 import { tableApi } from '@/features/tables/api/tableApi'
 import { orderApi } from '@/features/ordering/api/orderApi'
 import { useMenuRealtime } from '@/features/menu/hooks/useMenuRealtime'
@@ -55,19 +54,14 @@ export function StaffOrderModal({
   // Realtime menu updates sync
   useMenuRealtime(isOpen)
 
-  // 1. Fetch menu items (returns AVAILABLE and TEMPORARILY_UNAVAILABLE with BOM)
-  const { data: menuData, isLoading: isLoadingMenu } = useQuery({
-    queryKey: ['menu-items', 'staff-order'],
-    queryFn: () => menuApi.list({ page: 0, size: 100, sort: 'name,asc', forOrder: true }),
-    enabled: isOpen,
-  })
+  // 1. Fetch all orderable menu items (ACTIVE category, has BOM, AVAILABLE or TEMPORARILY_UNAVAILABLE)
+  const { data: menuData, isLoading: isLoadingMenu } = useAllOrderableMenuItems(
+    { sort: 'name,asc', forOrder: true },
+    isOpen
+  )
 
-  // 2. Fetch categories
-  const { data: categoryData } = useQuery({
-    queryKey: ['categories', 'active'],
-    queryFn: () => categoryApi.list(0, 50),
-    enabled: isOpen,
-  })
+  // 2. Fetch all active categories
+  const { data: categoryList } = useMenuCategoryOptions(isOpen)
 
   // 3. Fetch tables with active sessions (only needed if initialSessionId not provided)
   const { data: tablesData } = useQuery({
@@ -76,8 +70,11 @@ export function StaffOrderModal({
     enabled: isOpen && !initialSessionId,
   })
 
-  const menuItems = menuData?.content || []
-  const categories = categoryData?.content || []
+  const menuItems = useMemo(() => menuData?.items || [], [menuData])
+  const categories = useMemo(
+    () => (categoryList || []).filter((c) => c.isActive),
+    [categoryList]
+  )
   const activeTables = useMemo(() => {
     return (tablesData?.content || []).filter(
       (t) => t.activeSessionId !== null && t.activeSessionId !== undefined

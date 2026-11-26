@@ -1,22 +1,25 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { RefreshCw, Filter } from 'lucide-react'
+import { RefreshCw, Filter, Search } from 'lucide-react'
 
 import { tableApi } from '@/features/tables/api/tableApi'
 import type { ServiceSessionStatus } from '@/features/tables/types/table.types'
 import { Button } from '@/shared/components/ui/button'
 import { Badge } from '@/shared/components/ui/badge'
+import { Input } from '@/shared/components/ui/input'
 
 export function SessionHistoryPage() {
   const [statusFilter, setStatusFilter] = useState<ServiceSessionStatus | ''>('')
+  const [search, setSearch] = useState('')
   const [page, setPage] = useState(0)
 
   const { data, isLoading, isFetching, refetch } = useQuery({
-    queryKey: ['sessionsHistory', statusFilter, page],
+    queryKey: ['sessionsHistory', statusFilter, search, page],
     queryFn: () =>
       tableApi.getSessions({
         status: statusFilter || undefined,
+        search: search.trim() || undefined,
         page,
         size: 15,
         sort: 'openedAt,desc',
@@ -53,20 +56,33 @@ export function SessionHistoryPage() {
       </div>
 
       {/* Tầng 2: Filter Toolbar */}
-      <div className="flex items-center gap-3 p-3.5 bg-card border border-border rounded-lg">
-        <Filter className="w-4 h-4 text-muted shrink-0" />
-        <select
-          className="flex h-10 w-full sm:w-56 rounded-md border border-border bg-card px-3 py-2 text-xs text-text focus:outline-hidden focus:ring-2 focus:ring-accent"
-          value={statusFilter}
-          onChange={(e) => {
-            setStatusFilter((e.target.value as ServiceSessionStatus) || '')
-            setPage(0)
-          }}
-        >
-          <option value="">Tất cả trạng thái</option>
-          <option value="ACTIVE">Đang hoạt động (ACTIVE)</option>
-          <option value="CLOSED">Đã hoàn tất (CLOSED)</option>
-        </select>
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 p-3.5 bg-card border border-border rounded-lg">
+        <div className="flex-1 sm:max-w-xs">
+          <Input
+            placeholder="Tìm theo mã phiên (vd: S-2026...) hoặc mã bàn..."
+            leftIcon={<Search className="w-4 h-4 text-muted" />}
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value)
+              setPage(0)
+            }}
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Filter className="w-4 h-4 text-muted shrink-0" />
+          <select
+            className="flex h-10 w-full sm:w-56 rounded-md border border-border bg-card px-3 py-2 text-xs text-text focus:outline-hidden focus:ring-2 focus:ring-accent"
+            value={statusFilter}
+            onChange={(e) => {
+              setStatusFilter((e.target.value as ServiceSessionStatus) || '')
+              setPage(0)
+            }}
+          >
+            <option value="">Tất cả trạng thái</option>
+            <option value="ACTIVE">Đang hoạt động (ACTIVE)</option>
+            <option value="CLOSED">Đã hoàn tất (CLOSED)</option>
+          </select>
+        </div>
       </div>
 
       {/* Tầng 3: Sessions Table */}
@@ -103,7 +119,7 @@ export function SessionHistoryPage() {
                 sessions.map((s) => (
                   <tr key={s.id} className="hover:bg-muted-bg/50 transition-colors">
                     <td className="py-3 px-4 font-mono font-semibold text-text whitespace-nowrap">
-                      #{s.id}
+                      {s.sessionCode || `#${s.id}`}
                     </td>
                     <td className="py-3 px-4 font-semibold text-text whitespace-nowrap">
                       Bàn {s.tableCode}

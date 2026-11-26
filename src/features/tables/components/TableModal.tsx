@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { X, Save, Layers, Users, MapPin } from 'lucide-react'
@@ -6,7 +6,7 @@ import { toast } from 'sonner'
 
 import { tableSchema, type TableFormValues } from '@/features/tables/schemas/tableSchema'
 import { tableApi } from '@/features/tables/api/tableApi'
-import type { TableItem } from '@/features/tables/types/table.types'
+import type { AreaItem, TableItem } from '@/features/tables/types/table.types'
 import { getApiErrorMessage } from '@/shared/lib/axios'
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
@@ -16,7 +16,8 @@ interface TableModalProps {
   onClose: () => void
   onSuccess: () => void
   tableToEdit?: TableItem | null
-  existingAreas?: string[]
+  areas?: AreaItem[]
+  onManageAreas?: () => void
 }
 
 export function TableModal({
@@ -24,10 +25,17 @@ export function TableModal({
   onClose,
   onSuccess,
   tableToEdit,
-  existingAreas = [],
+  areas = [],
+  onManageAreas,
 }: TableModalProps) {
   const isEditMode = !!tableToEdit
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const selectableAreas = useMemo(() => {
+    return areas.filter(
+      (a) => a.isActive || (tableToEdit?.areaId != null && a.id === tableToEdit.areaId)
+    )
+  }, [areas, tableToEdit])
 
   const {
     register,
@@ -39,7 +47,7 @@ export function TableModal({
     defaultValues: {
       tableCode: '',
       capacity: 4,
-      area: '',
+      areaId: 0,
     },
   })
 
@@ -48,16 +56,16 @@ export function TableModal({
       reset({
         tableCode: tableToEdit.tableCode,
         capacity: tableToEdit.capacity,
-        area: tableToEdit.area || '',
+        areaId: tableToEdit.areaId ?? 0,
       })
     } else {
       reset({
         tableCode: '',
         capacity: 4,
-        area: '',
+        areaId: selectableAreas[0]?.id ?? 0,
       })
     }
-  }, [tableToEdit, reset, isOpen])
+  }, [tableToEdit, reset, isOpen, selectableAreas])
 
   if (!isOpen) return null
 
@@ -68,14 +76,14 @@ export function TableModal({
         await tableApi.updateTable(tableToEdit.id, {
           tableCode: values.tableCode.trim().toUpperCase(),
           capacity: Number(values.capacity),
-          area: values.area?.trim() || null,
+          areaId: Number(values.areaId),
         })
         toast.success(`Cập nhật thông tin bàn ${values.tableCode} thành công!`)
       } else {
         await tableApi.createTable({
           tableCode: values.tableCode.trim().toUpperCase(),
           capacity: Number(values.capacity),
-          area: values.area?.trim() || null,
+          areaId: Number(values.areaId),
         })
         toast.success(`Thêm bàn mới ${values.tableCode} thành công!`)
       }
@@ -159,25 +167,43 @@ export function TableModal({
 
           {/* Area */}
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="area" className="text-xs font-semibold text-text flex justify-between">
+            <label htmlFor="areaId" className="text-xs font-semibold text-text flex justify-between items-center">
               <span>Khu vực (Area)</span>
-              <span className="text-[11px] font-normal text-muted">Tùy chọn</span>
+              {onManageAreas && (
+                <button
+                  type="button"
+                  onClick={onManageAreas}
+                  className="text-[11px] font-semibold text-primary hover:underline"
+                >
+                  + Quản lý khu vực
+                </button>
+              )}
             </label>
-            <Input
-              id="area"
-              list="existing-areas-list"
-              placeholder="ví dụ: Tầng 1, Sân vườn, Phòng VIP..."
-              leftIcon={<MapPin className="w-4 h-4 text-muted" />}
-              error={!!errors.area}
-              {...register('area')}
-            />
-            <datalist id="existing-areas-list">
-              {existingAreas.map((area) => (
-                <option key={area} value={area} />
-              ))}
-            </datalist>
-            {errors.area && (
-              <span className="text-xs text-status-cancelled">{errors.area.message}</span>
+            <div className="relative">
+              <MapPin className="w-4 h-4 text-muted absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <select
+                id="areaId"
+                className={`flex h-10 w-full rounded-md border bg-card pl-9 pr-3 py-2 text-sm text-text focus:outline-hidden focus:ring-2 focus:ring-accent ${
+                  errors.areaId ? 'border-status-cancelled' : 'border-border'
+                }`}
+                {...register('areaId', { valueAsNumber: true })}
+              >
+                <option value={0}>-- Chọn khu vực --</option>
+                {selectableAreas.map((area) => (
+                  <option key={area.id} value={area.id}>
+                    {area.name}
+                    {!area.isActive ? ' (Đã ẩn)' : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {selectableAreas.length === 0 && (
+              <span className="text-[11px] text-amber-600">
+                Chưa có khu vực nào đang hoạt động. Vui lòng tạo khu vực trước.
+              </span>
+            )}
+            {errors.areaId && (
+              <span className="text-xs text-status-cancelled">{errors.areaId.message}</span>
             )}
           </div>
 

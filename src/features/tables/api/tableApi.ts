@@ -1,6 +1,7 @@
 import { apiClient } from '@/shared/lib/axios'
 import type { ApiResponse, PageResponse } from '@/shared/types/api.types'
 import type {
+  AreaItem,
   TableItem,
   CreateTablePayload,
   UpdateTablePayload,
@@ -15,7 +16,7 @@ export const tableApi = {
   async getTables(params: TableFilterParams = {}): Promise<PageResponse<TableItem>> {
     const queryParams: Record<string, string | number | boolean> = {}
     if (typeof params.isActive === 'boolean') queryParams.isActive = params.isActive
-    if (params.area?.trim()) queryParams.area = params.area.trim()
+    if (params.areaId) queryParams.areaId = params.areaId
     if (params.search?.trim()) queryParams.search = params.search.trim()
     queryParams.page = params.page ?? 0
     queryParams.size = params.size ?? 50
@@ -49,8 +50,26 @@ export const tableApi = {
     return res.data.data
   },
 
-  async getAreas(): Promise<string[]> {
-    const res = await apiClient.get<ApiResponse<string[]>>('/api/tables/areas')
+  async getAreas(isActive?: boolean): Promise<AreaItem[]> {
+    const params = typeof isActive === 'boolean' ? { isActive } : undefined
+    const res = await apiClient.get<ApiResponse<AreaItem[]>>('/api/areas', { params })
+    return res.data.data
+  },
+
+  async createArea(name: string): Promise<AreaItem> {
+    const res = await apiClient.post<ApiResponse<AreaItem>>('/api/areas', { name })
+    return res.data.data
+  },
+
+  async updateArea(id: number, name: string): Promise<AreaItem> {
+    const res = await apiClient.put<ApiResponse<AreaItem>>(`/api/areas/${id}`, { name })
+    return res.data.data
+  },
+
+  async updateAreaStatus(id: number, isActive: boolean): Promise<AreaItem> {
+    const res = await apiClient.patch<ApiResponse<AreaItem>>(`/api/areas/${id}/status`, {
+      isActive,
+    })
     return res.data.data
   },
 
@@ -80,6 +99,7 @@ export const tableApi = {
     const queryParams: Record<string, string | number> = {}
     if (params.tableId) queryParams.tableId = params.tableId
     if (params.status) queryParams.status = params.status
+    if (params.search?.trim()) queryParams.search = params.search.trim()
     queryParams.page = params.page ?? 0
     queryParams.size = params.size ?? 20
     if (params.sort) queryParams.sort = params.sort
