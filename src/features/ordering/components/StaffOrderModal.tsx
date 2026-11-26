@@ -20,6 +20,7 @@ import { categoryApi } from '@/features/menu/api/categoryApi'
 import { tableApi } from '@/features/tables/api/tableApi'
 import { orderApi } from '@/features/ordering/api/orderApi'
 import { useMenuRealtime } from '@/features/menu/hooks/useMenuRealtime'
+import { fetchAllPages } from '@/shared/utils/pagination'
 import { getApiErrorMessage } from '@/shared/lib/axios'
 import type { OrderResponse } from '@/features/ordering/types/ordering.types'
 
@@ -58,14 +59,17 @@ export function StaffOrderModal({
   // 1. Fetch menu items (returns AVAILABLE and TEMPORARILY_UNAVAILABLE with BOM)
   const { data: menuData, isLoading: isLoadingMenu } = useQuery({
     queryKey: ['menu-items', 'staff-order'],
-    queryFn: () => menuApi.list({ page: 0, size: 100, sort: 'name,asc', forOrder: true }),
+    queryFn: () =>
+      fetchAllPages((page) =>
+        menuApi.list({ page, size: 100, sort: 'name,asc', forOrder: true })
+      ),
     enabled: isOpen,
   })
 
-  // 2. Fetch categories
+  // 2. Fetch active categories
   const { data: categoryData } = useQuery({
     queryKey: ['categories', 'active'],
-    queryFn: () => categoryApi.list(0, 50),
+    queryFn: () => fetchAllPages((page) => categoryApi.list(page, 100)),
     enabled: isOpen,
   })
 
@@ -77,7 +81,10 @@ export function StaffOrderModal({
   })
 
   const menuItems = useMemo(() => menuData?.content || [], [menuData])
-  const categories = categoryData?.content || []
+  const categories = useMemo(
+    () => (categoryData?.content || []).filter((cat) => cat.isActive),
+    [categoryData]
+  )
   const activeTables = useMemo(() => {
     return (tablesData?.content || []).filter(
       (t) => t.activeSessionId !== null && t.activeSessionId !== undefined

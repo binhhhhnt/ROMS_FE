@@ -1,4 +1,5 @@
 import { apiClient } from '@/shared/lib/axios'
+import { fetchAllPages } from '@/shared/utils/pagination'
 import type { ApiResponse, PageResponse } from '@/shared/types/api.types'
 import type { CategoryResponse } from '@/features/menu/types/category.types'
 import type { MenuItemReadResponse } from '@/features/menu/types/menu.types'
@@ -20,22 +21,26 @@ export const qrApi = {
   },
 
   getCategories: async (qrToken: string): Promise<PageResponse<CategoryResponse>> => {
-    const res = await apiClient.get<ApiResponse<PageResponse<CategoryResponse>>>(
-      `/api/qr/${qrToken}/categories`,
-      { params: { page: 0, size: 100 } }
-    )
-    return res.data.data
+    return fetchAllPages(async (page) => {
+      const res = await apiClient.get<ApiResponse<PageResponse<CategoryResponse>>>(
+        `/api/qr/${qrToken}/categories`,
+        { params: { page, size: 100 } }
+      )
+      return res.data.data
+    })
   },
 
   getMenu: async (
     qrToken: string,
     categoryId?: number
   ): Promise<PageResponse<MenuItemReadResponse>> => {
-    const res = await apiClient.get<ApiResponse<PageResponse<MenuItemReadResponse>>>(
-      `/api/qr/${qrToken}/menu`,
-      { params: { categoryId, page: 0, size: 100 } }
-    )
-    return res.data.data
+    return fetchAllPages(async (page) => {
+      const res = await apiClient.get<ApiResponse<PageResponse<MenuItemReadResponse>>>(
+        `/api/qr/${qrToken}/menu`,
+        { params: { categoryId, page, size: 100 } }
+      )
+      return res.data.data
+    })
   },
 
   submitQrOrder: async (
