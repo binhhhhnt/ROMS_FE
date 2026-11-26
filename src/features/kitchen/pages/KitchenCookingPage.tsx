@@ -5,7 +5,8 @@ import { toast } from 'sonner'
 
 import { kitchenApi } from '@/features/kitchen/api/kitchenApi'
 import { settingsApi } from '@/features/settings/api/settingsApi'
-import { printKitchenReadyTicketViaBrowser } from '@/features/kitchen/utils/kitchenTicketPrinter'
+import { printKitchenOrderTicketViaBrowser, printKitchenReadyTicketViaBrowser } from '@/features/kitchen/utils/kitchenTicketPrinter'
+import type { KitchenOrderResponse } from '@/features/kitchen/types/kitchen.types'
 import type { OrderItemStatus } from '@/features/ordering/types/ordering.types'
 import { subscribeToTopic } from '@/shared/lib/stomp'
 import { getApiErrorMessage } from '@/shared/lib/axios'
@@ -129,6 +130,24 @@ export function KitchenCookingPage() {
     }
   }
 
+  const handlePrintOrderTicket = (order: KitchenOrderResponse) => {
+    const activeItems = order.items.filter(
+      (i) => i.status === 'PENDING' || i.status === 'COOKING'
+    )
+    if (activeItems.length === 0) return
+    printKitchenOrderTicketViaBrowser({
+      tableCode: order.tableCode || `Bàn #${order.tableId}`,
+      orderId: order.id,
+      orderCreatedAt: order.createdAt,
+      items: activeItems.map((i) => ({
+        itemName: i.menuItemName,
+        quantity: i.quantity,
+        note: i.note,
+      })),
+      paperSize: (settings?.readyTicketPaperSize as 'K80' | 'K58' | 'A5') || 'K80',
+    })
+  }
+
   // Active cooking orders: includes orders with items that are COOKING or PENDING
   const activeCookingOrders = useMemo(() => {
     return orders.filter((order) =>
@@ -238,6 +257,9 @@ export function KitchenCookingPage() {
               onUpdateItemStatus={handleUpdateItemStatus}
               onReadyAll={handleReadyAll}
               onCookAll={handleCookAll}
+              onPrintOrderTicket={
+                settings?.printKitchenOrderTicket ? handlePrintOrderTicket : undefined
+              }
             />
           ))}
         </div>

@@ -153,7 +153,7 @@ export function MenuItemForm({ item, onSave, onDeleted }: {
         {/* Price */}
         <div>
           <label htmlFor="menu-item-price" className="mb-2 block text-sm font-semibold">Giá (VND) <span className="text-status-cancelled">*</span></label>
-          <Input id="menu-item-price" inputMode="decimal" placeholder="Ví dụ: 65000" aria-required="true" aria-invalid={!!errors.price} aria-describedby="menu-item-price-error" {...register('price')} />
+          <Input id="menu-item-price" inputMode="decimal" numericMode="decimal" placeholder="Ví dụ: 65000" aria-required="true" aria-invalid={!!errors.price} aria-describedby="menu-item-price-error" {...register('price')} />
           <p id="menu-item-price-error" className="mt-1 text-sm text-status-cancelled">{errors.price?.message}</p>
           <p className="mt-1 text-xs text-muted">Không nhập dấu phân cách hàng nghìn; dùng dấu chấm cho phần thập phân.</p>
         </div>

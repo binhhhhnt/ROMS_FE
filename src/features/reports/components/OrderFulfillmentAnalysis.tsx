@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { CheckCircle2, XCircle, Info, ShieldAlert, Sparkles } from 'lucide-react'
+import { CheckCircle2, XCircle, ShieldAlert, Sparkles } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/shared/components/ui/card'
 import type { DashboardOverviewResponse } from '@/features/dashboard/types/dashboard.types'
 
@@ -122,14 +122,6 @@ export function OrderFulfillmentAnalysis({ overview, isLoading = false }: OrderF
                   </div>
                 </>
               )}
-            </div>
-
-            {/* Notice regarding cancellation rule */}
-            <div className="text-[11px] text-muted flex items-center gap-1.5 border-t border-border/50 pt-2">
-              <Info className="w-3.5 h-3.5 text-accent shrink-0" />
-              <span>
-                Quy tắc nghiệp vụ: Chỉ tài khoản bàn (<code className="bg-surface px-1 py-0.5 rounded text-primary">TABLE_ACCOUNT</code>) mới được hủy khi đơn còn ở trạng thái Chờ tiếp nhận (<code className="bg-surface px-1 py-0.5 rounded text-primary">PENDING</code>).
-              </span>
             </div>
           </>
         )}

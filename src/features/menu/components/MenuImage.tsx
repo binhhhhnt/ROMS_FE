@@ -17,7 +17,7 @@ export function MenuImage({
   return (
     <div className={`flex items-center justify-center overflow-hidden bg-surface/50 ${className}`}>
       {src && failedSrc !== src ? (
-        <img src={src} alt={name} loading="lazy" className={`h-full w-full ${fitClass}`} onError={() => setFailedSrc(src)} />
+        <img src={src} alt={name} loading="lazy" decoding="async" className={`h-full w-full ${fitClass}`} onError={() => setFailedSrc(src)} />
       ) : <UtensilsCrossed aria-label="Chưa có ảnh món ăn" className="h-8 w-8 text-accent/60" />}
     </div>
   )

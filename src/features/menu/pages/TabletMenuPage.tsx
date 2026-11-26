@@ -2,11 +2,10 @@ import { useState } from 'react'
 import { RefreshCw, Search } from 'lucide-react'
 import { useAuthStore } from '@/app/store/authStore'
 import { Button } from '@/shared/components/ui/button'
-import { useMenuItems } from '../hooks/useMenu'
+import { useAllOrderableMenuItems } from '../hooks/useMenu'
 import { useMenuFilters } from '../hooks/useMenuFilters'
 import { MenuFilters } from '../components/MenuFilters'
 import { MenuFeedback } from '../components/MenuFeedback'
-import { MenuPagination } from '../components/MenuPagination'
 import { TabletMenuCard } from '../components/TabletMenuCard'
 import { useMenuRealtime } from '../hooks/useMenuRealtime'
 import { getMenuErrorMessage } from '../utils/menu'
@@ -15,10 +14,15 @@ export function TabletMenuPage() {
   const user = useAuthStore((state) => state.user)
   useMenuRealtime()
   const filters = useMenuFilters(true)
-  const query = useMenuItems(filters.params, !filters.invalid)
+  const { page: _page, size: _size, ...tabletParams } = filters.params
+  const query = useAllOrderableMenuItems(tabletParams, !filters.invalid)
   const [search, setSearch] = useState('')
   const data = query.data
-  const visibleItems = data?.content.filter((item) => item.name.toLocaleLowerCase('vi').includes(search.trim().toLocaleLowerCase('vi'))) ?? []
+  const allItems = data?.items ?? []
+  const normalizedSearch = search.trim().toLocaleLowerCase('vi')
+  const visibleItems = normalizedSearch
+    ? allItems.filter((item) => item.name.toLocaleLowerCase('vi').includes(normalizedSearch))
+    : allItems
   const tableLabel = user?.tableName || (user?.tableId ? String(user.tableId).padStart(2, '0') : '—')
 
   return (
@@ -39,13 +43,24 @@ export function TabletMenuPage() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="text-lg font-bold tracking-tight text-primary">Món ngon dành cho bạn</h2>
-          {data && <p className="mt-1 text-xs text-muted">{data.totalElements} món trong thực đơn{search.trim() ? ` · ${visibleItems.length} kết quả trên trang này` : ''}</p>}
+          {data && (
+            <p className="mt-1 text-xs text-muted">
+              {allItems.length} món trong thực đơn
+              {normalizedSearch ? ` · ${visibleItems.length} kết quả phù hợp` : ''}
+            </p>
+          )}
         </div>
         <div className="flex max-w-full items-center gap-2">
           <label className="flex min-h-11 min-w-0 items-center gap-2 rounded-xl border border-border bg-card px-3 focus-within:ring-2 focus-within:ring-accent">
             <Search className="h-4 w-4 shrink-0 text-muted" aria-hidden="true" />
-            <input type="search" value={search} onChange={(event) => setSearch(event.target.value)} aria-label="Tìm món trên trang hiện tại"
-              placeholder="Tìm món trên trang này..." className="w-48 min-w-0 bg-transparent py-2 text-sm text-text outline-none placeholder:text-muted" />
+            <input
+              type="search"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              aria-label="Tìm món trong thực đơn"
+              placeholder="Tìm tên món..."
+              className="w-48 min-w-0 bg-transparent py-2 text-sm text-text outline-none placeholder:text-muted"
+            />
           </label>
           <Button variant="outline" size="icon" className="h-11 w-11 shrink-0 rounded-xl" disabled={query.isFetching || filters.invalid} onClick={() => void query.refetch()} aria-label="Làm mới thực đơn">
             <RefreshCw className={`h-4 w-4 ${query.isFetching ? 'animate-spin' : ''}`} aria-hidden="true" />
@@ -55,16 +70,15 @@ export function TabletMenuPage() {
       {filters.invalid ? <MenuFeedback message="Bộ lọc thực đơn không hợp lệ. Vui lòng đặt lại bộ lọc." retry={filters.reset} />
         : query.isPending ? <MenuFeedback message="Đang tải thực đơn..." loading />
         : query.isError ? <MenuFeedback message={getMenuErrorMessage(query.error)} retry={() => void query.refetch()} />
-        : <>
-          {visibleItems.length === 0 ? <div className="rounded-2xl border border-dashed border-border bg-card px-6 py-14 text-center">
+        : (
+          visibleItems.length === 0 ? <div className="rounded-2xl border border-dashed border-border bg-card px-6 py-14 text-center">
             <h3 className="font-semibold text-primary">Chưa có món phù hợp</h3>
-            <p className="mt-2 text-sm text-muted">{search.trim() ? 'Thử tên món khác hoặc xóa từ khóa để xem các món trên trang này.' : 'Vui lòng chọn danh mục khác hoặc làm mới thực đơn.'}</p>
+            <p className="mt-2 text-sm text-muted">{normalizedSearch ? 'Thử tên món khác hoặc xóa từ khóa để xem toàn bộ thực đơn.' : 'Vui lòng chọn danh mục khác hoặc làm mới thực đơn.'}</p>
             <Button className="mt-5 min-h-11 rounded-xl" variant="outline" onClick={() => { setSearch(''); filters.reset() }}>Xem tất cả món</Button>
           </div> : <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 md:gap-5" aria-busy={query.isFetching}>
             {visibleItems.map((item) => <TabletMenuCard key={item.id} item={item} />)}
-          </div>}
-          {data && <MenuPagination page={data.page} totalPages={data.totalPages} totalElements={data.totalElements} busy={query.isFetching} onPage={(page) => filters.change('page', String(page))} />}
-        </>}
+          </div>
+        )}
     </section>
   )
 }

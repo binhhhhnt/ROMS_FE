@@ -101,9 +101,9 @@ export function TableDetailPage() {
   useEffect(() => {
     if (!activeSessionId) return
 
-    const unsubSession = subscribeToTopic(
+    const unsubSession = subscribeToTopic<{ newStatus?: string; itemName?: string }>(
       `/topic/session/${activeSessionId}/orders`,
-      (payload: any) => {
+      (payload) => {
         refetchOrders()
         if (payload?.newStatus === 'READY') {
           toast.success(
@@ -150,8 +150,7 @@ export function TableDetailPage() {
   // Handle serving an individual item to table
   const handleCompleteItem = async (
     orderId: number,
-    itemId: number,
-    _itemName: string
+    itemId: number
   ) => {
     setServingItemId(itemId)
     try {
@@ -241,7 +240,7 @@ export function TableDetailPage() {
     onSuccess: (session) => {
       queryClient.invalidateQueries({ queryKey: ['tableDetail', id] })
       queryClient.invalidateQueries({ queryKey: ['tablesOverview'] })
-      toast.success(`Đã mở phiên phục vụ #${session.id} cho Bàn ${session.tableCode}!`)
+      toast.success(`Đã mở phiên phục vụ ${session.sessionCode || `#${session.id}`} cho Bàn ${session.tableCode}!`)
     },
     onError: (err) => {
       toast.error(getApiErrorMessage(err))
@@ -343,7 +342,7 @@ export function TableDetailPage() {
     onSuccess: (session) => {
       queryClient.invalidateQueries({ queryKey: ['tableDetail', id] })
       queryClient.invalidateQueries({ queryKey: ['tablesOverview'] })
-      toast.success(`Đã đóng phiên phục vụ #${session.id} thành công!`)
+      toast.success(`Đã đóng phiên phục vụ ${session.sessionCode || `#${session.id}`} thành công!`)
       navigate('/tables', { replace: true })
     },
     onError: (err) => {
@@ -454,7 +453,7 @@ export function TableDetailPage() {
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                 <span className="text-sm font-semibold text-text font-mono">
-                  Phiên #{sessionDetail?.id || activeSessionId}
+                  Phiên {sessionDetail?.sessionCode || table?.activeSessionCode || `#${activeSessionId}`}
                 </span>
                 <span className="inline-flex items-center gap-1 text-xs text-muted">
                   <Clock className="w-3.5 h-3.5 shrink-0" />
@@ -774,8 +773,7 @@ export function TableDetailPage() {
                                       onClick={() =>
                                         handleCompleteItem(
                                           order.id,
-                                          item.id,
-                                          item.menuItemName
+                                          item.id
                                         )
                                       }
                                       disabled={servingItemId === item.id}
@@ -876,6 +874,7 @@ export function TableDetailPage() {
             isOpen={isReturnModalOpen}
             onClose={() => setIsReturnModalOpen(false)}
             sessionId={activeSessionId}
+            sessionCode={sessionDetail?.sessionCode}
             tableCode={table?.tableCode}
             onSuccess={() => {
               refetchOrders()

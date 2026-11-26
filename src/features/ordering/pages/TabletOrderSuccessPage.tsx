@@ -26,12 +26,16 @@ export function TabletOrderSuccessPage() {
     }).format(amount)
   }
 
-  // If page is accessed directly without state, we can still show a friendly message or redirect
-  const orderId = state?.orderId || 1
+  // If page is accessed directly without order state, redirect to order tracking
+  if (!state?.orderId) {
+    return <Navigate to="/tablet/orders" replace />
+  }
+
+  const orderId = state.orderId
   const tableCode =
-    state?.tableCode || user?.tableName || (user?.tableId ? `Bàn ${user.tableId}` : 'Bàn T01')
-  const totalAmount = state?.totalAmount ?? 0
-  const itemCount = state?.itemCount ?? 1
+    state.tableCode || user?.tableName || (user?.tableId ? `Bàn ${user.tableId}` : 'Bàn T01')
+  const totalAmount = state.totalAmount ?? 0
+  const itemCount = state.itemCount ?? 1
 
   const currentTime = new Intl.DateTimeFormat('vi-VN', {
     hour: '2-digit',
@@ -40,11 +44,6 @@ export function TabletOrderSuccessPage() {
     month: '2-digit',
     year: 'numeric',
   }).format(new Date())
-
-  // If user directly browses here without any previous action and no user, navigate back
-  if (!user && !state) {
-    return <Navigate to="/tablet/cart" replace />
-  }
 
   return (
     <div className="max-w-2xl mx-auto flex flex-col items-center text-center py-6 sm:py-10 pb-16">

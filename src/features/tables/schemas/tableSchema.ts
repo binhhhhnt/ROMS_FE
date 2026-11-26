@@ -10,11 +10,9 @@ export const tableSchema = z.object({
     .number({ message: 'Vui lòng nhập sức chứa của bàn' })
     .min(1, 'Sức chứa tối thiểu 1 người')
     .max(50, 'Sức chứa tối đa 50 người'),
-  area: z
-    .string()
-    .max(50, 'Tên khu vực tối đa 50 ký tự')
-    .optional()
-    .or(z.literal('')),
+  areaId: z
+    .number({ message: 'Vui lòng chọn khu vực' })
+    .min(1, 'Vui lòng chọn khu vực'),
 })
 
 export type TableFormValues = z.infer<typeof tableSchema>

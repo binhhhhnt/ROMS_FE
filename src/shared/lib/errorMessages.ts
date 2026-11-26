@@ -23,11 +23,16 @@ export const ERROR_CODE_MESSAGES: Record<string, string> = {
   PASSWORD_MISMATCH: 'Mật khẩu cũ không chính xác.',
   PASSWORD_UNCHANGED: 'Mật khẩu mới phải khác mật khẩu hiện tại.',
   CANNOT_DEACTIVATE_SELF: 'Bạn không thể tự khóa tài khoản của chính mình.',
+  CANNOT_DELETE_SELF: 'Bạn không thể tự xóa tài khoản của chính mình.',
   DUPLICATE_USERNAME: 'Tên đăng nhập này đã tồn tại, vui lòng chọn tên khác.',
   DUPLICATE_EMAIL: 'Địa chỉ email này đã được sử dụng bởi tài khoản khác.',
   USER_NOT_FOUND: 'Không tìm thấy tài khoản người dùng.',
 
-  // 2. Bàn & Phiên phục vụ
+  // 2. Bàn, Khu vực & Phiên phục vụ
+  AREA_NOT_FOUND: 'Không tìm thấy thông tin khu vực yêu cầu.',
+  DUPLICATE_AREA_NAME: 'Tên khu vực này đã tồn tại. Vui lòng chọn tên khác.',
+  AREA_INACTIVE: 'Khu vực này đang tạm ẩn, không thể gán bàn mới vào.',
+  AREA_HAS_ACTIVE_TABLES: 'Không thể tạm ẩn khu vực khi vẫn còn bàn đang hoạt động.',
   TABLE_NOT_FOUND: 'Không tìm thấy thông tin bàn ăn yêu cầu.',
   DUPLICATE_TABLE_CODE: 'Mã bàn này đã tồn tại. Vui lòng chọn mã bàn khác.',
   TABLE_INACTIVE: 'Bàn ăn đang tạm ngưng hoạt động.',
@@ -107,6 +112,7 @@ const PATTERN_TRANSLATIONS: Array<[RegExp, string]> = [
   [/account is inactive/i, 'Tài khoản đã bị khóa hoặc tạm ngưng hoạt động.'],
   [/session has expired|session has been revoked|refresh token is required/i, 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.'],
   [/cannot deactivate your own account/i, 'Bạn không thể tự khóa tài khoản của chính mình.'],
+  [/cannot delete your own account/i, 'Bạn không thể tự xóa tài khoản của chính mình.'],
   [/already linked to user|already assigned/i, 'Bàn ăn này đã được liên kết với một tài khoản máy tính bảng khác.'],
   [/email is already in use|duplicate_email/i, 'Địa chỉ email này đã được sử dụng bởi tài khoản khác.'],
   [/username is already taken|duplicate_username/i, 'Tên đăng nhập này đã tồn tại trong hệ thống.'],

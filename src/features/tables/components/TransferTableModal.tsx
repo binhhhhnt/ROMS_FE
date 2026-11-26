@@ -96,7 +96,7 @@ export function TransferTableModal({
             <div className="text-right">
               <span className="text-[11px] text-muted block">Phiên phục vụ:</span>
               <span className="font-mono font-semibold text-primary">
-                #{currentTable.activeSessionId}
+                {currentTable.activeSessionCode || `#${currentTable.activeSessionId}`}
               </span>
             </div>
           </div>

@@ -3,13 +3,42 @@ import { useAuthStore } from '@/app/store/authStore'
 import { categoryApi } from '../api/categoryApi'
 import { menuApi } from '../api/menuApi'
 import type { CategoryResponse } from '../types/category.types'
-import type { MenuListParams } from '../types/menu.types'
+import type { MenuItemReadResponse, MenuListParams } from '../types/menu.types'
 
 export function useMenuItems(params: MenuListParams, enabled = true) {
   const user = useAuthStore((state) => state.user)
   return useQuery({
     queryKey: ['menu', 'items', user?.id, user?.role, params],
     queryFn: ({ signal }) => menuApi.list(params, signal),
+    enabled: !!user && enabled,
+    refetchOnWindowFocus: true,
+  })
+}
+
+export function useAllOrderableMenuItems(
+  params: Omit<MenuListParams, 'page' | 'size'>,
+  enabled = true
+) {
+  const user = useAuthStore((state) => state.user)
+  return useQuery({
+    queryKey: ['menu', 'orderable-all-items', user?.id, user?.role, params],
+    queryFn: async ({ signal }) => {
+      const result: MenuItemReadResponse[] = []
+      let page = 0
+      let totalPages = 1
+      let totalElements = 0
+      while (page < totalPages) {
+        const data = await menuApi.list({ ...params, page, size: 100 }, signal)
+        result.push(...data.content)
+        totalPages = data.totalPages
+        totalElements = data.totalElements
+        page++
+      }
+      return {
+        items: result,
+        totalElements,
+      }
+    },
     enabled: !!user && enabled,
     refetchOnWindowFocus: true,
   })
@@ -25,7 +54,7 @@ export function useMenuItem(id: number | null, quantity = 1, enabled = true) {
   })
 }
 
-export function useMenuCategoryOptions() {
+export function useMenuCategoryOptions(enabled = true) {
   const user = useAuthStore((state) => state.user)
   return useQuery({
     queryKey: ['menu', 'category-options', user?.id, user?.role],
@@ -41,7 +70,7 @@ export function useMenuCategoryOptions() {
       }
       return result
     },
-    enabled: !!user,
+    enabled: !!user && enabled,
   })
 }
 

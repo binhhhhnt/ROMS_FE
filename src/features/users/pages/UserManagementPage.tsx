@@ -13,9 +13,11 @@ import {
   Tablet,
   KeyRound,
   ShieldCheck,
+  Trash2,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
+import { useAuthStore } from '@/app/store/authStore'
 import { userApi } from '@/features/users/api/userApi'
 import type { UserItem, UserFilterParams } from '@/features/users/types/user.types'
 import type { UserRole } from '@/features/auth/types/auth.types'
@@ -33,6 +35,7 @@ type ManagementTab = 'staff' | 'tablet'
 
 export function UserManagementPage() {
   const { userId } = useParams<{ userId?: string }>()
+  const currentUser = useAuthStore((s) => s.user)
   const queryClient = useQueryClient()
 
   // Active Tab: 'staff' (Nhân viên) or 'tablet' (Tài khoản bàn)
@@ -68,6 +71,7 @@ export function UserManagementPage() {
 
   // Status toggle confirmation modal state
   const [statusConfirmUser, setStatusConfirmUser] = useState<UserItem | null>(null)
+  const [deleteConfirmUser, setDeleteConfirmUser] = useState<UserItem | null>(null)
 
   // Current active filters based on tab
   const currentFilters = activeTab === 'staff' ? staffFilters : tabletFilters
@@ -133,6 +137,24 @@ export function UserManagementPage() {
       toast.error(getApiErrorMessage(err))
     },
   })
+
+  const deleteUserMutation = useMutation({
+    mutationFn: (id: number) => userApi.deleteUser(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['usersList'] })
+      toast.success('Đã xóa tài khoản thành công!')
+    },
+    onError: (err) => {
+      toast.error(getApiErrorMessage(err))
+    },
+  })
+
+  const handleConfirmDeleteUser = () => {
+    if (!deleteConfirmUser) return
+    deleteUserMutation.mutate(deleteConfirmUser.id, {
+      onSettled: () => setDeleteConfirmUser(null),
+    })
+  }
 
   // Filter content: if staff tab and no role selected, exclude TABLE_ACCOUNT
   const rawUsers = data?.content || []
@@ -500,6 +522,16 @@ export function UserManagementPage() {
                               <Unlock className="w-4 h-4" />
                             )}
                           </button>
+                          {item.id !== currentUser?.id && (
+                            <button
+                              type="button"
+                              onClick={() => setDeleteConfirmUser(item)}
+                              className="p-1.5 text-muted hover:text-status-cancelled hover:bg-status-cancelled/10 rounded-md transition-colors"
+                              title="Xóa tài khoản"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -645,6 +677,16 @@ export function UserManagementPage() {
                               <Unlock className="w-4 h-4" />
                             </button>
                           )}
+                          {(!item.isActive || item.canDeactivate) && (
+                            <button
+                              type="button"
+                              onClick={() => setDeleteConfirmUser(item)}
+                              className="p-1.5 text-muted hover:text-status-cancelled hover:bg-status-cancelled/10 rounded-md transition-colors"
+                              title="Xóa tài khoản bàn"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -732,6 +774,33 @@ export function UserManagementPage() {
         confirmText={statusConfirmUser?.isActive ? 'Khóa tài khoản' : 'Kích hoạt lại'}
         cancelText="Hủy bỏ"
         variant={statusConfirmUser?.isActive ? 'danger' : 'primary'}
+      />
+
+      <ConfirmDialog
+        isOpen={!!deleteConfirmUser}
+        onClose={() => setDeleteConfirmUser(null)}
+        onConfirm={handleConfirmDeleteUser}
+        isLoading={deleteUserMutation.isPending}
+        title="Xác nhận xóa tài khoản"
+        description={
+          deleteConfirmUser ? (
+            <div className="space-y-1.5">
+              <p>
+                Bạn có chắc chắn muốn xóa tài khoản{' '}
+                <span className="font-semibold text-text">
+                  {`"${deleteConfirmUser.fullName || deleteConfirmUser.username}" (@${deleteConfirmUser.username})`}
+                </span>
+                ?
+              </p>
+              <p className="text-[11px] text-muted bg-surface/80 p-2 rounded-lg border border-border">
+                Tài khoản sẽ bị ẩn khỏi danh sách và thu hồi toàn bộ phiên đăng nhập hiện tại.
+              </p>
+            </div>
+          ) : null
+        }
+        confirmText="Xóa tài khoản"
+        cancelText="Hủy bỏ"
+        variant="danger"
       />
     </div>
   )

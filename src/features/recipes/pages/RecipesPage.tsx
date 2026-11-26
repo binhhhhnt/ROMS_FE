@@ -52,7 +52,7 @@ export function RecipesPage() {
   })
 
   const categories = categoryData?.content || []
-  const menuItems = menuData?.content || []
+  const menuItems = useMemo(() => menuData?.content || [], [menuData])
 
   // Filter menu items locally
   const filteredMenuItems = useMemo(() => {

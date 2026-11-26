@@ -45,7 +45,7 @@ export function PurchasesPage() {
       }),
   })
 
-  const purchases = purchasesData?.content || []
+  const purchases = useMemo(() => purchasesData?.content || [], [purchasesData])
   const totalElements = purchasesData?.totalElements || 0
   const totalPages = purchasesData?.totalPages || 0
 

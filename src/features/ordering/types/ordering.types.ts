@@ -68,6 +68,7 @@ export interface ReturnOrderItemsRequest {
 export interface OrderResponse {
   id: number
   sessionId: number
+  sessionCode?: string
   tableId: number
   tableCode: string
   status: OrderStatus
