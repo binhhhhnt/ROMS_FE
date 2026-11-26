@@ -76,7 +76,7 @@ export function StaffOrderModal({
     enabled: isOpen && !initialSessionId,
   })
 
-  const menuItems = menuData?.content || []
+  const menuItems = useMemo(() => menuData?.content || [], [menuData])
   const categories = categoryData?.content || []
   const activeTables = useMemo(() => {
     return (tablesData?.content || []).filter(

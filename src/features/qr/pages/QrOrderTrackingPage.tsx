@@ -50,8 +50,8 @@ export function QrOrderTrackingPage() {
     refetchInterval: 10000,
   })
 
-  const pendingRequests = data?.pendingRequests || []
-  const confirmedOrders = data?.confirmedOrders || []
+  const pendingRequests = useMemo(() => data?.pendingRequests || [], [data])
+  const confirmedOrders = useMemo(() => data?.confirmedOrders || [], [data])
 
   const sessionSummary = useMemo(() => {
     const pendingTotal = pendingRequests.reduce(

@@ -261,6 +261,7 @@ export function UserModal({ isOpen, onClose, onSuccess, userToEdit }: UserModalP
               {...register('role')}
             >
               <option value="SERVICE_STAFF">SERVICE_STAFF (Nhân viên phục vụ bàn)</option>
+              <option value="CASHIER_STAFF">CASHIER_STAFF (Nhân viên thu ngân)</option>
               <option value="KITCHEN_STAFF">KITCHEN_STAFF (Nhân viên bếp / KDS)</option>
               <option value="INVENTORY_STAFF">INVENTORY_STAFF (Nhân viên quản lý kho)</option>
               <option value="OWNER">OWNER (Quản trị viên / Chủ nhà hàng)</option>

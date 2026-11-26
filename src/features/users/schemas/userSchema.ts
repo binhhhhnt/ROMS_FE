@@ -3,6 +3,7 @@ import { z } from 'zod'
 export const userRoleEnum = z.enum([
   'OWNER',
   'SERVICE_STAFF',
+  'CASHIER_STAFF',
   'KITCHEN_STAFF',
   'INVENTORY_STAFF',
 ])
@@ -10,6 +11,7 @@ export const userRoleEnum = z.enum([
 export const staffRoleEnum = z.enum([
   'OWNER',
   'SERVICE_STAFF',
+  'CASHIER_STAFF',
   'KITCHEN_STAFF',
   'INVENTORY_STAFF',
 ])

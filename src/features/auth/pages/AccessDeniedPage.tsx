@@ -16,7 +16,7 @@ export function AccessDeniedPage() {
 
     if (user.role === 'KITCHEN_STAFF') {
       navigate('/kitchen/cooking', { replace: true })
-    } else if (user.role === 'OWNER') {
+    } else if (user.role === 'OWNER' || user.role === 'CASHIER_STAFF') {
       navigate('/owner/dashboard', { replace: true })
     } else if (user.role === 'SERVICE_STAFF') {
       navigate('/tables', { replace: true })

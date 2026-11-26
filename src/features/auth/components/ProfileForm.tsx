@@ -107,6 +107,7 @@ export function ProfileForm() {
       case 'OWNER':
         return 'default'
       case 'SERVICE_STAFF':
+      case 'CASHIER_STAFF':
         return 'ready'
       case 'KITCHEN_STAFF':
         return 'cooking'

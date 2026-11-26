@@ -23,6 +23,7 @@ import {
   type ReceiptTaxRow,
 } from '@/features/billing/utils/receiptPrinter'
 import { Button } from '@/shared/components/ui/button'
+import { handleNumericKeyDown, handleNumericPaste, sanitizeNumericString } from '@/shared/utils/numericInput'
 import { getApiErrorMessage } from '@/shared/lib/axios'
 import { getApiErrorCode } from '@/shared/lib/errorMessages'
 import type { PaymentItemDto } from '@/features/billing/types/bill.types'
@@ -47,6 +48,8 @@ export function SessionCheckoutPage() {
 
   const [selectedPromoCode, setSelectedPromoCode] = useState<string>('')
   const [customPromoCode, setCustomPromoCode] = useState<string>('')
+  const [surchargeInput, setSurchargeInput] = useState<string>('')
+  const [surchargeNote, setSurchargeNote] = useState<string>('')
   const [shouldPrintOnSuccess, setShouldPrintOnSuccess] = useState<boolean>(false)
 
   const [activeTab, setActiveTab] = useState<PaymentTab>('CASH')
@@ -79,25 +82,34 @@ export function SessionCheckoutPage() {
     return preview.availablePromotions.find((p) => p.code.toUpperCase() === code) || null
   }, [preview, selectedPromoCode, customPromoCode])
 
-  const { discountAmount, totalAmount } = useMemo(() => {
-    if (!preview) return { discountAmount: 0, totalAmount: 0 }
-    const base = preview.amountBeforeDiscount
+  const surchargeAmount = useMemo(() => {
+    const parsed = Number(surchargeInput)
+    if (!Number.isFinite(parsed) || parsed <= 0) return 0
+    return Math.round(parsed)
+  }, [surchargeInput])
 
-    if (!activePromo) {
-      return { discountAmount: 0, totalAmount: base }
-    }
+  const { discountAmount, roundingAdjustment, totalAmount } = useMemo(() => {
+    if (!preview) return { discountAmount: 0, roundingAdjustment: 0, totalAmount: 0 }
+    const base = Math.round(preview.amountBeforeDiscount)
 
     let discount = 0
-    if (activePromo.discountType === 'PERCENT') {
-      discount = Math.round((base * activePromo.discountValue) / 100)
-    } else {
-      discount = Math.min(activePromo.discountValue, base)
+    if (activePromo) {
+      if (activePromo.discountType === 'PERCENT') {
+        discount = Math.round((base * activePromo.discountValue) / 100)
+      } else {
+        discount = Math.min(Math.round(activePromo.discountValue), base)
+      }
+      discount = Math.min(discount, base)
     }
 
-    discount = Math.min(discount, base)
-    const finalTotal = Math.max(0, base - discount)
-    return { discountAmount: discount, totalAmount: finalTotal }
-  }, [preview, activePromo])
+    const rawTotal = Math.max(0, base - discount) + surchargeAmount
+    const finalTotal = Math.round(rawTotal / 1000) * 1000
+    return {
+      discountAmount: discount,
+      roundingAdjustment: finalTotal - rawTotal,
+      totalAmount: finalTotal,
+    }
+  }, [preview, activePromo, surchargeAmount])
 
   // Default split cash part to half of total when total changes
   useEffect(() => {
@@ -133,6 +145,8 @@ export function SessionCheckoutPage() {
       const code = (selectedPromoCode || customPromoCode).trim().toUpperCase()
       return billApi.checkoutBill(parsedSessionId, {
         promotionCode: code || undefined,
+        surchargeAmount: surchargeAmount > 0 ? surchargeAmount : 0,
+        surchargeNote: surchargeAmount > 0 ? surchargeNote.trim() : undefined,
         payments,
       })
     },
@@ -167,13 +181,15 @@ export function SessionCheckoutPage() {
           amountBeforeDiscount: savedBill.amountBeforeDiscount,
           discountAmount: savedBill.discountAmount,
           promotionCode: savedBill.promotionCode,
+          surchargeAmount: savedBill.surchargeAmount,
+          surchargeNote: savedBill.surchargeNote,
           taxRows,
           totalAmount: savedBill.totalAmount,
           payments: savedBill.payments?.map((p) => ({
             method: p.paymentMethod,
             amount: p.amount,
           })),
-          paperSize: (settings?.billPaperSize as any) || 'K80',
+          paperSize: settings?.billPaperSize === 'K58' ? 'K58' : 'K80',
         })
         toast.success(`Thanh toán và gửi lệnh in hóa đơn thành công! Mã HĐ: ${savedBill.billCode}`)
       } else {
@@ -199,7 +215,7 @@ export function SessionCheckoutPage() {
   })
 
   const hasBillableItems = Boolean(preview && preview.items && preview.items.length > 0)
-  const displayTableCode = preview?.tableCode || locationState?.tableCode || `Phiên #${parsedSessionId}`
+  const displayTableCode = preview?.tableCode || locationState?.tableCode || `Phiên ${preview?.sessionCode || `#${parsedSessionId}`}`
 
   const handlePrintProforma = () => {
     if (!preview || !hasBillableItems) return
@@ -232,14 +248,21 @@ export function SessionCheckoutPage() {
       amountBeforeDiscount: preview.amountBeforeDiscount,
       discountAmount,
       promotionCode: activePromo?.code,
+      surchargeAmount: surchargeAmount > 0 ? surchargeAmount : undefined,
+      surchargeNote: surchargeAmount > 0 ? surchargeNote.trim() : undefined,
       taxRows,
       totalAmount,
-      paperSize: (settings?.billPaperSize as any) || 'K80',
+      paperSize: settings?.billPaperSize === 'K58' ? 'K58' : 'K80',
     })
   }
 
   const handleConfirmPayment = (shouldPrint: boolean) => {
     if (!hasBillableItems || checkoutMutation.isPending) return
+
+    if (surchargeAmount > 0 && !surchargeNote.trim()) {
+      toast.error('Vui lòng nhập lý do phụ phí khi phụ phí lớn hơn 0!')
+      return
+    }
 
     let payments: PaymentItemDto[] = []
     if (activeTab === 'CASH') {
@@ -443,6 +466,43 @@ export function SessionCheckoutPage() {
               )}
             </div>
 
+            {/* Surcharge Section */}
+            <div className="bg-card p-4 sm:p-5 rounded-lg border border-border space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold text-text">Phụ phí phát sinh (tùy chọn)</span>
+                <span className="text-[11px] text-muted">Cộng thêm vào tổng thanh toán</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <input
+                    type="number"
+                    min={0}
+                    step={1000}
+                    placeholder="Số tiền phụ phí (VNĐ)..."
+                    value={surchargeInput}
+                    onKeyDown={(e) => handleNumericKeyDown(e, 'integer')}
+                    onPaste={(e) => handleNumericPaste(e, 'integer')}
+                    onChange={(e) => setSurchargeInput(sanitizeNumericString(e.target.value, 'integer'))}
+                    className="w-full h-10 px-3 text-xs bg-card border border-border rounded-md text-text tabular-nums focus:outline-hidden focus:ring-2 focus:ring-accent"
+                  />
+                </div>
+                <div>
+                  <input
+                    type="text"
+                    maxLength={255}
+                    placeholder={surchargeAmount > 0 ? 'Lý do phụ phí (bắt buộc)...' : 'Lý do phụ phí...'}
+                    value={surchargeNote}
+                    onChange={(e) => setSurchargeNote(e.target.value)}
+                    className={`w-full h-10 px-3 text-xs bg-card border rounded-md text-text focus:outline-hidden focus:ring-2 focus:ring-accent ${
+                      surchargeAmount > 0 && !surchargeNote.trim()
+                        ? 'border-amber-500'
+                        : 'border-border'
+                    }`}
+                  />
+                </div>
+              </div>
+            </div>
+
             {/* Calculation Summary Box */}
             <div className="bg-card p-4 sm:p-5 rounded-lg border border-border space-y-2.5 text-sm">
               <div className="flex justify-between text-text">
@@ -485,6 +545,27 @@ export function SessionCheckoutPage() {
                 <div className="flex justify-between text-status-completed font-semibold">
                   <span>Giảm giá khuyến mãi:</span>
                   <span className="tabular-nums">-{discountAmount.toLocaleString('vi-VN')} đ</span>
+                </div>
+              )}
+
+              {surchargeAmount > 0 && (
+                <div className="flex justify-between items-start gap-4 text-amber-600 font-semibold">
+                  <span className="min-w-0 break-words">
+                    Phụ phí {surchargeNote.trim() ? `(${surchargeNote.trim()})` : ''}:
+                  </span>
+                  <span className="tabular-nums shrink-0 whitespace-nowrap">
+                    +{surchargeAmount.toLocaleString('vi-VN')} đ
+                  </span>
+                </div>
+              )}
+
+              {roundingAdjustment !== 0 && (
+                <div className="flex justify-between text-xs font-medium text-muted">
+                  <span>Làm tròn thanh toán:</span>
+                  <span className="tabular-nums">
+                    {roundingAdjustment > 0 ? '+' : ''}
+                    {roundingAdjustment.toLocaleString('vi-VN')} đ
+                  </span>
                 </div>
               )}
 
@@ -561,7 +642,9 @@ export function SessionCheckoutPage() {
                       step={1000}
                       placeholder={totalAmount.toLocaleString('vi-VN')}
                       value={cashTenderedInput}
-                      onChange={(e) => setCashTenderedInput(e.target.value)}
+                      onKeyDown={(e) => handleNumericKeyDown(e, 'integer')}
+                      onPaste={(e) => handleNumericPaste(e, 'integer')}
+                      onChange={(e) => setCashTenderedInput(sanitizeNumericString(e.target.value, 'integer'))}
                       className="w-full px-3.5 py-2.5 text-base font-bold tabular-nums bg-card border border-border rounded-md text-text focus:outline-hidden focus:ring-2 focus:ring-accent"
                     />
                   </div>
@@ -640,7 +723,9 @@ export function SessionCheckoutPage() {
                       max={totalAmount}
                       step={1000}
                       value={cashPartInput}
-                      onChange={(e) => setCashPartInput(e.target.value)}
+                      onKeyDown={(e) => handleNumericKeyDown(e, 'integer')}
+                      onPaste={(e) => handleNumericPaste(e, 'integer')}
+                      onChange={(e) => setCashPartInput(sanitizeNumericString(e.target.value, 'integer'))}
                       className="w-full px-3.5 py-2.5 text-sm font-bold tabular-nums bg-card border border-border rounded-md text-text focus:outline-hidden focus:ring-2 focus:ring-accent"
                     />
                   </div>

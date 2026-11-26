@@ -109,14 +109,6 @@ export function ExpenseTable({
                     {/* Name */}
                     <td className="py-3.5 px-4">
                       <div className="font-semibold text-text text-sm">{item.name}</div>
-                      {isCancelled && item.cancelReason && (
-                        <div className="text-[11px] text-status-cancelled flex items-center gap-1 mt-0.5">
-                          <AlertCircle className="w-3 h-3 shrink-0" />
-                          <span className="truncate max-w-[200px]" title={item.cancelReason}>
-                            Lý do: {item.cancelReason}
-                          </span>
-                        </div>
-                      )}
                     </td>
 
                     {/* Amount */}

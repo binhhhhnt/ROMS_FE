@@ -34,7 +34,7 @@ export function CatalogDeleteButton({ kind, id, name, label = 'Xóa', disabled =
         className="border-status-cancelled/30 text-status-cancelled hover:bg-status-cancelled/5"
         onClick={() => setConfirming(true)}><Trash2 className="h-4 w-4" aria-hidden="true" />{label}</Button>
       {confirming && <MenuConfirmationDialog title={`Xóa ${noun}?`}
-        description={`Bạn muốn xóa ${noun} “${name}”? ${kind === 'category' ? 'Danh mục chỉ có thể xóa khi không còn món ăn.' : 'Món đã có trong đơn hàng sẽ được giữ lại để bảo toàn lịch sử.'}`}
+        description={`Bạn muốn xóa ${noun} “${name}”? ${kind === 'category' ? 'Danh mục chỉ có thể xóa khi không còn món ăn hoạt động.' : 'Món chưa có đơn sẽ bị xóa hẳn; món đã từng đặt sẽ được ẩn khỏi thực đơn và giữ lại lịch sử hóa đơn/báo cáo.'}`}
         confirmLabel={`Xóa ${noun}`} destructive getErrorMessage={deletionError}
         onClose={() => { setConfirming(false); trigger.current?.focus() }}
         onConfirm={async () => {

@@ -31,6 +31,7 @@ export interface PromotionDto {
 
 export interface BillPreviewResponse {
   sessionId: number
+  sessionCode?: string
   tableCode: string
   openedAt: string
   items: BillPreviewItemDto[]
@@ -49,6 +50,8 @@ export interface PaymentItemDto {
 
 export interface CheckoutBillPayload {
   promotionCode?: string
+  surchargeAmount?: number
+  surchargeNote?: string
   payments: PaymentItemDto[]
 }
 
@@ -73,12 +76,15 @@ export interface BillResponse {
   id: number
   billCode: string
   sessionId: number
+  sessionCode?: string
   tableCode: string
   amountBeforeDiscount: number
   promotionId?: number
   promotionCode?: string
   promotionName?: string
   discountAmount: number
+  surchargeAmount?: number
+  surchargeNote?: string | null
   totalAmount: number
   items: BillItemResponse[]
   payments: PaymentResponse[]

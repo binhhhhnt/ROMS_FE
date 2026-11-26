@@ -14,10 +14,16 @@ export interface KitchenReadyTicketPrintData {
   paperSize?: 'K80' | 'K58' | 'A5'
 }
 
-export function printKitchenReadyTicketViaBrowser(data: KitchenReadyTicketPrintData) {
-  if (!data.items || data.items.length === 0) return
+interface KitchenTicketLayoutOptions extends KitchenReadyTicketPrintData {
+  documentTitle: string
+  bannerText: string
+  footerLabel: string
+}
 
-  const paperSize = data.paperSize || 'K80'
+function buildAndPrintKitchenTicket(options: KitchenTicketLayoutOptions) {
+  if (!options.items || options.items.length === 0) return
+
+  const paperSize = options.paperSize || 'K80'
   const isA5 = paperSize === 'A5'
   const isK58 = paperSize === 'K58'
 
@@ -32,15 +38,15 @@ export function printKitchenReadyTicketViaBrowser(data: KitchenReadyTicketPrintD
       ? '@page { size: 58mm auto; margin: 2mm; }'
       : '@page { size: 80mm auto; margin: 3mm; }'
 
-  const formattedOrderAt = formatPrintDateTime(data.orderCreatedAt)
-  const formattedCompletedAt = formatPrintDateTime(new Date().toISOString())
+  const formattedOrderAt = formatPrintDateTime(options.orderCreatedAt)
+  const formattedPrintedAt = formatPrintDateTime(new Date().toISOString())
 
   const html = `
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
-  <title>PHIẾU RA MÓN - ${data.tableCode}</title>
+  <title>${options.documentTitle} - ${options.tableCode}</title>
   <style>
     ${pageSizeCss}
     * { box-sizing: border-box; }
@@ -70,10 +76,10 @@ export function printKitchenReadyTicketViaBrowser(data: KitchenReadyTicketPrintD
 </head>
 <body>
   <div class="text-center">
-    <div class="table-header">BÀN: ${data.tableCode}</div>
-    <div class="meta">Mã order: #${data.orderId}</div>
+    <div class="table-header">BÀN: ${options.tableCode}</div>
+    <div class="meta">Mã order: #${options.orderId}</div>
     ${formattedOrderAt ? `<div class="meta">Đặt lúc: ${formattedOrderAt}</div>` : ''}
-    <div class="banner">--- ĐÃ XONG ---</div>
+    <div class="banner">${options.bannerText}</div>
   </div>
 
   <div class="divider"></div>
@@ -87,7 +93,7 @@ export function printKitchenReadyTicketViaBrowser(data: KitchenReadyTicketPrintD
     </thead>
     <tbody>
       <tr><td colspan="2" style="padding: 0;"><div class="divider-solid"></div></td></tr>
-      ${data.items
+      ${options.items
         .map(
           (item) => `
         <tr>
@@ -104,10 +110,28 @@ export function printKitchenReadyTicketViaBrowser(data: KitchenReadyTicketPrintD
   </table>
 
   <div class="divider"></div>
-  <div class="text-center footer">Giờ hoàn tất: ${formattedCompletedAt}</div>
+  <div class="text-center footer">${options.footerLabel}: ${formattedPrintedAt}</div>
 </body>
 </html>
   `
 
   printHtmlViaIframe(html)
+}
+
+export function printKitchenReadyTicketViaBrowser(data: KitchenReadyTicketPrintData) {
+  buildAndPrintKitchenTicket({
+    ...data,
+    documentTitle: 'PHIẾU RA MÓN',
+    bannerText: '--- ĐÃ XONG ---',
+    footerLabel: 'Giờ hoàn tất',
+  })
+}
+
+export function printKitchenOrderTicketViaBrowser(data: KitchenReadyTicketPrintData) {
+  buildAndPrintKitchenTicket({
+    ...data,
+    documentTitle: 'PHIẾU ORDER BẾP',
+    bannerText: '--- ORDER MỚI VÀO BẾP ---',
+    footerLabel: 'Giờ nhận đơn',
+  })
 }

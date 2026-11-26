@@ -74,7 +74,7 @@ export function ReadyDishesPanel({
     )
 
     // Topic cập nhật trạng thái đơn bếp (nếu món chuyển COMPLETED hoặc CANCELLED thì xóa khỏi panel)
-    const unsubKitchen = subscribeToTopic<any>(
+    const unsubKitchen = subscribeToTopic<{ orderItemId?: number; newStatus?: string }>(
       '/topic/kitchen/orders',
       (event) => {
         if (!event) return

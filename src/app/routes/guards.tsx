@@ -42,7 +42,7 @@ export function PublicOnlyGuard() {
     if (user.role === 'KITCHEN_STAFF') {
       return <Navigate to="/kitchen/cooking" replace />
     }
-    if (user.role === 'OWNER') {
+    if (user.role === 'OWNER' || user.role === 'CASHIER_STAFF') {
       return <Navigate to="/owner/dashboard" replace />
     }
     if (user.role === 'SERVICE_STAFF') {

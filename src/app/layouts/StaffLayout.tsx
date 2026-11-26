@@ -105,7 +105,8 @@ export function StaffLayout() {
   }
 
   const isOwner = user?.role === 'OWNER'
-  const isServiceOrOwner = isOwner || user?.role === 'SERVICE_STAFF'
+  const isCashierOrOwner = isOwner || user?.role === 'CASHIER_STAFF'
+  const isServiceOrOwner = isOwner || user?.role === 'SERVICE_STAFF' || user?.role === 'CASHIER_STAFF'
   const isInventoryOrOwner = isOwner || user?.role === 'INVENTORY_STAFF'
 
   const navGroups: SidebarNavGroup[] = [
@@ -113,12 +114,12 @@ export function StaffLayout() {
       id: 'overview',
       title: 'Tổng quan & Báo cáo',
       items: [
-        { to: '/owner/dashboard', label: 'Tổng quan', icon: LayoutDashboard, visible: isOwner },
+        { to: '/owner/dashboard', label: 'Tổng quan', icon: LayoutDashboard, visible: isCashierOrOwner },
         {
           to: '/owner/reports/revenue',
           label: 'Báo cáo & Thống kê',
           icon: BarChart3,
-          visible: isOwner,
+          visible: isCashierOrOwner,
           isActiveOverride: isReportsPage,
         },
       ],
@@ -127,8 +128,8 @@ export function StaffLayout() {
       id: 'finance',
       title: 'Tài chính',
       items: [
-        { to: '/owner/bills', label: 'Lịch sử hóa đơn', icon: ReceiptText, visible: isOwner },
-        { to: '/owner/expenses', label: 'Quản lý Chi phí', icon: Receipt, visible: isOwner },
+        { to: '/owner/bills', label: 'Lịch sử hóa đơn', icon: ReceiptText, visible: isServiceOrOwner },
+        { to: '/owner/expenses', label: 'Quản lý Chi phí', icon: Receipt, visible: isCashierOrOwner },
       ],
     },
     {
@@ -273,7 +274,7 @@ export function StaffLayout() {
         </div>
 
         <div className="flex items-center gap-2 sm:gap-4">
-          {(user?.role === 'SERVICE_STAFF' || user?.role === 'OWNER') && (
+          {isServiceOrOwner && (
             <>
               <QrOrderNotificationPanel
                 isOpen={activePanel === 'qr'}

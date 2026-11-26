@@ -137,7 +137,7 @@ export function SessionDetailPage() {
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2.5">
               <h1 className="text-xl font-bold tracking-tight text-text">
-                Phiên phục vụ #{session.id}
+                Phiên phục vụ {session.sessionCode || `#${session.id}`}
               </h1>
               <Badge variant={isActive ? 'cooking' : 'completed'}>
                 {isActive ? 'Đang phục vụ' : 'Đã kết thúc'}

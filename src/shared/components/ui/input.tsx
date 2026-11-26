@@ -1,15 +1,51 @@
 import * as React from 'react'
 import { cn } from '@/shared/utils/cn'
+import {
+  handleNumericKeyDown,
+  handleNumericPaste,
+  inferNumericMode,
+  type NumericInputMode,
+} from '@/shared/utils/numericInput'
 
 export interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: boolean | string
   leftIcon?: React.ReactNode
   rightIcon?: React.ReactNode
+  numericMode?: NumericInputMode | false
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, error, leftIcon, rightIcon, ...props }, ref) => {
+  (
+    {
+      className,
+      type,
+      error,
+      leftIcon,
+      rightIcon,
+      numericMode,
+      onKeyDown,
+      onPaste,
+      step,
+      ...props
+    },
+    ref
+  ) => {
+    const resolvedNumericMode =
+      numericMode === false
+        ? undefined
+        : (numericMode ?? inferNumericMode(type, step))
+
+    const handleKeyDown: React.KeyboardEventHandler<HTMLInputElement> | undefined =
+      resolvedNumericMode
+        ? (e) => handleNumericKeyDown(e, resolvedNumericMode, onKeyDown)
+        : onKeyDown
+
+    const handlePaste: React.ClipboardEventHandler<HTMLInputElement> | undefined =
+      resolvedNumericMode
+        ? (e) => handleNumericPaste(e, resolvedNumericMode, onPaste)
+        : onPaste
+
     return (
       <div className="relative flex items-center w-full">
         {leftIcon && (
@@ -19,6 +55,9 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         )}
         <input
           type={type}
+          step={step}
+          onKeyDown={handleKeyDown}
+          onPaste={handlePaste}
           className={cn(
             'flex h-10 w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-text placeholder:text-muted focus-visible:outline-none focus-visible:border-accent focus-visible:ring-1 focus-visible:ring-accent transition-colors disabled:cursor-not-allowed disabled:opacity-50',
             leftIcon && 'pl-10',

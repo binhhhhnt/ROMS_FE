@@ -42,6 +42,8 @@ export function BillDetailModal({ isOpen, onClose, bill }: BillDetailModalProps)
       amountBeforeDiscount: bill.amountBeforeDiscount,
       discountAmount: bill.discountAmount,
       promotionCode: bill.promotionCode,
+      surchargeAmount: bill.surchargeAmount,
+      surchargeNote: bill.surchargeNote,
       totalAmount: bill.totalAmount,
       payments: (bill.payments || []).map((p) => ({
         method: p.paymentMethod === 'CASH' ? 'Tiền mặt' : 'Chuyển khoản',
@@ -63,7 +65,7 @@ export function BillDetailModal({ isOpen, onClose, bill }: BillDetailModalProps)
               </span>
             </div>
             <p className="text-xs text-muted mt-0.5">
-              Bàn {bill.tableCode} • Phiên #{bill.sessionId}
+              Bàn {bill.tableCode} • Phiên {bill.sessionCode || `#${bill.sessionId}`}
             </p>
           </div>
           <button
@@ -150,6 +152,17 @@ export function BillDetailModal({ isOpen, onClose, bill }: BillDetailModalProps)
                   <Tag className="w-3.5 h-3.5" /> Khuyến mãi {bill.promotionCode && `(${bill.promotionCode})`}
                 </span>
                 <span className="font-semibold tabular-nums">-{formatVnd(bill.discountAmount)}</span>
+              </div>
+            )}
+
+            {(bill.surchargeAmount ?? 0) > 0 && (
+              <div className="flex justify-between items-start gap-4 text-amber-600">
+                <span className="font-medium min-w-0 break-words">
+                  Phụ phí {bill.surchargeNote && `(${bill.surchargeNote})`}
+                </span>
+                <span className="font-semibold tabular-nums shrink-0 whitespace-nowrap">
+                  +{formatVnd(bill.surchargeAmount ?? 0)}
+                </span>
               </div>
             )}
 

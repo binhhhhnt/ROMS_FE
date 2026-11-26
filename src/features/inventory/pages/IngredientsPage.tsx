@@ -9,7 +9,7 @@ import {
   XCircle,
   Filter,
   Edit2,
-  Ban,
+  Power,
   ChevronLeft,
   ChevronRight,
   RefreshCw,
@@ -26,6 +26,7 @@ import { ImportIngredientsModal } from '@/features/inventory/components/ImportIn
 import { DeactivateIngredientModal } from '@/features/inventory/components/DeactivateIngredientModal'
 import { useAuthStore } from '@/app/store/authStore'
 import { Button } from '@/shared/components/ui/button'
+import { ConfirmDialog } from '@/shared/components/ui/confirm-dialog'
 import { Input } from '@/shared/components/ui/input'
 import { Badge } from '@/shared/components/ui/badge'
 import { getApiErrorMessage } from '@/shared/lib/axios'
@@ -49,6 +50,8 @@ export function IngredientsPage() {
   const [isExportingExcel, setIsExportingExcel] = useState(false)
   const [editingIngredient, setEditingIngredient] = useState<IngredientResponse | null>(null)
   const [deactivatingIngredient, setDeactivatingIngredient] = useState<IngredientResponse | null>(null)
+  const [activatingIngredient, setActivatingIngredient] = useState<IngredientResponse | null>(null)
+  const [isActivating, setIsActivating] = useState(false)
 
   // API Query
   const isOwner = user?.role === 'OWNER'
@@ -113,6 +116,21 @@ export function IngredientsPage() {
 
   const handleOpenDeactivate = (ingredient: IngredientResponse) => {
     setDeactivatingIngredient(ingredient)
+  }
+
+  const handleConfirmActivate = async () => {
+    if (!activatingIngredient) return
+    try {
+      setIsActivating(true)
+      await ingredientApi.activateIngredient(activatingIngredient.id)
+      toast.success(`Đã kích hoạt lại nguyên liệu "${activatingIngredient.name}"`)
+      setActivatingIngredient(null)
+      handleMutationSuccess()
+    } catch (err) {
+      toast.error(getApiErrorMessage(err) || 'Không thể kích hoạt lại nguyên liệu')
+    } finally {
+      setIsActivating(false)
+    }
   }
 
   const handleMutationSuccess = () => {
@@ -462,16 +480,26 @@ export function IngredientsPage() {
                               <Edit2 className="w-4 h-4" />
                             </Button>
 
-                            {/* Deactivate button: Only for OWNER and only if still active */}
-                            {isOwner && item.isActive && (
+                            {/* Toggle active / inactive button: Only for OWNER */}
+                            {isOwner && (
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => handleOpenDeactivate(item)}
-                                className="text-status-cancelled hover:bg-status-cancelled/10 p-1.5 h-auto"
-                                title="Ngưng sử dụng nguyên liệu"
+                                onClick={() =>
+                                  item.isActive
+                                    ? handleOpenDeactivate(item)
+                                    : setActivatingIngredient(item)
+                                }
+                                className={`p-1.5 h-auto hover:bg-surface/50 ${
+                                  item.isActive ? 'text-status-completed' : 'text-muted'
+                                }`}
+                                title={
+                                  item.isActive
+                                    ? 'Ngưng sử dụng nguyên liệu'
+                                    : 'Kích hoạt lại nguyên liệu'
+                                }
                               >
-                                <Ban className="w-4 h-4" />
+                                <Power className="w-4 h-4" />
                               </Button>
                             )}
                           </div>
@@ -538,6 +566,20 @@ export function IngredientsPage() {
         onClose={() => setDeactivatingIngredient(null)}
         ingredient={deactivatingIngredient}
         onSuccess={handleMutationSuccess}
+      />
+
+      <ConfirmDialog
+        isOpen={Boolean(activatingIngredient)}
+        onClose={() => setActivatingIngredient(null)}
+        onConfirm={handleConfirmActivate}
+        isLoading={isActivating}
+        title="Kích hoạt lại nguyên liệu"
+        description={
+          activatingIngredient
+            ? `Bạn có chắc muốn kích hoạt lại nguyên liệu "${activatingIngredient.name}" để tiếp tục nhập kho và sử dụng trong công thức?`
+            : ''
+        }
+        confirmText="Kích hoạt lại"
       />
     </div>
   )

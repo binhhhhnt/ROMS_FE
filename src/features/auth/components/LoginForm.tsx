@@ -52,7 +52,7 @@ export function LoginForm() {
       // 4. Role-aware redirection
       if (userProfile.role === 'KITCHEN_STAFF') {
         navigate('/kitchen/cooking', { replace: true })
-      } else if (userProfile.role === 'OWNER') {
+      } else if (userProfile.role === 'OWNER' || userProfile.role === 'CASHIER_STAFF') {
         navigate('/owner/dashboard', { replace: true })
       } else if (userProfile.role === 'SERVICE_STAFF') {
         navigate('/tables', { replace: true })

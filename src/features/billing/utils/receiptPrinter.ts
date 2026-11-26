@@ -33,6 +33,8 @@ export interface ReceiptPrintData {
   amountBeforeDiscount: number
   discountAmount?: number
   promotionCode?: string
+  surchargeAmount?: number
+  surchargeNote?: string | null
   taxRows?: ReceiptTaxRow[]
   totalAmount: number
   payments?: ReceiptPaymentRow[]
@@ -177,6 +179,12 @@ export function printReceiptViaBrowser(data: ReceiptPrintData) {
     }
     .summary-table td {
       padding: 2px 0;
+      vertical-align: top;
+      word-break: break-word;
+    }
+    .summary-table td.text-right {
+      white-space: nowrap;
+      padding-left: 8px;
     }
     .total-row {
       font-size: ${totalSize};
@@ -287,6 +295,15 @@ export function printReceiptViaBrowser(data: ReceiptPrintData) {
       <tr>
         <td>Khuyến mãi ${data.promotionCode ? `(${data.promotionCode})` : ''}:</td>
         <td class="text-right font-bold text-red-600">-${formatVnd(data.discountAmount)}</td>
+      </tr>
+    `
+      : ''
+    }
+    ${data.surchargeAmount && data.surchargeAmount > 0
+      ? `
+      <tr>
+        <td>Phụ phí ${data.surchargeNote ? `(${data.surchargeNote})` : ''}:</td>
+        <td class="text-right font-bold">+${formatVnd(data.surchargeAmount)}</td>
       </tr>
     `
       : ''

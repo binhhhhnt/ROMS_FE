@@ -78,13 +78,12 @@ export function AppRoutes() {
         {/* Staff & Owner Layout */}
         <Route
           element={
-            <RoleGuard allowedRoles={['OWNER', 'SERVICE_STAFF', 'INVENTORY_STAFF']} />
+            <RoleGuard allowedRoles={['OWNER', 'SERVICE_STAFF', 'CASHIER_STAFF', 'INVENTORY_STAFF']} />
           }
         >
           <Route element={<StaffLayout />}>
             {/* Owner Only Routes */}
             <Route element={<RoleGuard allowedRoles={['OWNER']} />}>
-              <Route path="/owner/dashboard" element={<OwnerDashboardPage />} />
               <Route path="/owner/users" element={<UserManagementPage />} />
               <Route path="/owner/users/:userId" element={<UserManagementPage />} />
               <Route path="/owner/categories" element={<CategoryManagementPage />} />
@@ -92,16 +91,25 @@ export function AppRoutes() {
               <Route path="/owner/menu-items" element={<MenuItemListPage />} />
               <Route path="/owner/menu-items/new" element={<MenuItemCreatePage />} />
               <Route path="/owner/menu-items/:itemId" element={<MenuItemDetailPage />} />
-              <Route path="/owner/expenses" element={<ExpensesPage />} />
               <Route path="/owner/promotions" element={<PromotionsPage />} />
-              <Route path="/owner/bills" element={<BillsPage />} />
+              <Route path="/owner/settings" element={<RestaurantSettingsPage />} />
+              <Route path="/owner/qr-tables" element={<OwnerQrTablesPage />} />
+              <Route path="/owner/recipes" element={<RecipesPage />} />
+            </Route>
+
+            {/* Cashier & Owner Routes */}
+            <Route element={<RoleGuard allowedRoles={['CASHIER_STAFF', 'OWNER']} />}>
+              <Route path="/owner/dashboard" element={<OwnerDashboardPage />} />
+              <Route path="/owner/expenses" element={<ExpensesPage />} />
               <Route path="/owner/reports/revenue" element={<RevenueReportPage />} />
               <Route path="/owner/reports/popular-items" element={<PopularItemsReportPage />} />
               <Route path="/owner/reports/profit" element={<ProfitReportPage />} />
               <Route path="/owner/reports/operations" element={<OperationsReportPage />} />
-              <Route path="/owner/settings" element={<RestaurantSettingsPage />} />
-              <Route path="/owner/qr-tables" element={<OwnerQrTablesPage />} />
-              <Route path="/owner/recipes" element={<RecipesPage />} />
+            </Route>
+
+            {/* Bill History Routes (Service Staff, Cashier & Owner) */}
+            <Route element={<RoleGuard allowedRoles={['SERVICE_STAFF', 'CASHIER_STAFF', 'OWNER']} />}>
+              <Route path="/owner/bills" element={<BillsPage />} />
             </Route>
 
             {/* Inventory Staff & Owner Routes */}
@@ -114,8 +122,8 @@ export function AppRoutes() {
               <Route path="/inventory/purchases/:purchaseId" element={<PurchaseDetailPage />} />
             </Route>
 
-            {/* Service Staff & Owner Routes */}
-            <Route element={<RoleGuard allowedRoles={['SERVICE_STAFF', 'OWNER']} />}>
+            {/* Service Staff, Cashier & Owner Routes */}
+            <Route element={<RoleGuard allowedRoles={['SERVICE_STAFF', 'CASHIER_STAFF', 'OWNER']} />}>
               <Route path="/tables" element={<TablesOverviewPage />} />
               <Route path="/staff/tables" element={<TablesOverviewPage />} />
               <Route path="/staff/active-tables" element={<TablesOverviewPage initialActiveOnly={true} />} />

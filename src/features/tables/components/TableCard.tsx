@@ -53,7 +53,7 @@ export function TableCard({
       return (
         <Badge variant="cooking" className="whitespace-nowrap shrink-0">
           <span className="w-2 h-2 rounded-full bg-status-cooking shrink-0" />
-          Đang phục vụ #{table.activeSessionId}
+          Đang phục vụ
         </Badge>
       )
     }

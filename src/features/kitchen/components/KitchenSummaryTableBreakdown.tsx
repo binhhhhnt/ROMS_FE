@@ -94,9 +94,6 @@ export function KitchenSummaryTableBreakdown({
                     <span className="font-semibold text-sm text-text">
                       {item.tableCode ? `Bàn ${item.tableCode}` : `Bàn #${item.tableId}`}
                     </span>
-                    <span className="text-xs font-mono text-muted">
-                      Đơn #{item.orderId}
-                    </span>
                   </div>
 
                   <div className="flex items-center gap-2 text-xs text-muted mt-0.5">

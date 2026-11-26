@@ -10,6 +10,8 @@ export interface RestaurantSettingResponse {
   receipt_footer?: string
   printReadyTicket?: boolean
   print_ready_ticket?: boolean
+  printKitchenOrderTicket?: boolean
+  print_kitchen_order_ticket?: boolean
   billPrinterName?: string | null
   bill_printer_name?: string | null
   billPaperSize?: 'A5' | 'K80' | 'K58'
@@ -36,6 +38,8 @@ export interface UpdateSettingRequest {
   receipt_footer?: string
   printReadyTicket?: boolean
   print_ready_ticket?: boolean
+  printKitchenOrderTicket?: boolean
+  print_kitchen_order_ticket?: boolean
   billPrinterName?: string | null
   bill_printer_name?: string | null
   billPaperSize?: 'A5' | 'K80' | 'K58'

@@ -9,6 +9,7 @@ export interface QrContextResponse {
   tableCode: string
   area?: string | null
   sessionId: number
+  sessionCode?: string
   restaurantName: string
   address?: string | null
 }
@@ -25,6 +26,7 @@ export interface QrOrderRequestItemResponse {
 export interface QrOrderRequestResponse {
   id: number
   serviceSessionId: number
+  serviceSessionCode?: string
   tableId: number
   tableCode: string
   area?: string | null

@@ -26,7 +26,11 @@ export const ERROR_CODE_MESSAGES: Record<string, string> = {
   DUPLICATE_EMAIL: 'Địa chỉ email này đã được sử dụng bởi tài khoản khác.',
   USER_NOT_FOUND: 'Không tìm thấy tài khoản người dùng.',
 
-  // 2. Bàn & Phiên phục vụ
+  // 2. Bàn, Khu vực & Phiên phục vụ
+  AREA_NOT_FOUND: 'Không tìm thấy thông tin khu vực yêu cầu.',
+  DUPLICATE_AREA_NAME: 'Tên khu vực này đã tồn tại. Vui lòng chọn tên khác.',
+  AREA_INACTIVE: 'Khu vực này đang tạm ẩn, không thể gán bàn mới vào.',
+  AREA_HAS_ACTIVE_TABLES: 'Không thể tạm ẩn khu vực khi vẫn còn bàn đang hoạt động.',
   TABLE_NOT_FOUND: 'Không tìm thấy thông tin bàn ăn yêu cầu.',
   DUPLICATE_TABLE_CODE: 'Mã bàn này đã tồn tại. Vui lòng chọn mã bàn khác.',
   TABLE_INACTIVE: 'Bàn ăn đang tạm ngưng hoạt động.',
@@ -83,6 +87,8 @@ export const ERROR_CODE_MESSAGES: Record<string, string> = {
   EMPTY_BILL: 'Không thể tạo hóa đơn khi phiên chưa có món hợp lệ.',
   PAYMENT_REQUIRED: 'Vui lòng hoàn tất thanh toán trước khi thực hiện thao tác này.',
   PAYMENT_AMOUNT_MISMATCH: 'Số tiền thanh toán không khớp với tổng tiền hóa đơn.',
+  INVALID_SURCHARGE_AMOUNT: 'Số tiền phụ phí không được âm.',
+  SURCHARGE_NOTE_REQUIRED: 'Vui lòng nhập lý do phụ phí khi phụ phí lớn hơn 0.',
   TAX_CATEGORY_NOT_FOUND: 'Không tìm thấy cấu hình thuế yêu cầu.',
   TAX_RATE_ALREADY_EXISTS: 'Mức thuế này đã tồn tại trong hệ thống.',
   INVALID_TAX_RATE: 'Mức thuế suất không hợp lệ.',

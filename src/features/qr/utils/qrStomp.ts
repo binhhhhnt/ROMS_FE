@@ -5,7 +5,7 @@ type MessageCallback<T = unknown> = (data: T) => void
 
 interface RegisteredDestination {
   subscription: StompSubscription | null
-  callbacks: Set<MessageCallback<any>>
+  callbacks: Set<MessageCallback<unknown>>
 }
 
 let qrClient: Client | null = null
@@ -62,7 +62,7 @@ function getOrCreateQrClient(qrToken: string): Client {
           }
           entry.callbacks.forEach((cb) => {
             try {
-              cb(parsed as any)
+              cb(parsed)
             } catch (err) {
               console.error(`[QR STOMP] Error in message handler for ${destination}:`, err)
             }
@@ -98,7 +98,10 @@ export function subscribeQrTopic<T = unknown>(
     destinationsMap.set(destination, entry)
   }
 
-  entry.callbacks.add(onMessageWrapper(callback))
+  const wrappedCallback: MessageCallback<unknown> = (data) => {
+    callback(data as T)
+  }
+  entry.callbacks.add(wrappedCallback)
 
   if (client.connected && !entry.subscription) {
     entry.subscription = client.subscribe(destination, (message: IMessage) => {
@@ -110,7 +113,7 @@ export function subscribeQrTopic<T = unknown>(
       }
       entry?.callbacks.forEach((cb) => {
         try {
-          cb(parsed as any)
+          cb(parsed)
         } catch (err) {
           console.error(`[QR STOMP] Error in message handler for ${destination}:`, err)
         }
@@ -125,7 +128,7 @@ export function subscribeQrTopic<T = unknown>(
   return () => {
     const currentEntry = destinationsMap.get(destination)
     if (currentEntry) {
-      currentEntry.callbacks.delete(callback as MessageCallback<any>)
+      currentEntry.callbacks.delete(wrappedCallback)
       if (currentEntry.callbacks.size === 0) {
         try {
           currentEntry.subscription?.unsubscribe()
@@ -142,8 +145,4 @@ export function subscribeQrTopic<T = unknown>(
       activeQrToken = null
     }
   }
-}
-
-function onMessageWrapper<T>(callback: (data: T) => void): MessageCallback<any> {
-  return callback as MessageCallback<any>
 }

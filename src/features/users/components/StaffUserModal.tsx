@@ -241,6 +241,7 @@ export function StaffUserModal({
                 className="flex h-10 w-full rounded-lg border border-border bg-card px-3 py-2 text-xs text-text shadow-xs focus:outline-hidden focus:ring-2 focus:ring-accent"
               >
                 <option value="SERVICE_STAFF">Nhân viên phục vụ (SERVICE_STAFF)</option>
+                <option value="CASHIER_STAFF">Nhân viên thu ngân (CASHIER_STAFF)</option>
                 <option value="KITCHEN_STAFF">Nhân viên bếp (KITCHEN_STAFF)</option>
                 <option value="INVENTORY_STAFF">Nhân viên kho (INVENTORY_STAFF)</option>
                 <option value="OWNER">Quản trị viên nhà hàng (OWNER)</option>

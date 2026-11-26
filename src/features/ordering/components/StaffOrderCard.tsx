@@ -96,9 +96,6 @@ export function StaffOrderCard({ order }: StaffOrderCardProps) {
             <span className="font-bold text-base text-text">
               {order.tableCode ? `Bàn ${order.tableCode}` : `Bàn #${order.tableId}`}
             </span>
-            <span className="text-xs font-mono text-muted">
-              #{order.id}
-            </span>
           </div>
           <div className="flex items-center gap-1.5 text-xs text-muted mt-0.5">
             <Clock className="w-3.5 h-3.5 shrink-0" />

@@ -8,7 +8,7 @@ type MessageCallback<T = unknown> = (data: T) => void
 
 interface RegisteredDestination {
   subscription: StompSubscription | null
-  callbacks: Set<MessageCallback<any>>
+  callbacks: Set<MessageCallback<unknown>>
 }
 
 const destinationsMap = new Map<string, RegisteredDestination>()
@@ -18,12 +18,12 @@ function isDestinationPermitted(destination: string): boolean {
   if (!role) return true // If unauthenticated / test mode, allow attempt
   if (role === 'OWNER') return true
   if (destination.startsWith('/topic/kitchen')) return role === 'KITCHEN_STAFF'
-  if (destination.startsWith('/topic/tables')) return role === 'SERVICE_STAFF'
+  if (destination.startsWith('/topic/tables')) return role === 'SERVICE_STAFF' || role === 'CASHIER_STAFF'
   if (destination.startsWith('/topic/menu')) return true
-  if (destination.startsWith('/topic/service/')) return role === 'SERVICE_STAFF'
-  if (destination === '/topic/staff/qr-orders') return role === 'SERVICE_STAFF'
+  if (destination.startsWith('/topic/service/')) return role === 'SERVICE_STAFF' || role === 'CASHIER_STAFF'
+  if (destination === '/topic/staff/qr-orders') return role === 'SERVICE_STAFF' || role === 'CASHIER_STAFF'
   if (/^\/topic\/session\/\d+\/orders$/.test(destination)) {
-    return role === 'SERVICE_STAFF'
+    return role === 'SERVICE_STAFF' || role === 'CASHIER_STAFF'
   }
   if (destination.startsWith('/user/') || destination.startsWith('/queue/notifications')) return true
   return false
@@ -119,7 +119,10 @@ export function subscribeToTopic<T = unknown>(
     destinationsMap.set(destination, entry)
   }
 
-  entry.callbacks.add(onMessage as MessageCallback<any>)
+  const wrappedCallback: MessageCallback<unknown> = (data) => {
+    onMessage(data as T)
+  }
+  entry.callbacks.add(wrappedCallback)
 
   // If already connected and not yet subscribed to this destination, subscribe immediately
   if (client.connected && !entry.subscription) {
@@ -153,7 +156,7 @@ export function subscribeToTopic<T = unknown>(
   return () => {
     const currentEntry = destinationsMap.get(destination)
     if (currentEntry) {
-      currentEntry.callbacks.delete(onMessage as MessageCallback<any>)
+      currentEntry.callbacks.delete(wrappedCallback)
       if (currentEntry.callbacks.size === 0) {
         if (currentEntry.subscription) {
           try {
@@ -172,7 +175,11 @@ export function disconnectStomp(): void {
   if (stompClient) {
     destinationsMap.forEach((entry) => {
       if (entry.subscription) {
-        try { entry.subscription.unsubscribe() } catch (e) {}
+        try {
+          entry.subscription.unsubscribe()
+        } catch {
+          // ignore unsubscribe error during disconnect
+        }
       }
     })
     destinationsMap.clear()

@@ -129,6 +129,7 @@ export function ResetPasswordForm() {
           id="otp"
           maxLength={6}
           inputMode="numeric"
+          numericMode="integer"
           autoComplete="one-time-code"
           placeholder="Ví dụ: 868686"
           leftIcon={<KeyRound className="w-4 h-4 text-muted" />}

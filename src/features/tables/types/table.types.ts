@@ -1,14 +1,23 @@
 export type TableRealtimeStatus = 'EMPTY' | 'OCCUPIED' | 'OUT_OF_SERVICE'
 export type ServiceSessionStatus = 'ACTIVE' | 'CLOSED'
 
+export interface AreaItem {
+  id: number
+  name: string
+  isActive: boolean
+  activeTableCount: number
+}
+
 export interface TableItem {
   id: number
   tableCode: string
   capacity: number
+  areaId?: number | null
   area?: string | null
   isActive: boolean
   realtimeStatus: TableRealtimeStatus
   activeSessionId?: number | null
+  activeSessionCode?: string | null
   createdAt?: string
   updatedAt?: string
 }
@@ -16,18 +25,18 @@ export interface TableItem {
 export interface CreateTablePayload {
   tableCode: string
   capacity: number
-  area?: string | null
+  areaId: number
 }
 
 export interface UpdateTablePayload {
   tableCode: string
   capacity: number
-  area?: string | null
+  areaId: number
 }
 
 export interface TableFilterParams {
   isActive?: boolean | ''
-  area?: string
+  areaId?: number
   search?: string
   page?: number
   size?: number
@@ -36,6 +45,7 @@ export interface TableFilterParams {
 
 export interface ServiceSessionItem {
   id: number
+  sessionCode?: string
   tableId: number
   tableCode: string
   status: ServiceSessionStatus
@@ -62,6 +72,7 @@ export interface TableTransferHistoryItem {
 export interface SessionFilterParams {
   tableId?: number
   status?: ServiceSessionStatus
+  search?: string
   page?: number
   size?: number
   sort?: string

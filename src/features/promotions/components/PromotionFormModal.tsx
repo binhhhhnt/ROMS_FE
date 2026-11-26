@@ -244,6 +244,7 @@ export function PromotionFormModal({
                 <Input
                   type="number"
                   step="any"
+                  numericMode={discountType === 'PERCENT' ? 'decimal' : 'integer'}
                   {...register('discountValue', { valueAsNumber: true })}
                   placeholder={discountType === 'PERCENT' ? '10' : '50000'}
                   className={errors.discountValue ? 'border-error focus-visible:ring-error pr-12' : 'pr-12'}

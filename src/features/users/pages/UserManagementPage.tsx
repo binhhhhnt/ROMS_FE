@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
-  Users,
   UserPlus,
   Search,
   Filter,
@@ -10,44 +9,28 @@ import {
   Lock,
   Unlock,
   RefreshCw,
-  Tablet,
-  KeyRound,
+  Trash2,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
+import { useAuthStore } from '@/app/store/authStore'
 import { userApi } from '@/features/users/api/userApi'
 import type { UserItem, UserFilterParams } from '@/features/users/types/user.types'
 import type { UserRole } from '@/features/auth/types/auth.types'
 import { StaffUserModal } from '@/features/users/components/StaffUserModal'
-import { TableAccountModal } from '@/features/users/components/TableAccountModal'
-import { ChangeTablePasswordModal } from '@/features/users/components/ChangeTablePasswordModal'
 import { ConfirmDialog } from '@/shared/components/ui/confirm-dialog'
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 import { Badge } from '@/shared/components/ui/badge'
 import { getApiErrorMessage } from '@/shared/lib/axios'
-import { subscribeToTopic } from '@/shared/lib/stomp'
-
-type ManagementTab = 'staff' | 'tablet'
 
 export function UserManagementPage() {
   const { userId } = useParams<{ userId?: string }>()
+  const currentUser = useAuthStore((state) => state.user)
   const queryClient = useQueryClient()
 
-  // Active Tab: 'staff' (Nhân viên) or 'tablet' (Tài khoản bàn)
-  const [activeTab, setActiveTab] = useState<ManagementTab>('staff')
-
-  // Filters for Staff tab (Hiển thị toàn bộ, không phân trang)
+  // Filters for Staff (Hiển thị toàn bộ, không phân trang)
   const [staffFilters, setStaffFilters] = useState<UserFilterParams>({
-    page: 0,
-    size: 200,
-    search: '',
-    role: '',
-    isActive: '',
-  })
-
-  // Filters for Tablet tab (Hiển thị toàn bộ, không phân trang)
-  const [tabletFilters, setTabletFilters] = useState<UserFilterParams>({
     page: 0,
     size: 200,
     search: '',
@@ -59,33 +42,14 @@ export function UserManagementPage() {
   const [isStaffModalOpen, setIsStaffModalOpen] = useState(false)
   const [editingStaffUser, setEditingStaffUser] = useState<UserItem | null>(null)
 
-  const [isTableModalOpen, setIsTableModalOpen] = useState(false)
-  const [editingTableUser, setEditingTableUser] = useState<UserItem | null>(null)
-
-  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false)
-  const [passwordTargetUser, setPasswordTargetUser] = useState<UserItem | null>(null)
-
-  // Status toggle confirmation modal state
+  // Status toggle & delete confirmation modal state
   const [statusConfirmUser, setStatusConfirmUser] = useState<UserItem | null>(null)
+  const [deleteConfirmUser, setDeleteConfirmUser] = useState<UserItem | null>(null)
 
-  // Current active filters based on tab
-  const currentFilters = activeTab === 'staff' ? staffFilters : tabletFilters
-
-  // Lắng nghe sự kiện WebSocket realtime khi trạng thái bàn hoặc phiên phục vụ thay đổi
-  useEffect(() => {
-    const unsubscribe = subscribeToTopic('/topic/tables', () => {
-      queryClient.invalidateQueries({ queryKey: ['usersList'] })
-    })
-    return () => {
-      unsubscribe()
-    }
-  }, [queryClient])
-
-  // Fetch users with TanStack Query kèm cơ chế realtime & backup polling 3s cho tab tablet
+  // Fetch users with TanStack Query
   const { data, isLoading, isFetching, refetch } = useQuery({
-    queryKey: ['usersList', activeTab, currentFilters],
-    queryFn: () => userApi.getUsers(currentFilters),
-    refetchInterval: activeTab === 'tablet' ? 3000 : false,
+    queryKey: ['usersList', staffFilters],
+    queryFn: () => userApi.getUsers(staffFilters),
   })
 
   // Auto-load user if userId param is present
@@ -96,7 +60,6 @@ export function UserManagementPage() {
         userApi
           .getUserById(uId)
           .then((u) => {
-            setActiveTab('staff')
             setEditingStaffUser(u)
             setIsStaffModalOpen(true)
           })
@@ -124,28 +87,29 @@ export function UserManagementPage() {
     },
   })
 
+  const deleteUserMutation = useMutation({
+    mutationFn: (id: number) => userApi.deleteUser(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['usersList'] })
+      toast.success('Đã xóa tài khoản nhân viên thành công!')
+    },
+    onError: (err) => {
+      toast.error(getApiErrorMessage(err))
+    },
+  })
+
   const rawUsers = data?.content || []
   const users = rawUsers
 
 
   const handleOpenCreate = () => {
-    if (activeTab === 'staff') {
-      setEditingStaffUser(null)
-      setIsStaffModalOpen(true)
-    } else {
-      setEditingTableUser(null)
-      setIsTableModalOpen(true)
-    }
+    setEditingStaffUser(null)
+    setIsStaffModalOpen(true)
   }
 
   const handleOpenEdit = (user: UserItem) => {
     setEditingStaffUser(user)
     setIsStaffModalOpen(true)
-  }
-
-  const handleOpenPasswordReset = (user: UserItem) => {
-    setPasswordTargetUser(user)
-    setIsPasswordModalOpen(true)
   }
 
   const handleToggleStatus = (user: UserItem) => {
@@ -162,6 +126,13 @@ export function UserManagementPage() {
     )
   }
 
+  const handleConfirmDeleteUser = () => {
+    if (!deleteConfirmUser) return
+    deleteUserMutation.mutate(deleteConfirmUser.id, {
+      onSettled: () => setDeleteConfirmUser(null),
+    })
+  }
+
   const roleBadgeVariant = (
     role: UserRole
   ): 'default' | 'ready' | 'cooking' | 'secondary' | 'completed' | 'outline' => {
@@ -169,6 +140,7 @@ export function UserManagementPage() {
       case 'OWNER':
         return 'default'
       case 'SERVICE_STAFF':
+      case 'CASHIER_STAFF':
         return 'ready'
       case 'KITCHEN_STAFF':
         return 'cooking'
@@ -185,6 +157,8 @@ export function UserManagementPage() {
         return 'Quản trị viên'
       case 'SERVICE_STAFF':
         return 'Nhân viên phục vụ'
+      case 'CASHIER_STAFF':
+        return 'Nhân viên thu ngân'
       case 'KITCHEN_STAFF':
         return 'Nhân viên bếp'
       case 'INVENTORY_STAFF':
@@ -203,7 +177,7 @@ export function UserManagementPage() {
             Quản lý tài khoản &amp; Phân quyền
           </h1>
           <p className="text-xs text-muted mt-0.5">
-            Quản lý tài khoản nhân viên nhà hàng và tài khoản máy tính bảng tại từng bàn ăn.
+            Quản lý tài khoản nhân viên và phân quyền trong nhà hàng.
           </p>
         </div>
 
@@ -225,43 +199,13 @@ export function UserManagementPage() {
             className="h-9 px-3.5 text-xs font-semibold"
           >
             <UserPlus className="w-4 h-4 mr-1.5" />
-            {activeTab === 'staff' ? 'Thêm nhân viên' : 'Thêm tài khoản bàn'}
+            Thêm nhân viên
           </Button>
         </div>
       </div>
 
-      {/* Tabs Navigation */}
-      <div className="flex border-b border-border gap-2">
-        <button
-          type="button"
-          onClick={() => setActiveTab('staff')}
-          className={`flex items-center gap-2 py-2.5 px-4 text-xs font-semibold transition-colors border-b-2 -mb-px cursor-pointer ${
-            activeTab === 'staff'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-muted hover:text-text'
-          }`}
-        >
-          <Users className="w-4 h-4" />
-          <span>Tài khoản nhân viên</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab('tablet')}
-          className={`flex items-center gap-2 py-2.5 px-4 text-xs font-semibold transition-colors border-b-2 -mb-px cursor-pointer ${
-            activeTab === 'tablet'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-muted hover:text-text'
-          }`}
-        >
-          <Tablet className="w-4 h-4" />
-          <span>Tài khoản bàn (Tablet)</span>
-        </button>
-      </div>
-
-      {/* Filter Toolbar for STAFF TAB */}
-      {activeTab === 'staff' && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 bg-card border border-border rounded-lg">
+      {/* Filter Toolbar */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 bg-card border border-border rounded-lg">
           <div className="relative">
             <Input
               placeholder="Tìm theo tên hoặc username..."
@@ -289,6 +233,7 @@ export function UserManagementPage() {
               <option value="">Tất cả vai trò nhân viên</option>
               <option value="OWNER">Quản trị viên (OWNER)</option>
               <option value="SERVICE_STAFF">Nhân viên phục vụ (SERVICE_STAFF)</option>
+              <option value="CASHIER_STAFF">Nhân viên thu ngân (CASHIER_STAFF)</option>
               <option value="KITCHEN_STAFF">Nhân viên bếp (KITCHEN_STAFF)</option>
               <option value="INVENTORY_STAFF">Nhân viên kho (INVENTORY_STAFF)</option>
             </select>
@@ -323,56 +268,9 @@ export function UserManagementPage() {
             </select>
           </div>
         </div>
-      )}
 
-      {/* Filter Toolbar for TABLET TAB */}
-      {activeTab === 'tablet' && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 bg-card border border-border rounded-lg">
-          <div className="relative">
-            <Input
-              placeholder="Tìm theo tên tablet, username hoặc mã bàn..."
-              leftIcon={<Search className="w-4 h-4 text-muted" />}
-              value={tabletFilters.search || ''}
-              onChange={(e) =>
-                setTabletFilters((prev) => ({ ...prev, search: e.target.value, page: 0 }))
-              }
-            />
-          </div>
-
-          <div>
-            <select
-              className="flex h-10 w-full rounded-md border border-border bg-card px-3 py-2 text-xs text-text focus:outline-hidden focus:ring-2 focus:ring-accent"
-              value={
-                typeof tabletFilters.isActive === 'boolean'
-                  ? tabletFilters.isActive
-                    ? 'true'
-                    : 'false'
-                  : ''
-              }
-              onChange={(e) =>
-                setTabletFilters((prev) => ({
-                  ...prev,
-                  isActive:
-                    e.target.value === 'true'
-                      ? true
-                      : e.target.value === 'false'
-                        ? false
-                        : '',
-                  page: 0,
-                }))
-              }
-            >
-              <option value="">Tất cả trạng thái</option>
-              <option value="true">Đang hoạt động</option>
-              <option value="false">Đã bị vô hiệu hóa</option>
-            </select>
-          </div>
-        </div>
-      )}
-
-      {/* TAB 1: USERS TABLE */}
-      {activeTab === 'staff' && (
-        <div className="bg-card border border-border rounded-lg overflow-hidden">
+      {/* USERS TABLE */}
+      <div className="bg-card border border-border rounded-lg overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[700px] text-left text-xs border-collapse">
               <thead>
@@ -464,143 +362,16 @@ export function UserManagementPage() {
                               <Unlock className="w-3.5 h-3.5" />
                             )}
                           </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* TAB 2: TABLET ACCOUNTS TABLE */}
-      {activeTab === 'tablet' && (
-        <div className="bg-card border border-border rounded-lg overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[760px] text-left text-xs border-collapse">
-              <thead>
-                <tr className="border-b border-border bg-surface/60 text-muted font-medium">
-                  <th className="py-3 px-4 whitespace-nowrap">Tài khoản Tablet</th>
-                  <th className="py-3 px-4 whitespace-nowrap">Tên thiết bị</th>
-                  <th className="py-3 px-4 whitespace-nowrap">Bàn liên kết</th>
-                  <th className="py-3 px-4 whitespace-nowrap">Trạng thái bàn</th>
-                  <th className="py-3 px-4 whitespace-nowrap">Trạng thái TK</th>
-                  <th className="py-3 px-4 whitespace-nowrap">Ngày tạo</th>
-                  <th className="py-3 px-4 text-right whitespace-nowrap">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {isLoading ? (
-                  <tr>
-                    <td colSpan={7} className="py-12 text-center text-muted">
-                      <div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-                      Đang tải danh sách tài khoản bàn...
-                    </td>
-                  </tr>
-                ) : users.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="py-10 text-center text-muted">
-                      Không tìm thấy tài khoản bàn nào phù hợp với bộ lọc.
-                    </td>
-                  </tr>
-                ) : (
-                  users.map((item) => (
-                    <tr key={item.id} className="hover:bg-muted-bg/40 transition-colors">
-                      <td className="py-3 px-4 whitespace-nowrap">
-                        <span className="font-semibold text-sm text-text font-mono block">
-                          @{item.username}
-                        </span>
-                      </td>
-
-                      <td className="py-3 px-4 font-semibold text-text whitespace-nowrap">
-                        {item.fullName || item.username}
-                      </td>
-
-                      <td className="py-3 px-4 whitespace-nowrap">
-                        {item.tableCode ? (
-                          <Badge variant="outline">Bàn {item.tableCode}</Badge>
-                        ) : (
-                          <span className="text-muted">Chưa gắn bàn</span>
-                        )}
-                      </td>
-
-                      <td className="py-3 px-4 whitespace-nowrap">
-                        {item.hasActiveSession ? (
-                          <Badge variant="cooking">
-                            <span className="w-1.5 h-1.5 rounded-full bg-status-cooking shrink-0" />
-                            Đang có phiên
-                          </Badge>
-                        ) : (
-                          <span className="text-muted">—</span>
-                        )}
-                      </td>
-
-                      <td className="py-3 px-4 whitespace-nowrap">
-                        {item.isActive ? (
-                          <Badge variant="completed">
-                            <span className="w-1.5 h-1.5 rounded-full bg-status-completed shrink-0" />
-                            Hoạt động
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="text-muted">
-                            Đã khóa
-                          </Badge>
-                        )}
-                      </td>
-
-                      <td className="py-3 px-4 text-muted tabular-nums whitespace-nowrap">
-                        {new Date(item.createdAt).toLocaleDateString('vi-VN')}
-                      </td>
-
-                      <td className="py-3 px-4 text-right whitespace-nowrap">
-                        <div className="inline-flex items-center gap-1.5">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleOpenPasswordReset(item)}
-                            className="h-8 px-2"
-                            title="Đổi mật khẩu máy tính bảng"
-                          >
-                            <KeyRound className="w-3.5 h-3.5" />
-                          </Button>
-
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleOpenEdit(item)}
-                            className="h-8 px-2"
-                            title="Chỉnh sửa tài khoản & bàn liên kết"
-                          >
-                            <Edit2 className="w-3.5 h-3.5" />
-                          </Button>
-
-                          {item.isActive ? (
-                            item.canDeactivate ? (
-                              <Button
-                                type="button"
-                                variant="destructiveOutline"
-                                size="sm"
-                                onClick={() => handleToggleStatus(item)}
-                                className="h-8 px-2"
-                                title="Vô hiệu hóa tài khoản bàn"
-                              >
-                                <Lock className="w-3.5 h-3.5" />
-                              </Button>
-                            ) : null
-                          ) : (
+                          {currentUser?.id !== item.id && (
                             <Button
                               type="button"
-                              variant="outline"
+                              variant="destructiveOutline"
                               size="sm"
-                              onClick={() => handleToggleStatus(item)}
-                              className="h-8 px-2 text-status-completed"
-                              title="Kích hoạt tài khoản bàn"
+                              onClick={() => setDeleteConfirmUser(item)}
+                              className="h-8 px-2"
+                              title="Xóa tài khoản"
                             >
-                              <Unlock className="w-3.5 h-3.5" />
+                              <Trash2 className="w-3.5 h-3.5" />
                             </Button>
                           )}
                         </div>
@@ -612,14 +383,13 @@ export function UserManagementPage() {
             </table>
           </div>
         </div>
-      )}
 
       {/* Summary Footer */}
       <div className="flex items-center justify-between px-2 pt-2 text-xs text-muted">
         <div>
           Tổng số:{' '}
           <span className="font-semibold text-text">
-            {users.length} {activeTab === 'staff' ? 'nhân viên' : 'tài khoản máy tính bảng'}
+            {users.length} nhân viên
           </span>
         </div>
       </div>
@@ -630,22 +400,6 @@ export function UserManagementPage() {
         onClose={() => setIsStaffModalOpen(false)}
         onSuccess={() => refetch()}
         userToEdit={editingStaffUser}
-      />
-
-      {/* Table Account Modal */}
-      <TableAccountModal
-        isOpen={isTableModalOpen}
-        onClose={() => setIsTableModalOpen(false)}
-        onSuccess={() => refetch()}
-        userToEdit={editingTableUser}
-      />
-
-      {/* Change Table Password Quick Modal */}
-      <ChangeTablePasswordModal
-        isOpen={isPasswordModalOpen}
-        onClose={() => setIsPasswordModalOpen(false)}
-        onSuccess={() => refetch()}
-        account={passwordTargetUser}
       />
 
       {/* Modern Center Modal Confirmation Dialog */}
@@ -684,6 +438,33 @@ export function UserManagementPage() {
         confirmText={statusConfirmUser?.isActive ? 'Khóa tài khoản' : 'Kích hoạt lại'}
         cancelText="Hủy bỏ"
         variant={statusConfirmUser?.isActive ? 'danger' : 'primary'}
+      />
+
+      <ConfirmDialog
+        isOpen={!!deleteConfirmUser}
+        onClose={() => setDeleteConfirmUser(null)}
+        onConfirm={handleConfirmDeleteUser}
+        isLoading={deleteUserMutation.isPending}
+        title="Xác nhận xóa tài khoản nhân viên"
+        description={
+          deleteConfirmUser ? (
+            <div className="space-y-1.5">
+              <p>
+                Bạn có chắc chắn muốn xóa tài khoản{' '}
+                <span className="font-semibold text-text">
+                  {`"${deleteConfirmUser.fullName || deleteConfirmUser.username}" (@${deleteConfirmUser.username})`}
+                </span>
+                ?
+              </p>
+              <p className="text-[11px] text-muted bg-surface/80 p-2 rounded-lg border border-border">
+                Tài khoản sẽ bị ẩn khỏi danh sách và không thể đăng nhập lại; dữ liệu hóa đơn/đơn hàng cũ vẫn được giữ nguyên.
+              </p>
+            </div>
+          ) : null
+        }
+        confirmText="Xóa tài khoản"
+        cancelText="Hủy bỏ"
+        variant="danger"
       />
     </div>
   )

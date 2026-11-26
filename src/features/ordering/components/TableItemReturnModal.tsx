@@ -7,11 +7,13 @@ import type { DirectSaleItemDto } from '@/features/ordering/types/ordering.types
 import { getApiErrorMessage } from '@/shared/lib/axios'
 import { Button } from '@/shared/components/ui/button'
 import { Badge } from '@/shared/components/ui/badge'
+import { handleNumericKeyDown, handleNumericPaste } from '@/shared/utils/numericInput'
 
 interface TableItemReturnModalProps {
   isOpen: boolean
   onClose: () => void
   sessionId: number
+  sessionCode?: string
   tableCode?: string
   onSuccess?: () => void
 }
@@ -31,6 +33,7 @@ export function TableItemReturnModal({
   isOpen,
   onClose,
   sessionId,
+  sessionCode,
   tableCode,
   onSuccess,
 }: TableItemReturnModalProps) {
@@ -185,7 +188,7 @@ export function TableItemReturnModal({
               Kiểm đồ toàn phiên {tableCode ? `— Bàn ${tableCode}` : ''}
             </h2>
             <p className="text-xs text-muted mt-0.5">
-              Phiên phục vụ #{sessionId}
+              Phiên phục vụ {sessionCode || `#${sessionId}`}
             </p>
           </div>
           <button
@@ -266,6 +269,8 @@ export function TableItemReturnModal({
                                 min={0}
                                 max={group.totalOrdered}
                                 value={targetReturned}
+                                onKeyDown={(e) => handleNumericKeyDown(e, 'integer')}
+                                onPaste={(e) => handleNumericPaste(e, 'integer')}
                                 onChange={(e) =>
                                   handleQuantityChange(group.menuItemId, group.totalOrdered, e.target.value)
                                 }
