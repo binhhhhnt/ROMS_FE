@@ -109,6 +109,7 @@ export const ERROR_CODE_MESSAGES: Record<string, string> = {
   DUPLICATE_INGREDIENT_NAME: 'Tên nguyên liệu này đã tồn tại.',
   INVALID_MINIMUM_STOCK: 'Mức tồn kho tối thiểu không hợp lệ.',
   INVALID_QUANTITY: 'Số lượng phải lớn hơn 0.',
+  INVALID_REQUEST_PARAMETER: 'Tham số truy vấn không đúng định dạng. Vui lòng kiểm tra lại.',
 }
 
 const PATTERN_TRANSLATIONS: Array<[RegExp, string]> = [
