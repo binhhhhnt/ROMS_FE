@@ -20,7 +20,7 @@ export function StaffOrderCard({ order }: StaffOrderCardProps) {
     }).format(amount)
   }
 
-  const formatTime = (isoString?: string) => {
+  const formatDateTime = (isoString?: string) => {
     if (!isoString) return ''
     const date = new Date(isoString)
     return new Intl.DateTimeFormat('vi-VN', {
@@ -28,17 +28,8 @@ export function StaffOrderCard({ order }: StaffOrderCardProps) {
       minute: '2-digit',
       day: '2-digit',
       month: '2-digit',
+      year: 'numeric',
     }).format(date)
-  }
-
-  const getTimeAgo = (isoString?: string) => {
-    if (!isoString) return ''
-    const diffMs = Date.now() - new Date(isoString).getTime()
-    const diffMins = Math.floor(diffMs / 60000)
-    if (diffMins < 1) return 'Vừa đặt'
-    if (diffMins < 60) return `${diffMins} phút trước`
-    const diffHours = Math.floor(diffMins / 60)
-    return `${diffHours} giờ trước`
   }
 
   const getOrderStatusBadge = (status: OrderStatus) => {
@@ -97,14 +88,12 @@ export function StaffOrderCard({ order }: StaffOrderCardProps) {
               {order.tableCode ? `Bàn ${order.tableCode}` : `Bàn #${order.tableId}`}
             </span>
             <span className="text-xs font-mono text-muted">
-              #{order.id}
+              {order.sessionCode ? `Phiên ${order.sessionCode}` : `Phiên #${order.sessionId}`}
             </span>
           </div>
           <div className="flex items-center gap-1.5 text-xs text-muted mt-0.5">
             <Clock className="w-3.5 h-3.5 shrink-0" />
-            <span>{getTimeAgo(order.createdAt)}</span>
-            <span>&bull;</span>
-            <span className="tabular-nums">{formatTime(order.createdAt)}</span>
+            <span className="tabular-nums">{formatDateTime(order.createdAt)}</span>
           </div>
         </div>
 

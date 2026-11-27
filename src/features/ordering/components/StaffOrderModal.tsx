@@ -15,10 +15,12 @@ import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 import { Badge } from '@/shared/components/ui/badge'
 import { toast } from 'sonner'
-import { useAllOrderableMenuItems, useMenuCategoryOptions } from '@/features/menu/hooks/useMenu'
+import { menuApi } from '@/features/menu/api/menuApi'
+import { categoryApi } from '@/features/menu/api/categoryApi'
 import { tableApi } from '@/features/tables/api/tableApi'
 import { orderApi } from '@/features/ordering/api/orderApi'
 import { useMenuRealtime } from '@/features/menu/hooks/useMenuRealtime'
+import { fetchAllPages } from '@/shared/utils/pagination'
 import { getApiErrorMessage } from '@/shared/lib/axios'
 import type { OrderResponse } from '@/features/ordering/types/ordering.types'
 
@@ -54,14 +56,22 @@ export function StaffOrderModal({
   // Realtime menu updates sync
   useMenuRealtime(isOpen)
 
-  // 1. Fetch all orderable menu items (ACTIVE category, has BOM, AVAILABLE or TEMPORARILY_UNAVAILABLE)
-  const { data: menuData, isLoading: isLoadingMenu } = useAllOrderableMenuItems(
-    { sort: 'name,asc', forOrder: true },
-    isOpen
-  )
+  // 1. Fetch menu items (returns AVAILABLE and TEMPORARILY_UNAVAILABLE with BOM)
+  const { data: menuData, isLoading: isLoadingMenu } = useQuery({
+    queryKey: ['menu-items', 'staff-order'],
+    queryFn: () =>
+      fetchAllPages((page) =>
+        menuApi.list({ page, size: 100, sort: 'name,asc', forOrder: true })
+      ),
+    enabled: isOpen,
+  })
 
-  // 2. Fetch all active categories
-  const { data: categoryList } = useMenuCategoryOptions(isOpen)
+  // 2. Fetch active categories
+  const { data: categoryData } = useQuery({
+    queryKey: ['categories', 'active'],
+    queryFn: () => fetchAllPages((page) => categoryApi.list(page, 100)),
+    enabled: isOpen,
+  })
 
   // 3. Fetch tables with active sessions (only needed if initialSessionId not provided)
   const { data: tablesData } = useQuery({
@@ -70,10 +80,10 @@ export function StaffOrderModal({
     enabled: isOpen && !initialSessionId,
   })
 
-  const menuItems = useMemo(() => menuData?.items || [], [menuData])
+  const menuItems = useMemo(() => menuData?.content || [], [menuData])
   const categories = useMemo(
-    () => (categoryList || []).filter((c) => c.isActive),
-    [categoryList]
+    () => (categoryData?.content || []).filter((cat) => cat.isActive),
+    [categoryData]
   )
   const activeTables = useMemo(() => {
     return (tablesData?.content || []).filter(
@@ -333,7 +343,7 @@ export function StaffOrderModal({
                               {item.name}
                             </h4>
                             {item.isFeatured && (
-                              <Badge variant="pending" className="shrink-0">Bán chạy</Badge>
+                              <Badge variant="pending" className="shrink-0">Nổi bật</Badge>
                             )}
                           </div>
                           {item.description && (

@@ -211,10 +211,10 @@ export function PopularItemsTable({
                       <td className="py-3 px-4 text-center whitespace-nowrap">
                         {dish.rank <= 3 ? (
                           <Badge variant="pending" className="bg-amber-100 text-amber-900 border-amber-300 gap-1">
-                            <Flame className="w-3 h-3 text-amber-600" /> Best Seller
+                            <Flame className="w-3 h-3 text-amber-600" /> Bán chạy nhất
                           </Badge>
                         ) : dish.rank <= 10 ? (
-                          <Badge variant="ready">Bán chạy</Badge>
+                          <Badge variant="ready">Phổ biến</Badge>
                         ) : (
                           <Badge variant="outline">Tiềm năng</Badge>
                         )}

@@ -54,6 +54,7 @@ export function TabletOrderTrackingPage() {
     queryKey: ['orders', 'tablet', user?.tableId, activeSessionId],
     queryFn: () => (activeSessionId ? orderApi.getOrders(activeSessionId) : Promise.resolve([])),
     enabled: !!activeSessionId,
+    refetchInterval: 5000,
   })
 
   // Realtime STOMP Subscription

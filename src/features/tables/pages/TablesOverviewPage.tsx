@@ -439,7 +439,6 @@ export function TablesOverviewPage({ initialActiveOnly = true }: TablesOverviewP
               }}
               onToggleStatus={handleToggleStatus}
               onViewDetail={(t) => navigate(`/tables/${t.id}`)}
-              onCheckout={navigateToCheckout}
             />
           ))}
         </div>

@@ -25,6 +25,8 @@ export function BillsPage() {
   // Filter states
   const [searchInput, setSearchInput] = useState('')
   const [search, setSearch] = useState('')
+  const [fromDate, setFromDate] = useState('')
+  const [toDate, setToDate] = useState('')
   const [page, setPage] = useState(0)
   const pageSize = 15
 
@@ -39,8 +41,15 @@ export function BillsPage() {
     error,
     refetch,
   } = useQuery({
-    queryKey: ['bills', { page, size: pageSize, search }],
-    queryFn: () => billApi.getBills(page, pageSize, search || undefined),
+    queryKey: ['bills', { page, size: pageSize, search, fromDate, toDate }],
+    queryFn: () =>
+      billApi.getBills(
+        page,
+        pageSize,
+        search || undefined,
+        fromDate || undefined,
+        toDate || undefined
+      ),
   })
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -52,8 +61,12 @@ export function BillsPage() {
   const handleResetFilters = () => {
     setSearchInput('')
     setSearch('')
+    setFromDate('')
+    setToDate('')
     setPage(0)
   }
+
+  const hasActiveFilters = Boolean(search || fromDate || toDate)
 
   const formatVnd = (num: number) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(num)
@@ -121,33 +134,65 @@ export function BillsPage() {
       </div>
 
       {/* Tầng 2: Filter Bar */}
-      <div className="bg-card border border-border rounded-lg p-3.5 flex flex-col sm:flex-row gap-2.5 items-center justify-between">
-        <form onSubmit={handleSearchSubmit} className="flex-1 w-full flex items-center gap-2">
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+      <div className="bg-card border border-border rounded-lg p-3.5 flex flex-col xl:flex-row gap-3 xl:items-center justify-between">
+        <form onSubmit={handleSearchSubmit} className="flex-1 min-w-0 flex items-center gap-2">
+          <div className="relative flex-1 min-w-0">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
             <Input
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Tìm theo mã HĐ (VD: BILL-20261107-0001) hoặc mã bàn..."
+              placeholder="Tìm theo mã HĐ (VD: BILL-...) hoặc mã bàn..."
               className="pl-9 h-9 text-xs"
             />
           </div>
-          <Button type="submit" variant="primary" size="sm" className="h-9 px-4 text-xs">
+          <Button type="submit" variant="primary" size="sm" className="h-9 px-4 text-xs shrink-0">
             Tìm
           </Button>
         </form>
 
-        {search && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleResetFilters}
-            className="text-xs h-9 px-3 shrink-0"
-          >
-            <RotateCcw className="w-3.5 h-3.5 mr-1" />
-            Xóa tìm kiếm
-          </Button>
-        )}
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 flex-1 sm:flex-initial">
+            <span className="text-xs text-muted whitespace-nowrap">Từ</span>
+            <Input
+              type="date"
+              value={fromDate}
+              max={toDate || undefined}
+              onChange={(e) => {
+                setFromDate(e.target.value)
+                setPage(0)
+              }}
+              className="h-9 text-xs w-full sm:w-36"
+              aria-label="Từ ngày"
+            />
+          </div>
+          <div className="flex items-center gap-1.5 flex-1 sm:flex-initial">
+            <span className="text-xs text-muted whitespace-nowrap">Đến</span>
+            <Input
+              type="date"
+              value={toDate}
+              min={fromDate || undefined}
+              onChange={(e) => {
+                setToDate(e.target.value)
+                setPage(0)
+              }}
+              className="h-9 text-xs w-full sm:w-36"
+              aria-label="Đến ngày"
+            />
+          </div>
+          {hasActiveFilters && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleResetFilters}
+              className="text-xs h-9 px-3 shrink-0"
+              title="Đặt lại bộ lọc"
+            >
+              <RotateCcw className="w-3.5 h-3.5 mr-1" />
+              Đặt lại
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Tầng 3: Bills Table */}

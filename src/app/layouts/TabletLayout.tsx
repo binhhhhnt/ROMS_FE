@@ -45,10 +45,14 @@ export function TabletLayout() {
     const unsubTables = subscribeToTopic(
       '/topic/tables',
       (event: any) => {
-        if (event && event.tableId === tableId && event.status === 'CLOSED') {
-          resetTabletData()
-          toast.info('Phiên phục vụ của bàn đã kết thúc. Cảm ơn quý khách!')
-          navigate('/tablet/welcome', { replace: true })
+        if (event && event.tableId === tableId) {
+          if (event.status === 'ACTIVE') {
+            queryClient.invalidateQueries({ queryKey: ['tabletTableInfo', tableId] })
+          } else if (event.status === 'CLOSED') {
+            resetTabletData()
+            toast.info('Phiên phục vụ của bàn đã kết thúc. Cảm ơn quý khách!')
+            navigate('/tablet/welcome', { replace: true })
+          }
         }
       }
     )

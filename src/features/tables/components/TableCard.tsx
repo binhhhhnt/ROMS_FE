@@ -1,4 +1,4 @@
-import { Users, Play, ArrowRightLeft, Settings2, Power, Eye, Receipt } from 'lucide-react'
+import { Users, Play, ArrowRightLeft, Settings2, Power, Eye } from 'lucide-react'
 import type { TableItem } from '@/features/tables/types/table.types'
 import { Badge } from '@/shared/components/ui/badge'
 import { Button } from '@/shared/components/ui/button'
@@ -13,7 +13,6 @@ interface TableCardProps {
   onEditTable?: (table: TableItem) => void
   onToggleStatus?: (table: TableItem) => void
   onViewDetail: (table: TableItem) => void
-  onCheckout?: (table: TableItem) => void
 }
 
 export function TableCard({
@@ -25,7 +24,6 @@ export function TableCard({
   onEditTable,
   onToggleStatus,
   onViewDetail,
-  onCheckout,
 }: TableCardProps) {
   const isOccupied = table.realtimeStatus === 'OCCUPIED'
   const isEmpty = table.realtimeStatus === 'EMPTY'
@@ -112,18 +110,6 @@ export function TableCard({
 
         {isOccupied && (
           <div className="flex flex-col gap-1.5">
-            {onCheckout && (
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => onCheckout(table)}
-                className="w-full h-9 text-xs font-semibold"
-              >
-                <Receipt className="w-3.5 h-3.5 mr-1.5" />
-                Thanh toán
-              </Button>
-            )}
-
             <div className="grid grid-cols-2 gap-1.5">
               <Button
                 variant="outline"
