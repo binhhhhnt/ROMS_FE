@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { RefreshCw, Filter, Search } from 'lucide-react'
+import { RefreshCw, Filter, Search, RotateCcw } from 'lucide-react'
 
 import { tableApi } from '@/features/tables/api/tableApi'
 import type { ServiceSessionStatus } from '@/features/tables/types/table.types'
@@ -12,19 +12,33 @@ import { Input } from '@/shared/components/ui/input'
 export function SessionHistoryPage() {
   const [statusFilter, setStatusFilter] = useState<ServiceSessionStatus | ''>('')
   const [search, setSearch] = useState('')
+  const [fromDate, setFromDate] = useState('')
+  const [toDate, setToDate] = useState('')
   const [page, setPage] = useState(0)
 
   const { data, isLoading, isFetching, refetch } = useQuery({
-    queryKey: ['sessionsHistory', statusFilter, search, page],
+    queryKey: ['sessionsHistory', statusFilter, search, fromDate, toDate, page],
     queryFn: () =>
       tableApi.getSessions({
         status: statusFilter || undefined,
         search: search.trim() || undefined,
+        fromDate: fromDate || undefined,
+        toDate: toDate || undefined,
         page,
         size: 15,
         sort: 'openedAt,desc',
       }),
   })
+
+  const hasActiveFilters = Boolean(statusFilter || search.trim() || fromDate || toDate)
+
+  const handleResetFilters = () => {
+    setStatusFilter('')
+    setSearch('')
+    setFromDate('')
+    setToDate('')
+    setPage(0)
+  }
 
   const sessions = data?.content || []
   const totalPages = data?.totalPages || 0
@@ -56,8 +70,8 @@ export function SessionHistoryPage() {
       </div>
 
       {/* Tầng 2: Filter Toolbar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 p-3.5 bg-card border border-border rounded-lg">
-        <div className="flex-1 sm:max-w-xs">
+      <div className="flex flex-col xl:flex-row items-stretch xl:items-center gap-3 p-3.5 bg-card border border-border rounded-lg">
+        <div className="flex-1 min-w-0">
           <Input
             placeholder="Tìm theo mã phiên (vd: S-2026...) hoặc mã bàn..."
             leftIcon={<Search className="w-4 h-4 text-muted" />}
@@ -68,20 +82,62 @@ export function SessionHistoryPage() {
             }}
           />
         </div>
-        <div className="flex items-center gap-2">
-          <Filter className="w-4 h-4 text-muted shrink-0" />
-          <select
-            className="flex h-10 w-full sm:w-56 rounded-md border border-border bg-card px-3 py-2 text-xs text-text focus:outline-hidden focus:ring-2 focus:ring-accent"
-            value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter((e.target.value as ServiceSessionStatus) || '')
-              setPage(0)
-            }}
-          >
-            <option value="">Tất cả trạng thái</option>
-            <option value="ACTIVE">Đang hoạt động (ACTIVE)</option>
-            <option value="CLOSED">Đã hoàn tất (CLOSED)</option>
-          </select>
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 flex-1 sm:flex-initial">
+            <span className="text-xs text-muted whitespace-nowrap">Từ</span>
+            <Input
+              type="date"
+              value={fromDate}
+              max={toDate || undefined}
+              onChange={(e) => {
+                setFromDate(e.target.value)
+                setPage(0)
+              }}
+              className="h-10 text-xs w-full sm:w-36"
+              aria-label="Từ ngày"
+            />
+          </div>
+          <div className="flex items-center gap-1.5 flex-1 sm:flex-initial">
+            <span className="text-xs text-muted whitespace-nowrap">Đến</span>
+            <Input
+              type="date"
+              value={toDate}
+              min={fromDate || undefined}
+              onChange={(e) => {
+                setToDate(e.target.value)
+                setPage(0)
+              }}
+              className="h-10 text-xs w-full sm:w-36"
+              aria-label="Đến ngày"
+            />
+          </div>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <Filter className="w-4 h-4 text-muted shrink-0" />
+            <select
+              className="flex h-10 w-full sm:w-48 rounded-md border border-border bg-card px-3 py-2 text-xs text-text focus:outline-hidden focus:ring-2 focus:ring-accent"
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter((e.target.value as ServiceSessionStatus) || '')
+                setPage(0)
+              }}
+            >
+              <option value="">Tất cả trạng thái</option>
+              <option value="ACTIVE">Đang hoạt động (ACTIVE)</option>
+              <option value="CLOSED">Đã hoàn tất (CLOSED)</option>
+            </select>
+          </div>
+          {hasActiveFilters && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleResetFilters}
+              className="h-10 px-3 text-xs shrink-0"
+              title="Đặt lại bộ lọc"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+            </Button>
+          )}
         </div>
       </div>
 

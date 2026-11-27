@@ -1,5 +1,5 @@
 import { apiClient } from '@/shared/lib/axios'
-import type { ApiResponse } from '@/shared/types/api.types'
+import type { ApiResponse, PageResponse } from '@/shared/types/api.types'
 import type {
   CreateOrderRequest,
   OrderResponse,
@@ -35,6 +35,30 @@ export const orderApi = {
 
     const res = await apiClient.get<ApiResponse<OrderResponse[]>>(
       `/api/orders?${params.toString()}`
+    )
+    return res.data.data
+  },
+
+  async getOrdersPaged(query: {
+    status?: OrderStatus
+    session?: string
+    fromDate?: string
+    toDate?: string
+    page?: number
+    size?: number
+    sort?: string
+  }): Promise<PageResponse<OrderResponse>> {
+    const params = new URLSearchParams()
+    if (query.status) params.append('status', query.status)
+    if (query.session?.trim()) params.append('session', query.session.trim())
+    if (query.fromDate) params.append('fromDate', query.fromDate)
+    if (query.toDate) params.append('toDate', query.toDate)
+    params.append('page', String(query.page ?? 0))
+    params.append('size', String(query.size ?? 21))
+    if (query.sort) params.append('sort', query.sort)
+
+    const res = await apiClient.get<ApiResponse<PageResponse<OrderResponse>>>(
+      `/api/orders/paged?${params.toString()}`
     )
     return res.data.data
   },

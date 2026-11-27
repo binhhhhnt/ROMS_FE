@@ -7,7 +7,7 @@ interface ReportFilterBarProps {
   endDate: string
   onDateChange: (start: string, end: string) => void
   onRefresh: () => void
-  onExportCsv: () => void
+  onExportExcel?: () => void
   isExporting?: boolean
   isRefreshing?: boolean
 }
@@ -19,7 +19,7 @@ export function ReportFilterBar({
   endDate,
   onDateChange,
   onRefresh,
-  onExportCsv,
+  onExportExcel,
   isExporting = false,
   isRefreshing = false,
 }: ReportFilterBarProps) {
@@ -129,18 +129,20 @@ export function ReportFilterBar({
           <RotateCcw className={`w-3.5 h-3.5 mr-1.5 ${isRefreshing ? 'animate-spin' : ''}`} />
           Làm mới
         </Button>
-        <Button
-          type="button"
-          variant="primary"
-          size="sm"
-          onClick={onExportCsv}
-          disabled={isExporting}
-          className="h-9 px-3 text-xs shadow-sm font-semibold"
-          title="Tải về file báo cáo CSV từ máy chủ"
-        >
-          <Download className="w-3.5 h-3.5 mr-1.5" />
-          {isExporting ? 'Đang xuất CSV...' : 'Xuất file CSV'}
-        </Button>
+        {onExportExcel && (
+          <Button
+            type="button"
+            variant="primary"
+            size="sm"
+            onClick={onExportExcel}
+            disabled={isExporting}
+            className="h-9 px-3 text-xs shadow-sm font-semibold"
+            title="Tải về file báo cáo Excel từ máy chủ"
+          >
+            <Download className="w-3.5 h-3.5 mr-1.5" />
+            {isExporting ? 'Đang xuất Excel...' : 'Xuất file Excel'}
+          </Button>
+        )}
       </div>
     </div>
   )

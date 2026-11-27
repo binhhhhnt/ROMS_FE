@@ -73,20 +73,20 @@ export function OwnerDashboardPage() {
     await queryClient.invalidateQueries({ queryKey: ['dashboard'] })
   }
 
-  // Export CSV
-  const handleExportCsv = async () => {
+  // Export Excel
+  const handleExportExcel = async () => {
     setIsExporting(true)
     try {
       const blob = await dashboardApi.exportDailyReport(dates.startDate, dates.endDate)
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.download = `daily-financial-report-${new Date().toISOString().split('T')[0]}.csv`
+      link.download = `daily-financial-report-${new Date().toISOString().split('T')[0]}.xlsx`
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
       window.URL.revokeObjectURL(url)
-      toast.success('Xuất file báo cáo tài chính CSV thành công!')
+      toast.success('Xuất file báo cáo tài chính Excel thành công!')
     } catch (err) {
       toast.error('Có lỗi khi tải file báo cáo: ' + getApiErrorMessage(err))
     } finally {
@@ -126,7 +126,7 @@ export function OwnerDashboardPage() {
         endDate={dates.endDate}
         onDateChange={(start, end) => setDates({ startDate: start, endDate: end })}
         onRefresh={handleRefresh}
-        onExportCsv={handleExportCsv}
+        onExportExcel={handleExportExcel}
         isExporting={isExporting}
         isRefreshing={isRefetchingOverview}
       />

@@ -139,7 +139,7 @@ export function UserModal({ isOpen, onClose, onSuccess, userToEdit }: UserModalP
               <span className="text-[11px] text-muted">
                 {isEditMode
                   ? 'Cập nhật thông tin phân quyền và định danh'
-                  : 'Tạo thông tin đăng nhập và phân quyền nhân viên / tablet'}
+                  : 'Tạo thông tin đăng nhập và phân quyền nhân viên'}
               </span>
             </div>
           </div>
@@ -221,7 +221,7 @@ export function UserModal({ isOpen, onClose, onSuccess, userToEdit }: UserModalP
             </label>
             <Input
               id="fullName"
-              placeholder="ví dụ: Nguyễn Văn An hoặc Tablet Bàn 01"
+              placeholder="ví dụ: Nguyễn Văn An"
               leftIcon={<User className="w-4 h-4 text-muted" />}
               error={!!errors.fullName}
               {...register('fullName')}

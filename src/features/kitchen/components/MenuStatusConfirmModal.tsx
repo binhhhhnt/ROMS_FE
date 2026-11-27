@@ -76,7 +76,7 @@ export function MenuStatusConfirmModal({
 
           <p className="text-muted text-xs leading-relaxed pt-2 border-t border-border">
             {isPausing
-              ? 'Món ăn sẽ tạm khóa đặt trên tablet tại bàn. Các đơn đã đặt trước đó vẫn được giữ nguyên.'
+              ? 'Món ăn sẽ tạm khóa. Các đơn đã đặt trước đó vẫn được giữ nguyên.'
               : 'Món ăn sẽ được mở bán lại và cho phép khách đặt bình thường.'}
           </p>
         </div>

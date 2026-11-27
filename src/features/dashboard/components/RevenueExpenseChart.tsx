@@ -64,7 +64,7 @@ export function RevenueExpenseChart({ trends, isLoading = false }: RevenueExpens
     const range = max - min
     const width = 800
     const height = 260
-    const padding = { top: 20, right: 20, bottom: 40, left: 60 }
+    const padding = { top: 20, right: 20, bottom: 44, left: 72 }
     const chartW = width - padding.left - padding.right
     const chartH = height - padding.top - padding.bottom
 
@@ -129,7 +129,7 @@ export function RevenueExpenseChart({ trends, isLoading = false }: RevenueExpens
     <Card className="shadow-xs border border-border text-left">
       <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-border/50 gap-3">
         <div>
-          <CardTitle className="text-base font-bold text-text">Xu hướng Tài chính theo ngày</CardTitle>
+          <CardTitle className="text-base font-bold text-text">Biểu đồ tài chính theo ngày</CardTitle>
           <p className="text-xs text-muted mt-0.5">
             Biểu đồ so sánh doanh thu đơn hàng, chi phí vận hành, nhập hàng và lợi nhuận ròng.
           </p>
@@ -140,27 +140,24 @@ export function RevenueExpenseChart({ trends, isLoading = false }: RevenueExpens
           <button
             type="button"
             onClick={() => setViewMode('all')}
-            className={`px-2.5 py-1 rounded-md font-medium transition-all cursor-pointer ${
-              viewMode === 'all' ? 'bg-card text-primary shadow-xs font-bold' : 'text-muted hover:text-text'
-            }`}
+            className={`px-2.5 py-1 rounded-md font-medium transition-all cursor-pointer ${viewMode === 'all' ? 'bg-card text-primary shadow-xs font-bold' : 'text-muted hover:text-text'
+              }`}
           >
             Tất cả
           </button>
           <button
             type="button"
             onClick={() => setViewMode('revenue_profit')}
-            className={`px-2.5 py-1 rounded-md font-medium transition-all cursor-pointer ${
-              viewMode === 'revenue_profit' ? 'bg-card text-primary shadow-xs font-bold' : 'text-muted hover:text-text'
-            }`}
+            className={`px-2.5 py-1 rounded-md font-medium transition-all cursor-pointer ${viewMode === 'revenue_profit' ? 'bg-card text-primary shadow-xs font-bold' : 'text-muted hover:text-text'
+              }`}
           >
             Doanh thu & Lợi nhuận
           </button>
           <button
             type="button"
             onClick={() => setViewMode('revenue_expense')}
-            className={`px-2.5 py-1 rounded-md font-medium transition-all cursor-pointer ${
-              viewMode === 'revenue_expense' ? 'bg-card text-primary shadow-xs font-bold' : 'text-muted hover:text-text'
-            }`}
+            className={`px-2.5 py-1 rounded-md font-medium transition-all cursor-pointer ${viewMode === 'revenue_expense' ? 'bg-card text-primary shadow-xs font-bold' : 'text-muted hover:text-text'
+              }`}
           >
             Doanh thu & Chi phí
           </button>
@@ -215,7 +212,7 @@ export function RevenueExpenseChart({ trends, isLoading = false }: RevenueExpens
 
         {/* SVG Chart */}
         {!isLoading && chartData && (
-          <div className="relative w-full overflow-hidden">
+          <div className="relative w-full">
             <svg
               viewBox={`0 0 ${chartData.width} ${chartData.height}`}
               className="w-full h-auto overflow-visible select-none"
@@ -239,7 +236,7 @@ export function RevenueExpenseChart({ trends, isLoading = false }: RevenueExpens
                       x={chartData.padding.left - 8}
                       y={y + 4}
                       textAnchor="end"
-                      className="fill-muted text-[10px] font-mono"
+                      className="fill-muted text-[13px] font-mono font-medium"
                     >
                       {formatCompactVND(tick)}
                     </text>
@@ -328,9 +325,9 @@ export function RevenueExpenseChart({ trends, isLoading = false }: RevenueExpens
                     {showXTick && (
                       <text
                         x={x}
-                        y={chartData.height - 12}
+                        y={chartData.height - 10}
                         textAnchor="middle"
-                        className="fill-muted text-[10px] font-mono"
+                        className="fill-muted text-[13px] font-mono font-medium"
                       >
                         {formatDateLabel(t.date)}
                       </text>
@@ -375,45 +372,51 @@ export function RevenueExpenseChart({ trends, isLoading = false }: RevenueExpens
             </svg>
 
             {/* Floating Tooltip Card */}
-            {activeHoveredItem && hoveredIndex !== null && (
-              <div
-                className="absolute z-10 bg-card/95 backdrop-blur-xs border border-border rounded-xl p-3 shadow-xl pointer-events-none text-xs flex flex-col gap-1.5 transition-all duration-75"
-                style={{
-                  top: '10px',
-                  left: `${Math.min(Math.max(chartData.getX(hoveredIndex) - 90, 10), chartData.width - 200)}px`,
-                }}
-              >
-                <div className="font-bold text-text pb-1 border-b border-border flex items-center justify-between gap-4">
-                  <span>Ngày {activeHoveredItem.date}</span>
+            {activeHoveredItem && hoveredIndex !== null && (() => {
+              const xPercent = (chartData.getX(hoveredIndex) / chartData.width) * 100
+              const flipLeft = xPercent > 60
+              return (
+                <div
+                  className="absolute z-10 min-w-[210px] bg-card/95 backdrop-blur-xs border border-border rounded-xl p-3 shadow-xl pointer-events-none text-xs flex flex-col gap-1.5 transition-all duration-75"
+                  style={{
+                    top: '10px',
+                    ...(flipLeft
+                      ? { right: `${Math.max(100 - xPercent + 1.5, 1)}%` }
+                      : { left: `${Math.max(xPercent + 1.5, 2)}%` }),
+                  }}
+                >
+                  <div className="font-bold text-text pb-1 border-b border-border flex items-center justify-between gap-4">
+                    <span>Ngày {activeHoveredItem.date}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-[#3D92CB] font-medium flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-[#3D92CB]" /> Doanh thu:
+                    </span>
+                    <span className="font-bold font-mono text-text">{formatVND(activeHoveredItem.revenue)}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-[#EF4444] font-medium flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-[#EF4444]" /> Chi phí:
+                    </span>
+                    <span className="font-bold font-mono text-text">{formatVND(activeHoveredItem.expenses)}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-[#8B5CF6] font-medium flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-[#8B5CF6]" /> Nhập hàng:
+                    </span>
+                    <span className="font-bold font-mono text-text">{formatVND(activeHoveredItem.purchases)}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3 pt-1 border-t border-border/60">
+                    <span className="text-[#10B981] font-bold flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-[#10B981]" /> Lợi nhuận:
+                    </span>
+                    <span className={`font-bold font-mono ${activeHoveredItem.netProfit >= 0 ? 'text-status-ready' : 'text-status-cancelled'}`}>
+                      {formatVND(activeHoveredItem.netProfit)}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-[#3D92CB] font-medium flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full bg-[#3D92CB]" /> Doanh thu:
-                  </span>
-                  <span className="font-bold font-mono text-text">{formatVND(activeHoveredItem.revenue)}</span>
-                </div>
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-[#EF4444] font-medium flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full bg-[#EF4444]" /> Chi phí:
-                  </span>
-                  <span className="font-bold font-mono text-text">{formatVND(activeHoveredItem.expenses)}</span>
-                </div>
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-[#8B5CF6] font-medium flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full bg-[#8B5CF6]" /> Nhập hàng:
-                  </span>
-                  <span className="font-bold font-mono text-text">{formatVND(activeHoveredItem.purchases)}</span>
-                </div>
-                <div className="flex items-center justify-between gap-3 pt-1 border-t border-border/60">
-                  <span className="text-[#10B981] font-bold flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full bg-[#10B981]" /> Lợi nhuận:
-                  </span>
-                  <span className={`font-bold font-mono ${activeHoveredItem.netProfit >= 0 ? 'text-status-ready' : 'text-status-cancelled'}`}>
-                    {formatVND(activeHoveredItem.netProfit)}
-                  </span>
-                </div>
-              </div>
-            )}
+              )
+            })()}
           </div>
         )}
       </CardContent>

@@ -61,7 +61,7 @@
 | FE-042 | Báo cáo món bán chạy (`FE-SCR-042`; Page) | ROMS-064 | Member 5 | Done | Xếp hạng món bán chạy SVG, chi tiết số lượng & doanh thu |
 | FE-043 | Báo cáo chi phí/lợi nhuận (`FE-SCR-043`; Page) | ROMS-065 | Member 5 | Done | Doanh thu, chi phí, nhập hàng, lợi nhuận ròng |
 | FE-044 | Báo cáo vận hành (`FE-SCR-044`; Page) | ROMS-066 | Member 5 | Done | Tỷ lệ hoàn thành đơn, tỷ lệ hủy, cảnh báo tồn kho |
-| FE-045 | Xuất báo cáo (`FE-SCR-045`; Action) | ROMS-067 | Member 5 | Done | Nút xuất CSV trên ReportFilterBar |
+| FE-045 | Xuất báo cáo (`FE-SCR-045`; Action) | ROMS-067 | Member 5 | Done | Nút xuất file trên ReportFilterBar |
 | FE-047 | Cài đặt nhà hàng & Thuế (`FE-SCR-047`; Page + Modal/Action) | BE-034, BE-035 | Member 5 | Done | Implemented /owner/settings page with VAT toggle, live calculation table, and TaxCategoryModal for adding rates; build verified |
 | FE-048 | Đặt món trực tiếp & Hủy đơn cho Phục vụ | BE-036 | BINH-DEV | Done | Implemented StaffOrderModal for direct ordering, integrated into StaffOrdersPage & SessionDetailPage; enabled PENDING order & item cancellation with reason in StaffOrderDetailPage; build verified |
 | FE-049 | KDS Nút "Nấu tất cả" / "Ra tất cả" & Báo phục vụ | BE-037 | BINH-DEV | Done | KDS FIFO queue, action batch cook-all / ready-all, STOMP event báo món READY, nút phục vụ "Hoàn thành"; build verified |

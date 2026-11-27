@@ -47,8 +47,8 @@ export function StaffOrderDetailPage() {
     })
     const unsubSession = order?.sessionId
       ? subscribeToTopic(`/topic/session/${order.sessionId}/orders`, () => {
-          refetch()
-        })
+        refetch()
+      })
       : undefined
 
     return () => {
@@ -347,7 +347,7 @@ export function StaffOrderDetailPage() {
           <div className="min-w-0">
             <span className="text-muted block">Nguồn đơn</span>
             <span className="font-medium text-text mt-0.5 block truncate">
-              {order.createdByName || 'Khách tại bàn (Tablet)'}
+              {order.createdByName || 'Khách tại bàn'}
             </span>
           </div>
 
@@ -378,9 +378,8 @@ export function StaffOrderDetailPage() {
             return (
               <div
                 key={item.id}
-                className={`px-4 py-3.5 sm:px-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
-                  isCancelled ? 'opacity-60' : ''
-                }`}
+                className={`px-4 py-3.5 sm:px-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${isCancelled ? 'opacity-60' : ''
+                  }`}
               >
                 {/* Cột trái: Số lượng (anchor) + Tên món + Ghi chú */}
                 <div className="min-w-0 flex-1 flex items-start gap-3">
@@ -391,9 +390,8 @@ export function StaffOrderDetailPage() {
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
                       <span
-                        className={`font-semibold text-sm text-text ${
-                          isCancelled ? 'line-through text-muted' : ''
-                        }`}
+                        className={`font-semibold text-sm text-text ${isCancelled ? 'line-through text-muted' : ''
+                          }`}
                       >
                         {item.menuItemName}
                       </span>

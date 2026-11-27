@@ -151,7 +151,7 @@ export function QrMenuPage() {
                     />
                     {item.isFeatured && (
                       <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold shadow-xs">
-                        Bán chạy
+                        Nổi bật
                       </span>
                     )}
                     {!isAvailable && (
@@ -206,7 +206,7 @@ export function QrMenuPage() {
                 </h2>
                 {selectedItem.isFeatured && (
                   <span className="shrink-0 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold">
-                    Bán chạy
+                    Nổi bật
                   </span>
                 )}
               </div>

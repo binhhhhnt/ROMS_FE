@@ -177,7 +177,7 @@ export function MenuItemForm({ item, onSave, onDeleted }: {
             <input type="checkbox" className="h-4 w-4 accent-primary" {...register('isFeatured')} />
             Món nổi bật
           </label>
-          <p className="mt-1 text-xs text-muted">Đánh dấu món để giới thiệu trên thực đơn tablet.</p>
+          <p className="mt-1 text-xs text-muted">Đánh dấu món để giới thiệu trên thực đơn.</p>
           {errors.isFeatured && <p className="text-sm text-status-cancelled">{errors.isFeatured.message}</p>}
         </div>
 

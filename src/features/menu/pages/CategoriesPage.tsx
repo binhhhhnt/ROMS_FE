@@ -108,8 +108,8 @@ export function CategoriesPage() {
         statusFilter === 'ALL'
           ? true
           : statusFilter === 'ACTIVE'
-          ? cat.isActive
-          : !cat.isActive
+            ? cat.isActive
+            : !cat.isActive
 
       return matchSearch && matchStatus
     })
@@ -157,7 +157,7 @@ export function CategoriesPage() {
             Quản lý Danh mục Món
           </h1>
           <p className="text-xs text-muted mt-0.5">
-            Phân loại thực đơn nhà hàng và quản lý thứ tự hiển thị danh mục trên tablet của thực khách.
+            Phân loại thực đơn nhà hàng và quản lý thứ tự hiển thị danh mục.
           </p>
         </div>
         <Button
@@ -223,33 +223,30 @@ export function CategoriesPage() {
             <button
               type="button"
               onClick={() => setStatusFilter('ALL')}
-              className={`px-2.5 py-1 rounded-md font-medium transition-all ${
-                statusFilter === 'ALL'
+              className={`px-2.5 py-1 rounded-md font-medium transition-all ${statusFilter === 'ALL'
                   ? 'bg-primary text-white shadow-xs'
                   : 'text-muted hover:text-text'
-              }`}
+                }`}
             >
               Tất cả
             </button>
             <button
               type="button"
               onClick={() => setStatusFilter('ACTIVE')}
-              className={`px-2.5 py-1 rounded-md font-medium transition-all ${
-                statusFilter === 'ACTIVE'
+              className={`px-2.5 py-1 rounded-md font-medium transition-all ${statusFilter === 'ACTIVE'
                   ? 'bg-status-ready text-white shadow-xs'
                   : 'text-muted hover:text-text'
-              }`}
+                }`}
             >
               Đang hiển thị
             </button>
             <button
               type="button"
               onClick={() => setStatusFilter('INACTIVE')}
-              className={`px-2.5 py-1 rounded-md font-medium transition-all ${
-                statusFilter === 'INACTIVE'
+              className={`px-2.5 py-1 rounded-md font-medium transition-all ${statusFilter === 'INACTIVE'
                   ? 'bg-muted-bg text-text shadow-xs'
                   : 'text-muted hover:text-text'
-              }`}
+                }`}
             >
               Đang tạm ẩn
             </button>
@@ -285,12 +282,12 @@ export function CategoriesPage() {
         pagination={
           pageData
             ? {
-                page: pageData.page,
-                totalPages: pageData.totalPages,
-                totalElements: pageData.totalElements,
-                size: pageData.size,
-                onPageChange: (newPage) => setPage(newPage),
-              }
+              page: pageData.page,
+              totalPages: pageData.totalPages,
+              totalElements: pageData.totalElements,
+              size: pageData.size,
+              onPageChange: (newPage) => setPage(newPage),
+            }
             : undefined
         }
       />

@@ -343,7 +343,7 @@ export function StaffOrderModal({
                               {item.name}
                             </h4>
                             {item.isFeatured && (
-                              <Badge variant="pending" className="shrink-0">Bán chạy</Badge>
+                              <Badge variant="pending" className="shrink-0">Nổi bật</Badge>
                             )}
                           </div>
                           {item.description && (

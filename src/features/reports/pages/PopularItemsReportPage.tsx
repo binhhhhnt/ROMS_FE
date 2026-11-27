@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
 import { Trophy, ShoppingBag, Banknote, Award } from 'lucide-react'
 import { reportApi } from '@/features/reports/api/reportApi'
 import { getApiErrorMessage } from '@/shared/lib/axios'
@@ -25,7 +24,6 @@ export function PopularItemsReportPage() {
   })
 
   const [limit, setLimit] = useState(20)
-  const [isExporting, setIsExporting] = useState(false)
 
   // Query: Best selling dishes
   const {
@@ -39,30 +37,13 @@ export function PopularItemsReportPage() {
     queryFn: () => reportApi.getBestSellingDishes(dates.startDate, dates.endDate, limit),
   })
 
+
+
+
+
   // Refresh
   const handleRefresh = async () => {
     await queryClient.invalidateQueries({ queryKey: ['reports'] })
-  }
-
-  // Export CSV
-  const handleExportCsv = async () => {
-    setIsExporting(true)
-    try {
-      const blob = await reportApi.exportReportCsv(dates.startDate, dates.endDate)
-      const url = window.URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = `bao-cao-mon-ban-chay-${new Date().toISOString().split('T')[0]}.csv`
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      window.URL.revokeObjectURL(url)
-      toast.success('Xuất file báo cáo món bán chạy CSV thành công!')
-    } catch (err) {
-      toast.error('Có lỗi khi xuất file: ' + getApiErrorMessage(err))
-    } finally {
-      setIsExporting(false)
-    }
   }
 
   const formatVND = (num: number) => {
@@ -121,8 +102,6 @@ export function PopularItemsReportPage() {
         endDate={dates.endDate}
         onDateChange={(start, end) => setDates({ startDate: start, endDate: end })}
         onRefresh={handleRefresh}
-        onExportCsv={handleExportCsv}
-        isExporting={isExporting}
         isRefreshing={isRefetchingDishes}
       />
 
@@ -204,7 +183,7 @@ export function PopularItemsReportPage() {
             </div>
           </div>
           <div className="mt-3 pt-2 border-t border-border/60 text-[11px] text-muted">
-            Mức độ đóng góp doanh thu của món Best Seller
+            Mức độ đóng góp doanh thu của món bán chạy
           </div>
         </Card>
       </div>
