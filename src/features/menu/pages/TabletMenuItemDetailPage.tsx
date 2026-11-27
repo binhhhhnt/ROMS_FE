@@ -97,7 +97,7 @@ function TabletMenuItemDetail({ id }: { id: number | null }) {
             : item && <div className="grid items-start gap-6 md:grid-cols-2 lg:gap-10">
               <MenuItemGallery key={item.id} images={item.images} name={item.name} />
               <div className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-7">
-                <div className="flex flex-wrap items-center gap-2"><span className="text-sm text-muted">{item.category.name}</span>{item.isFeatured && <Badge variant="secondary">Món nổi bật</Badge>}</div>
+                <div className="flex flex-wrap items-center gap-2"><span className="text-sm text-muted">{item.category.name}</span>{item.isFeatured && <Badge variant="secondary">Nổi bật</Badge>}</div>
                 <h1 className="mt-3 break-words text-2xl font-bold text-primary">{item.name}</h1>
                 <p className="mt-4 text-2xl font-bold text-primary">{formatMenuPrice(checked?.price ?? item.price)}</p>
                 <p className="mt-4 whitespace-pre-wrap break-words text-sm leading-relaxed text-muted">{item.description || 'Món ăn được phục vụ tại nhà hàng.'}</p>

@@ -45,7 +45,7 @@ export const reportApi = {
     return res.data.data
   },
 
-  async exportReportCsv(startDate?: string, endDate?: string): Promise<Blob> {
+  async exportReportExcel(startDate?: string, endDate?: string): Promise<Blob> {
     const params = new URLSearchParams()
     if (startDate) params.append('startDate', startDate)
     if (endDate) params.append('endDate', endDate)

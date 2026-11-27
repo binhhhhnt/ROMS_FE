@@ -73,6 +73,8 @@ export interface SessionFilterParams {
   tableId?: number
   status?: ServiceSessionStatus
   search?: string
+  fromDate?: string
+  toDate?: string
   page?: number
   size?: number
   sort?: string

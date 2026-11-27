@@ -51,20 +51,20 @@ export function RevenueReportPage() {
     await queryClient.invalidateQueries({ queryKey: ['reports'] })
   }
 
-  // Export CSV (Task FE-045)
-  const handleExportCsv = async () => {
+  // Export Excel (Task FE-045)
+  const handleExportExcel = async () => {
     setIsExporting(true)
     try {
-      const blob = await reportApi.exportReportCsv(dates.startDate, dates.endDate)
+      const blob = await reportApi.exportReportExcel(dates.startDate, dates.endDate)
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.download = `bao-cao-doanh-thu-${new Date().toISOString().split('T')[0]}.csv`
+      link.download = `bao-cao-doanh-thu-${new Date().toISOString().split('T')[0]}.xlsx`
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
       window.URL.revokeObjectURL(url)
-      toast.success('Xuất file báo cáo doanh thu CSV thành công!')
+      toast.success('Xuất file báo cáo doanh thu Excel thành công!')
     } catch (err) {
       toast.error('Có lỗi khi tải file báo cáo: ' + getApiErrorMessage(err))
     } finally {
@@ -93,7 +93,7 @@ export function RevenueReportPage() {
         endDate={dates.endDate}
         onDateChange={(start, end) => setDates({ startDate: start, endDate: end })}
         onRefresh={handleRefresh}
-        onExportCsv={handleExportCsv}
+        onExportExcel={handleExportExcel}
         isExporting={isExporting}
         isRefreshing={isRefetchingTrends}
       />

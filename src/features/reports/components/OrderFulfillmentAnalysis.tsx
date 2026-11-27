@@ -71,7 +71,7 @@ export function OrderFulfillmentAnalysis({ overview, isLoading = false }: OrderF
 
               <div className="flex items-center justify-between text-[11px] text-muted">
                 <span>{data.completed} đơn phục vụ thành công</span>
-                <span>{data.cancelled} đơn bị hủy tại bàn</span>
+                <span>{data.cancelled} đơn bị hủy</span>
               </div>
             </div>
 
@@ -92,7 +92,7 @@ export function OrderFulfillmentAnalysis({ overview, isLoading = false }: OrderF
               </div>
 
               <div className="bg-status-cancelled/10 border border-status-cancelled/30 rounded-xl p-3 flex flex-col justify-between">
-                <span className="text-status-cancelled text-[11px] font-medium">Bị hủy tại bàn</span>
+                <span className="text-status-cancelled text-[11px] font-medium">Bị hủy</span>
                 <div className="text-xl font-bold font-mono text-status-cancelled mt-1">
                   {data.cancelled} <span className="text-xs font-normal text-muted">đơn</span>
                 </div>
@@ -117,7 +117,7 @@ export function OrderFulfillmentAnalysis({ overview, isLoading = false }: OrderF
                   <div className="flex flex-col gap-1 text-text">
                     <span className="font-bold text-status-ready">Hiệu suất vận hành tốt:</span>
                     <p className="text-muted leading-relaxed text-[11px]">
-                      Tỷ lệ hoàn tất đơn đạt <strong className="text-status-ready">{data.completedPct.toFixed(1)}%</strong>. Quy trình từ tablet khách đến nhà bếp và phục vụ món tại bàn đang diễn ra trơn tru.
+                      Tỷ lệ hoàn tất đơn đạt <strong className="text-status-ready">{data.completedPct.toFixed(1)}%</strong>
                     </p>
                   </div>
                 </>

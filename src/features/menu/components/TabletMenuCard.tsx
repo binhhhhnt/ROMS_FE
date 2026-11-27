@@ -80,7 +80,7 @@ export function TabletMenuCard({ item }: { item: MenuItemReadResponse }) {
         <MenuImage src={orderedMenuImages(item.images)[0]?.imageUrl} name={item.name} className="aspect-[16/10] w-full" />
         {item.isFeatured && (
           <span className="absolute left-3 top-3 rounded-md bg-card/95 px-2.5 py-1.5 text-[10px] font-bold tracking-wider text-primary shadow-sm">
-            HOT
+            Nổi bật
           </span>
         )}
         {!sellable && (

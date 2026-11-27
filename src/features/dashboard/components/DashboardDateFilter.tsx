@@ -7,7 +7,7 @@ interface DashboardDateFilterProps {
   endDate: string
   onDateChange: (start: string, end: string) => void
   onRefresh: () => void
-  onExportCsv: () => void
+  onExportExcel: () => void
   isExporting?: boolean
   isRefreshing?: boolean
 }
@@ -19,7 +19,7 @@ export function DashboardDateFilter({
   endDate,
   onDateChange,
   onRefresh,
-  onExportCsv,
+  onExportExcel,
   isExporting = false,
   isRefreshing = false,
 }: DashboardDateFilterProps) {
@@ -53,36 +53,32 @@ export function DashboardDateFilter({
           <button
             type="button"
             onClick={() => handleSelectPreset('today')}
-            className={`px-3 py-1.5 rounded-md font-medium transition-all cursor-pointer ${
-              selectedPreset === 'today' ? 'bg-card text-primary font-bold shadow-xs' : 'text-muted hover:text-text'
-            }`}
+            className={`px-3 py-1.5 rounded-md font-medium transition-all cursor-pointer ${selectedPreset === 'today' ? 'bg-card text-primary font-bold shadow-xs' : 'text-muted hover:text-text'
+              }`}
           >
             Hôm nay
           </button>
           <button
             type="button"
             onClick={() => handleSelectPreset('7_days')}
-            className={`px-3 py-1.5 rounded-md font-medium transition-all cursor-pointer ${
-              selectedPreset === '7_days' ? 'bg-card text-primary font-bold shadow-xs' : 'text-muted hover:text-text'
-            }`}
+            className={`px-3 py-1.5 rounded-md font-medium transition-all cursor-pointer ${selectedPreset === '7_days' ? 'bg-card text-primary font-bold shadow-xs' : 'text-muted hover:text-text'
+              }`}
           >
             7 ngày qua
           </button>
           <button
             type="button"
             onClick={() => handleSelectPreset('30_days')}
-            className={`px-3 py-1.5 rounded-md font-medium transition-all cursor-pointer ${
-              selectedPreset === '30_days' ? 'bg-card text-primary font-bold shadow-xs' : 'text-muted hover:text-text'
-            }`}
+            className={`px-3 py-1.5 rounded-md font-medium transition-all cursor-pointer ${selectedPreset === '30_days' ? 'bg-card text-primary font-bold shadow-xs' : 'text-muted hover:text-text'
+              }`}
           >
             30 ngày qua
           </button>
           <button
             type="button"
             onClick={() => setSelectedPreset('custom')}
-            className={`px-3 py-1.5 rounded-md font-medium transition-all cursor-pointer ${
-              selectedPreset === 'custom' ? 'bg-card text-primary font-bold shadow-xs' : 'text-muted hover:text-text'
-            }`}
+            className={`px-3 py-1.5 rounded-md font-medium transition-all cursor-pointer ${selectedPreset === 'custom' ? 'bg-card text-primary font-bold shadow-xs' : 'text-muted hover:text-text'
+              }`}
           >
             Tùy chọn
           </button>
@@ -133,12 +129,12 @@ export function DashboardDateFilter({
           type="button"
           variant="secondary"
           size="sm"
-          onClick={onExportCsv}
+          onClick={onExportExcel}
           disabled={isExporting}
           className="h-9 px-3 text-xs border border-border font-medium"
         >
           <Download className="w-3.5 h-3.5 mr-1.5 text-accent" />
-          {isExporting ? 'Đang xuất...' : 'Xuất CSV'}
+          {isExporting ? 'Đang xuất...' : 'Xuất file báo cáo'}
         </Button>
       </div>
     </div>
