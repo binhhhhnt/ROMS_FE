@@ -12,9 +12,6 @@ export interface ChatMessage {
 
 export interface SessionChatData {
   messages: ChatMessage[]
-  partySize: number | ''
-  allergies: string
-  budgetRange: string
 }
 
 export const createInitialChatData = (): SessionChatData => ({
@@ -22,13 +19,10 @@ export const createInitialChatData = (): SessionChatData => ({
     {
       id: 'welcome-msg',
       sender: 'bot',
-      text: 'Xin chào quý khách! Tôi là Trợ lý Ẩm thực AI thông minh của nhà hàng ROMS. Hãy trò chuyện với tôi về khẩu vị, sở thích món ăn, số lượng người hoặc bất kỳ yêu cầu nào (dị ứng, ngân sách...), tôi sẽ gợi ý thực đơn chuẩn xác và đang sẵn sàng phục vụ quý khách!',
+      text: 'Xin chào quý khách! Tôi là Trợ lý Ẩm thực AI thông minh của nhà hàng ROMS. Hãy trò chuyện với tôi về khẩu vị, sở thích món ăn, số lượng người hoặc bất kỳ yêu cầu nào (dị ứng, ngân sách...), tôi sẽ ghi nhớ xuyên suốt bữa ăn và gợi ý thực đơn phù hợp nhất!',
       timestamp: new Date().toISOString(),
     },
   ],
-  partySize: 4,
-  allergies: '',
-  budgetRange: '',
 })
 
 /**
@@ -57,10 +51,6 @@ interface AiChatStoreState {
   sessions: Record<string, SessionChatData>
   getChatData: (sessionKey: string) => SessionChatData
   addMessage: (sessionKey: string, message: ChatMessage) => void
-  updateCriteria: (
-    sessionKey: string,
-    criteria: Partial<Omit<SessionChatData, 'messages'>>
-  ) => void
   resetChat: (sessionKey: string) => void
   cleanupOldTableSessions: (tableId: number, currentSessionId?: number | null) => void
   clearAll: () => void
@@ -94,21 +84,6 @@ export const useAiChatStore = create<AiChatStoreState>()(
         })
       },
 
-      updateCriteria: (sessionKey: string, criteria) => {
-        set((state) => {
-          const current = state.sessions[sessionKey] || createInitialChatData()
-          return {
-            sessions: {
-              ...state.sessions,
-              [sessionKey]: {
-                ...current,
-                ...criteria,
-              },
-            },
-          }
-        })
-      },
-
       resetChat: (sessionKey: string) => {
         set((state) => ({
           sessions: {
@@ -131,11 +106,18 @@ export const useAiChatStore = create<AiChatStoreState>()(
       cleanupOldTableSessions: (tableId: number, currentSessionId?: number | null) => {
         set((state) => {
           const prefix = `table_${tableId}_`
+          const idleKey = `table_${tableId}_idle`
           const currentKey = currentSessionId
             ? `table_${tableId}_session_${currentSessionId}`
-            : `table_${tableId}_idle`
+            : idleKey
           const newSessions = { ...state.sessions }
           let hasChanges = false
+
+          if (currentSessionId && newSessions[idleKey] && !newSessions[currentKey]) {
+            newSessions[currentKey] = newSessions[idleKey]
+            hasChanges = true
+          }
+
           for (const key of Object.keys(newSessions)) {
             if (key.startsWith(prefix) && key !== currentKey) {
               delete newSessions[key]

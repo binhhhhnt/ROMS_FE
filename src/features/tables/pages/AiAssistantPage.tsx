@@ -4,17 +4,11 @@ import {
   Mic,
   MicOff,
   Send,
-  Users,
-  Banknote,
-  AlertOctagon,
   Bot,
   User,
   RotateCcw,
   PlusCircle,
   CheckCircle2,
-  SlidersHorizontal,
-  ChevronDown,
-  ChevronUp,
   Flame,
 } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
@@ -63,7 +57,6 @@ export function AiAssistantPage() {
 
   const cleanupOldTableSessions = useAiChatStore((state) => state.cleanupOldTableSessions)
   const addMessage = useAiChatStore((state) => state.addMessage)
-  const updateCriteria = useAiChatStore((state) => state.updateCriteria)
   const resetChat = useAiChatStore((state) => state.resetChat)
 
   // Clean up any historical sessions of this table so they never leak into new session
@@ -81,12 +74,6 @@ export function AiAssistantPage() {
     sessionChat?.messages && sessionChat.messages.length > 0
       ? sessionChat.messages
       : initialData.messages
-  const partySize = sessionChat?.partySize ?? initialData.partySize
-  const allergies = sessionChat?.allergies ?? initialData.allergies
-  const budgetRange = sessionChat?.budgetRange ?? initialData.budgetRange
-
-  // Advanced criteria toggle
-  const [showFilters, setShowFilters] = useState(false)
 
   // Chat message input & loading states
   const [inputText, setInputText] = useState('')
@@ -167,14 +154,20 @@ export function AiAssistantPage() {
     setInputText('')
     setIsLoading(true)
 
-    // 2. Call backend AI recommendation API
+    // 2. Call backend AI recommendation API with full session conversation history
+    const history = messages
+      .filter((m) => m.id !== 'welcome-msg' && !m.id.startsWith('welcome-') && !m.id.startsWith('bot-err-') && m.text.trim())
+      .slice(-100)
+      .map((m) => ({
+        sender: m.sender,
+        text: m.sender === 'bot' && m.text.length > 300 ? `${m.text.slice(0, 300)}...` : m.text,
+      }))
+
     try {
       const res = await aiApi.getRecommendations({
         message: query,
         preferences: query,
-        partySize: partySize ? Number(partySize) : undefined,
-        allergies: allergies.trim() || undefined,
-        budgetRange: budgetRange.trim() || undefined,
+        history,
       })
 
       const botMessage: ChatMessage = {
@@ -248,18 +241,6 @@ export function AiAssistantPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Toggle filter criteria */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowFilters(!showFilters)}
-            className="bg-white/10 text-white border-white/20 hover:bg-white/20 hover:text-white text-xs h-8"
-          >
-            <SlidersHorizontal className="w-3.5 h-3.5 mr-1.5" />
-            Tiêu chí
-            {showFilters ? <ChevronUp className="w-3.5 h-3.5 ml-1" /> : <ChevronDown className="w-3.5 h-3.5 ml-1" />}
-          </Button>
-
           {/* Reset chat button */}
           <Button
             variant="ghost"
@@ -273,65 +254,6 @@ export function AiAssistantPage() {
           </Button>
         </div>
       </div>
-
-      {/* Collapsible Filter Bar */}
-      {showFilters && (
-        <div className="bg-surface/50 border-b border-border p-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-xs shrink-0 animate-in slide-in-from-top-2 duration-200">
-          <div>
-            <label className="font-semibold text-text flex items-center gap-1.5 mb-1">
-              <Users className="w-3.5 h-3.5 text-primary" />
-              Số lượng người ăn
-            </label>
-            <Input
-              type="number"
-              min={1}
-              max={50}
-              value={partySize}
-              onChange={(e) =>
-                updateCriteria(sessionKey, {
-                  partySize: e.target.value ? Number(e.target.value) : '',
-                })
-              }
-              placeholder="Ví dụ: 4 người"
-              className="h-8 bg-card text-xs"
-            />
-          </div>
-
-          <div>
-            <label className="font-semibold text-text flex items-center gap-1.5 mb-1">
-              <AlertOctagon className="w-3.5 h-3.5 text-amber-500" />
-              Dị ứng / Kiêng kỵ
-            </label>
-            <Input
-              value={allergies}
-              onChange={(e) =>
-                updateCriteria(sessionKey, {
-                  allergies: e.target.value,
-                })
-              }
-              placeholder="Ví dụ: Dị ứng tôm, kiêng ăn cay..."
-              className="h-8 bg-card text-xs"
-            />
-          </div>
-
-          <div>
-            <label className="font-semibold text-text flex items-center gap-1.5 mb-1">
-              <Banknote className="w-3.5 h-3.5 text-green-500" />
-              Ngân sách dự kiến
-            </label>
-            <Input
-              value={budgetRange}
-              onChange={(e) =>
-                updateCriteria(sessionKey, {
-                  budgetRange: e.target.value,
-                })
-              }
-              placeholder="Ví dụ: Khoảng 500.000đ - 1.000.000đ"
-              className="h-8 bg-card text-xs"
-            />
-          </div>
-        </div>
-      )}
 
       {/* Chat Messages Stream */}
       <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 bg-background/50">

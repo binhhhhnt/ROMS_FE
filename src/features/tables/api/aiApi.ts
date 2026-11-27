@@ -1,12 +1,18 @@
 import { apiClient } from '@/shared/lib/axios'
 import type { ApiResponse } from '@/shared/types/api.types'
 
+export interface AiChatHistoryItem {
+  sender: 'user' | 'bot'
+  text: string
+}
+
 export interface AiRecommendationRequest {
   preferences?: string
   partySize?: number
   allergies?: string
   budgetRange?: string
   message?: string
+  history?: AiChatHistoryItem[]
 }
 
 export interface AiRecommendationItem {
