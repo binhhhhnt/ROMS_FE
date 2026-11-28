@@ -74,7 +74,7 @@ export function QrMenuPage() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Tìm món ăn, đồ uống..."
-            className="w-full h-10 pl-9 pr-8 rounded-full bg-card border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent"
+            className="w-full h-10 pl-9 pr-8 rounded-full bg-card border border-border text-base md:text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent"
           />
           {searchTerm && (
             <button
@@ -276,7 +276,7 @@ export function QrMenuPage() {
                 onChange={(e) => setItemNote(e.target.value)}
                 maxLength={255}
                 placeholder="Ví dụ: Ít cay, không hành..."
-                className="w-full h-10 px-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                className="w-full h-10 px-3 rounded-xl border border-border bg-background text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-accent"
               />
             </div>
 
