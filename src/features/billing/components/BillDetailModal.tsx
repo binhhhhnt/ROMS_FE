@@ -1,5 +1,8 @@
 import { X, Printer, Tag, CreditCard, Banknote } from 'lucide-react'
+import { toast } from 'sonner'
 import { Button } from '@/shared/components/ui/button'
+import { billApi } from '@/features/billing/api/billApi'
+import { settingsApi } from '@/features/settings/api/settingsApi'
 import { printReceiptViaBrowser, groupBillingItems } from '@/features/billing/utils/receiptPrinter'
 import type { BillResponse } from '@/features/billing/types/bill.types'
 
@@ -24,7 +27,13 @@ export function BillDetailModal({ isOpen, onClose, bill }: BillDetailModalProps)
       : `${d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} ${d.toLocaleDateString('vi-VN')}`
   }
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
+    const agentOnline = await settingsApi.isPrintAgentOnline()
+    if (agentOnline) {
+      await billApi.printBill(bill.id)
+      toast.success(`Đã gửi lệnh in hóa đơn ${bill.billCode} tới Print Agent`)
+      return
+    }
     printReceiptViaBrowser({
       title: 'HÓA ĐƠN THANH TOÁN',
       billCode: bill.billCode,

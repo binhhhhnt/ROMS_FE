@@ -66,6 +66,12 @@ export function RestaurantSettingsPage() {
     queryFn: () => settingsApi.getAvailablePrinters(),
   })
 
+  const { data: printAgentStatus } = useQuery({
+    queryKey: ['print-agent-status'],
+    queryFn: () => settingsApi.getPrintAgentStatus(),
+    refetchInterval: 15000,
+  })
+
   // 3. Fetch tax categories
   const {
     data: taxCategories = [],
@@ -452,13 +458,24 @@ export function RestaurantSettingsPage() {
                 </CardDescription>
               </div>
             </div>
-            {isLoadingPrinters ? (
-              <Badge variant="outline" className="animate-pulse">Đang quét máy in...</Badge>
-            ) : (
-              <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-300">
-                Tìm thấy {availablePrinters.length} máy in
-              </Badge>
-            )}
+            <div className="flex items-center gap-2">
+              {printAgentStatus?.online ? (
+                <Badge variant="outline" className="text-xs text-emerald-700 border-emerald-300 bg-emerald-50">
+                  Print Agent: Online
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="text-xs text-amber-700 border-amber-300 bg-amber-50">
+                  Print Agent: Offline (dùng in trình duyệt)
+                </Badge>
+              )}
+              {isLoadingPrinters ? (
+                <Badge variant="outline" className="animate-pulse">Đang quét máy in...</Badge>
+              ) : (
+                <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-300">
+                  Tìm thấy {availablePrinters.length} máy in
+                </Badge>
+              )}
+            </div>
           </div>
         </CardHeader>
 

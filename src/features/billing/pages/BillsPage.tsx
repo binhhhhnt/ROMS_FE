@@ -16,6 +16,7 @@ import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 import { Badge } from '@/shared/components/ui/badge'
 import { billApi } from '@/features/billing/api/billApi'
+import { settingsApi } from '@/features/settings/api/settingsApi'
 import { printReceiptViaBrowser } from '@/features/billing/utils/receiptPrinter'
 import { BillDetailModal } from '@/features/billing/components/BillDetailModal'
 import { getApiErrorMessage } from '@/shared/lib/axios'
@@ -85,7 +86,13 @@ export function BillsPage() {
     toast.success(`Đã sao chép mã HĐ: ${code}`)
   }
 
-  const handleQuickPrint = (bill: BillResponse) => {
+  const handleQuickPrint = async (bill: BillResponse) => {
+    const agentOnline = await settingsApi.isPrintAgentOnline()
+    if (agentOnline) {
+      await billApi.printBill(bill.id)
+      toast.success(`Đã gửi lệnh in hóa đơn ${bill.billCode} tới Print Agent`)
+      return
+    }
     printReceiptViaBrowser({
       title: 'HÓA ĐƠN THANH TOÁN',
       billCode: bill.billCode,

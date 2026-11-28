@@ -150,7 +150,7 @@ export function SessionCheckoutPage() {
         payments,
       })
     },
-    onSuccess: (savedBill) => {
+    onSuccess: async (savedBill) => {
       if (shouldPrintOnSuccess) {
         const receiptItems: ReceiptItem[] = savedBill.items.map((item, idx) => ({
           index: idx + 1,
@@ -166,31 +166,36 @@ export function SessionCheckoutPage() {
             amount: t.taxAmount,
           })) || []
 
-        printReceiptViaBrowser({
-          title: 'HÓA ĐƠN THANH TOÁN',
-          restaurantName: settings?.restaurantName,
-          address: settings?.address,
-          phone: settings?.phone,
-          receiptFooter: settings?.receiptFooter,
-          cashierName: savedBill.createdByName || currentUser?.username || 'Thu ngân',
-          tableCode: savedBill.tableCode,
-          openedAt: preview?.openedAt,
-          closedAt: savedBill.closedAt || savedBill.createdAt || new Date().toISOString(),
-          billCode: savedBill.billCode,
-          items: receiptItems,
-          amountBeforeDiscount: savedBill.amountBeforeDiscount,
-          discountAmount: savedBill.discountAmount,
-          promotionCode: savedBill.promotionCode,
-          surchargeAmount: savedBill.surchargeAmount,
-          surchargeNote: savedBill.surchargeNote,
-          taxRows,
-          totalAmount: savedBill.totalAmount,
-          payments: savedBill.payments?.map((p) => ({
-            method: p.paymentMethod,
-            amount: p.amount,
-          })),
-          paperSize: settings?.billPaperSize === 'K58' ? 'K58' : 'K80',
-        })
+        const agentOnline = await settingsApi.isPrintAgentOnline()
+        if (agentOnline) {
+          await billApi.printBill(savedBill.id)
+        } else {
+          printReceiptViaBrowser({
+            title: 'HÓA ĐƠN THANH TOÁN',
+            restaurantName: settings?.restaurantName,
+            address: settings?.address,
+            phone: settings?.phone,
+            receiptFooter: settings?.receiptFooter,
+            cashierName: savedBill.createdByName || currentUser?.username || 'Thu ngân',
+            tableCode: savedBill.tableCode,
+            openedAt: preview?.openedAt,
+            closedAt: savedBill.closedAt || savedBill.createdAt || new Date().toISOString(),
+            billCode: savedBill.billCode,
+            items: receiptItems,
+            amountBeforeDiscount: savedBill.amountBeforeDiscount,
+            discountAmount: savedBill.discountAmount,
+            promotionCode: savedBill.promotionCode,
+            surchargeAmount: savedBill.surchargeAmount,
+            surchargeNote: savedBill.surchargeNote,
+            taxRows,
+            totalAmount: savedBill.totalAmount,
+            payments: savedBill.payments?.map((p) => ({
+              method: p.paymentMethod,
+              amount: p.amount,
+            })),
+            paperSize: settings?.billPaperSize === 'K58' ? 'K58' : 'K80',
+          })
+        }
         toast.success(`Thanh toán và gửi lệnh in hóa đơn thành công! Mã HĐ: ${savedBill.billCode}`)
       } else {
         toast.success(`Thanh toán thành công! Mã HĐ: ${savedBill.billCode}`)
@@ -217,8 +222,15 @@ export function SessionCheckoutPage() {
   const hasBillableItems = Boolean(preview && preview.items && preview.items.length > 0)
   const displayTableCode = preview?.tableCode || locationState?.tableCode || `Phiên ${preview?.sessionCode || `#${parsedSessionId}`}`
 
-  const handlePrintProforma = () => {
+  const handlePrintProforma = async () => {
     if (!preview || !hasBillableItems) return
+
+    const agentOnline = await settingsApi.isPrintAgentOnline()
+    if (agentOnline) {
+      await billApi.printProforma(parsedSessionId)
+      toast.success('Đã gửi phiếu tạm tính tới Print Agent')
+      return
+    }
 
     const receiptItems: ReceiptItem[] = preview.items.map((item, idx) => ({
       index: idx + 1,

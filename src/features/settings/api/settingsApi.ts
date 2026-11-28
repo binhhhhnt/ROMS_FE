@@ -105,6 +105,22 @@ export const settingsApi = {
     return res.data.data ?? []
   },
 
+  async getPrintAgentStatus(): Promise<{ online: boolean; printerCount: number; printers: string[] }> {
+    const res = await apiClient.get<
+      ApiResponse<{ online: boolean; printerCount: number; printers: string[] }>
+    >('/api/print-agent/status')
+    return res.data.data ?? { online: false, printerCount: 0, printers: [] }
+  },
+
+  async isPrintAgentOnline(): Promise<boolean> {
+    try {
+      const status = await this.getPrintAgentStatus()
+      return Boolean(status.online)
+    } catch {
+      return false
+    }
+  },
+
   async getTaxCategories(): Promise<TaxCategoryResponse[]> {
     const res = await apiClient.get<ApiResponse<TaxCategoryResponse[]>>('/api/tax-categories')
     return res.data.data
