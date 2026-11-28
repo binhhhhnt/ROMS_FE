@@ -20,9 +20,7 @@ interface KitchenTicketLayoutOptions extends KitchenReadyTicketPrintData {
   footerLabel: string
 }
 
-function buildAndPrintKitchenTicket(options: KitchenTicketLayoutOptions) {
-  if (!options.items || options.items.length === 0) return
-
+function buildKitchenTicketHtml(options: KitchenTicketLayoutOptions): string {
   const paperSize = options.paperSize || 'K80'
   const isA5 = paperSize === 'A5'
   const isK58 = paperSize === 'K58'
@@ -115,11 +113,11 @@ function buildAndPrintKitchenTicket(options: KitchenTicketLayoutOptions) {
 </html>
   `
 
-  printHtmlViaIframe(html)
+  return html
 }
 
-export function printKitchenReadyTicketViaBrowser(data: KitchenReadyTicketPrintData) {
-  buildAndPrintKitchenTicket({
+export function buildKitchenReadyTicketHtml(data: KitchenReadyTicketPrintData): string {
+  return buildKitchenTicketHtml({
     ...data,
     documentTitle: 'PHIẾU RA MÓN',
     bannerText: '--- ĐÃ XONG ---',
@@ -127,11 +125,21 @@ export function printKitchenReadyTicketViaBrowser(data: KitchenReadyTicketPrintD
   })
 }
 
-export function printKitchenOrderTicketViaBrowser(data: KitchenReadyTicketPrintData) {
-  buildAndPrintKitchenTicket({
+export function buildKitchenOrderTicketHtml(data: KitchenReadyTicketPrintData): string {
+  return buildKitchenTicketHtml({
     ...data,
     documentTitle: 'PHIẾU ORDER BẾP',
     bannerText: '--- ORDER MỚI VÀO BẾP ---',
     footerLabel: 'Giờ nhận đơn',
   })
+}
+
+export function printKitchenReadyTicketViaBrowser(data: KitchenReadyTicketPrintData) {
+  if (!data.items || data.items.length === 0) return
+  printHtmlViaIframe(buildKitchenReadyTicketHtml(data))
+}
+
+export function printKitchenOrderTicketViaBrowser(data: KitchenReadyTicketPrintData) {
+  if (!data.items || data.items.length === 0) return
+  printHtmlViaIframe(buildKitchenOrderTicketHtml(data))
 }

@@ -76,7 +76,7 @@ export function groupBillingItems<T extends GroupableBillItem>(items: T[]): T[] 
   return Array.from(map.values())
 }
 
-export function printReceiptViaBrowser(data: ReceiptPrintData) {
+export function buildReceiptHtml(data: ReceiptPrintData): string {
   const groupedItems: ReceiptItem[] = groupBillingItems(data.items).map((item, idx) => ({
     ...item,
     index: idx + 1,
@@ -357,6 +357,10 @@ export function printReceiptViaBrowser(data: ReceiptPrintData) {
 </html>
   `
 
-  printHtmlViaIframe(html)
+  return html
+}
+
+export function printReceiptViaBrowser(data: ReceiptPrintData) {
+  printHtmlViaIframe(buildReceiptHtml(data))
 }
 

@@ -28,6 +28,7 @@ import {
   X,
   QrCode,
   ChefHat,
+  Printer,
   type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/shared/utils/cn'
@@ -169,6 +170,7 @@ export function StaffLayout() {
         { to: '/kitchen/cooking', label: 'Bếp', icon: ChefHat, visible: isOwner },
         { to: '/owner/users', label: 'Quản lý tài khoản', icon: Users, visible: isOwner },
         { to: '/owner/qr-tables', label: 'Quản lý QR bàn', icon: QrCode, visible: isOwner },
+        { to: '/owner/print-templates', label: 'Quản lý phiếu in', icon: Printer, visible: isOwner },
         { to: '/owner/settings', label: 'Cài đặt & Thuế', icon: Sliders, visible: isOwner },
       ],
     },

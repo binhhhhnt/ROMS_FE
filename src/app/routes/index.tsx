@@ -20,6 +20,7 @@ import { QrCartPage } from '@/features/qr/pages/QrCartPage'
 import { QrOrderTrackingPage } from '@/features/qr/pages/QrOrderTrackingPage'
 import { StaffQrOrdersPage } from '@/features/qr/pages/StaffQrOrdersPage'
 import { OwnerQrTablesPage } from '@/features/qr/pages/OwnerQrTablesPage'
+import { PrintTemplatesPage } from '@/features/settings/pages/PrintTemplatesPage'
 import { StaffOrdersPage } from '@/features/ordering/pages/StaffOrdersPage'
 import { StaffOrderDetailPage } from '@/features/ordering/pages/StaffOrderDetailPage'
 import { KitchenCookingPage } from '@/features/kitchen/pages/KitchenCookingPage'
@@ -93,6 +94,7 @@ export function AppRoutes() {
               <Route path="/owner/menu-items/:itemId" element={<MenuItemDetailPage />} />
               <Route path="/owner/promotions" element={<PromotionsPage />} />
               <Route path="/owner/settings" element={<RestaurantSettingsPage />} />
+              <Route path="/owner/print-templates" element={<PrintTemplatesPage />} />
               <Route path="/owner/qr-tables" element={<OwnerQrTablesPage />} />
               <Route path="/owner/recipes" element={<RecipesPage />} />
             </Route>
