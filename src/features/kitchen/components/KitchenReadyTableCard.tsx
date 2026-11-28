@@ -1,5 +1,7 @@
 import { Printer } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
+import { toast } from 'sonner'
+import { kitchenApi } from '@/features/kitchen/api/kitchenApi'
 import { settingsApi } from '@/features/settings/api/settingsApi'
 import { printKitchenReadyTicketViaBrowser } from '@/features/kitchen/utils/kitchenTicketPrinter'
 import { Button } from '@/shared/components/ui/button'
@@ -20,7 +22,13 @@ export function KitchenReadyTableCard({
     queryFn: () => settingsApi.getSettings(),
   })
 
-  const handlePrintReadyTicket = () => {
+  const handlePrintReadyTicket = async () => {
+    const agentOnline = await settingsApi.isPrintAgentOnline()
+    if (agentOnline) {
+      await kitchenApi.printReadyTicket(order.id)
+      toast.success('Đã gửi phiếu ra món tới Print Agent')
+      return
+    }
     printKitchenReadyTicketViaBrowser({
       tableCode: order.tableCode || `Bàn #${order.tableId}`,
       orderId: order.id,

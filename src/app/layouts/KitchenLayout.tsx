@@ -158,9 +158,14 @@ export function KitchenLayout() {
 
         const currentSettings = settingsRef.current
         if (currentSettings?.printKitchenOrderTicket) {
-          kitchenApi
-            .getKitchenOrderById(orderId)
-            .then((order) => {
+          settingsApi
+            .isPrintAgentOnline()
+            .then(async (agentOnline) => {
+              if (agentOnline) {
+                await kitchenApi.printOrderTicket(orderId)
+                return
+              }
+              const order = await kitchenApi.getKitchenOrderById(orderId)
               const activeItems = order.items.filter(
                 (i) => i.status === 'PENDING' || i.status === 'COOKING'
               )

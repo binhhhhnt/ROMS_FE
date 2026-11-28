@@ -51,6 +51,14 @@ export const kitchenApi = {
     return res.data.data
   },
 
+  async printReadyTicket(id: number): Promise<void> {
+    await apiClient.post(`/api/kitchen/orders/${id}/print-ready`)
+  },
+
+  async printOrderTicket(id: number): Promise<void> {
+    await apiClient.post(`/api/kitchen/orders/${id}/print-order`)
+  },
+
   async updateOrderItemStatus(
     orderId: number,
     itemId: number,

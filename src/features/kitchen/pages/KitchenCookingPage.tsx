@@ -136,11 +136,17 @@ export function KitchenCookingPage() {
     }
   }
 
-  const handlePrintOrderTicket = (order: KitchenOrderResponse) => {
+  const handlePrintOrderTicket = async (order: KitchenOrderResponse) => {
     const activeItems = order.items.filter(
       (i) => i.status === 'PENDING' || i.status === 'COOKING'
     )
     if (activeItems.length === 0) return
+    const agentOnline = await settingsApi.isPrintAgentOnline()
+    if (agentOnline) {
+      await kitchenApi.printOrderTicket(order.id)
+      toast.success('Đã gửi phiếu bếp tới Print Agent')
+      return
+    }
     printKitchenOrderTicketViaBrowser({
       tableCode: order.tableCode || `Bàn #${order.tableId}`,
       orderId: order.id,
